@@ -26,6 +26,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
         [InlineData("Assets.operation_plus_request.json", "Assets.operation_plus_response.json")]
         [InlineData("Assets.operation_divide_1_request.json", "Assets.operation_divide_1_response.json")]
         [InlineData("Assets.operation_divide_2_request.json", "Assets.operation_divide_2_response.json")]
+        [InlineData("Assets.operation_power_request.json", "Assets.operation_power_response.json")]
         [InlineData("Assets.invalid_method_request.json", "Assets.invalid_method_response.json")]
         [InlineData("Assets.invalid_message_request.json", "Assets.invalid_message_response.json")]
         [InlineData("Assets.invalid_processing_id_request.json", "Assets.invalid_processing_id_response.json")]

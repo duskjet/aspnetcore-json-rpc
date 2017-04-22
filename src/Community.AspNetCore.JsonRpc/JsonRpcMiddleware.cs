@@ -47,12 +47,7 @@ namespace Community.AspNetCore.JsonRpc
             return new JsonRpcSerializer(scheme, settings);
         }
 
-        private static bool ValidateMediaType(string value)
-        {
-            return MediaTypeHeaderValue.TryParse(value, out var result) && (string.Compare(result.MediaType, _mediaType.MediaType, StringComparison.OrdinalIgnoreCase) == 0);
-        }
-
-        private JsonRpcError ConvertToError(JsonRpcException exception)
+        private static JsonRpcError ConvertToError(JsonRpcException exception)
         {
             switch (exception.Type)
             {
@@ -75,6 +70,11 @@ namespace Community.AspNetCore.JsonRpc
             }
         }
 
+        private static bool ValidateMediaType(string value)
+        {
+            return MediaTypeHeaderValue.TryParse(value, out var result) && (string.Compare(result.MediaType, _mediaType.MediaType, StringComparison.OrdinalIgnoreCase) == 0);
+        }
+
         private async Task<JsonRpcResponse> ConvertToResponse(JsonRpcItem<JsonRpcRequest> item)
         {
             if (item.IsValid)
@@ -95,16 +95,22 @@ namespace Community.AspNetCore.JsonRpc
                 }
                 catch (InvalidOperationException ex)
                 {
-                    _logger.LogTrace(3, ex, "Unknown request processing error");
+                    _logger.LogTrace(1, ex, "Unknown \"{RequestId}\" request processing error", jsonRpcRequest.Id);
 
                     return !jsonRpcRequest.IsNotification ? new JsonRpcResponse(_jsonRpcErrorInternal, jsonRpcRequest.Id) : default(JsonRpcResponse);
                 }
 
                 if (!jsonRpcRequest.IsNotification)
                 {
+                    if (jsonRpcResponse == null)
+                    {
+                        _logger.LogTrace(2, "Response for the \"{RequestId}\" is (null)", jsonRpcRequest.Id);
+
+                        return new JsonRpcResponse(_jsonRpcErrorInternal, jsonRpcRequest.Id);
+                    }
                     if (jsonRpcRequest.Id != jsonRpcResponse.Id)
                     {
-                        _logger.LogTrace(4, "Response for the \"{RequestId}\" request has invalid identifier: \"{ResponseId}\"", jsonRpcRequest.Id, jsonRpcResponse.Id);
+                        _logger.LogTrace(2, "Response for the \"{RequestId}\" request has invalid identifier: \"{ResponseId}\"", jsonRpcRequest.Id, jsonRpcResponse.Id);
 
                         return new JsonRpcResponse(_jsonRpcErrorInternal, jsonRpcRequest.Id);
                     }
@@ -133,19 +139,19 @@ namespace Community.AspNetCore.JsonRpc
 
             if (string.Compare(context.Request.Method, "POST", StringComparison.OrdinalIgnoreCase) != 0)
             {
-                _logger.LogTrace(0, "Unsupported request method: \"{Method}\"", context.Request.Method);
+                _logger.LogTrace(0, "Unsupported HTTP method: \"{Method}\"", context.Request.Method);
 
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             }
             else if (!ValidateMediaType(context.Request.ContentType))
             {
-                _logger.LogTrace(1, "Unsupported input media type: \"{Type}\"", context.Request.ContentType);
+                _logger.LogTrace(0, "Unsupported request media type: \"{Type}\"", context.Request.ContentType);
 
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             }
             else if (!ValidateMediaType(context.Request.Headers["Accept"]))
             {
-                _logger.LogTrace(2, "Unsupported output media type: \"{Type}\"", context.Request.Headers["Accept"]);
+                _logger.LogTrace(0, "Unsupported response media type: \"{Type}\"", context.Request.Headers["Accept"]);
 
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             }
@@ -165,7 +171,7 @@ namespace Community.AspNetCore.JsonRpc
                 }
                 catch (JsonRpcException ex)
                 {
-                    _logger.LogTrace(1, ex, "Unknown request data processing error");
+                    _logger.LogTrace(1, ex, "Unknown JSON-RPC request processing error");
 
                     responseString = _serializer.SerializeResponse(new JsonRpcResponse(ConvertToError(ex), JsonRpcId.None));
                 }

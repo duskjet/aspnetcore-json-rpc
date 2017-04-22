@@ -15,6 +15,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
             result.Methods["multiply"] = new JsonRpcMethodScheme(typeof(CalculatorOperands));
             result.Methods["plus"] = new JsonRpcMethodScheme(typeof(CalculatorOperands));
             result.Methods["minus"] = new JsonRpcMethodScheme(typeof(CalculatorOperands));
+            result.Methods["power"] = new JsonRpcMethodScheme(typeof(CalculatorOperands));
 
             return result;
         }
@@ -57,9 +58,13 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
                         response = new JsonRpcResponse(operands.Operand1 - operands.Operand2, JsonRpcId.None);
                     }
                     break;
+                case "power":
+                    {
+                    }
+                    break;
                 default:
                     {
-                        throw new InvalidOperationException($"Unsupported operation: \"{request.Method}\""); ;
+                        throw new InvalidOperationException($"Unsupported operation: \"{request.Method}\"");
                     }
             }
 
