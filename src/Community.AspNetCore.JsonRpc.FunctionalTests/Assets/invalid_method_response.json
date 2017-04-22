@@ -1,0 +1,8 @@
+{
+    "jsonrpc": "2.0",
+    "id": "1cd2c27e-6c61-40d5-b30e-ca8e89456d2b",
+    "error": {
+        "code": -32601,
+        "message": "The request method \"log\" is not supported"
+    }
+}

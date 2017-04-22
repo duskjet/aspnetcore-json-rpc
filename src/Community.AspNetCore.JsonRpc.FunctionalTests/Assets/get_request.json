@@ -1,0 +1,9 @@
+{
+    "jsonrpc": "2.0",
+    "id": "954b6543-629a-42cc-8cbc-0eca74d2bb6f",
+    "method": "plus",
+    "params": {
+        "operand_1": 1.0,
+        "operand_2": 2.0
+    }
+}
