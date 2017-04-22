@@ -2,7 +2,7 @@
 
 1. Define types for request parameters and result objects:
 
-```
+```cs
 [JsonObject(MemberSerialization.OptIn)]
 internal struct CalculatorOperands
 {
@@ -16,7 +16,7 @@ internal struct CalculatorOperands
 
 2. Implement RPC-JSON handler interface:
 
-```
+```cs
 class JsonRpcCalculatorHandler : IJsonRpcHandler
 {
     public JsonRpcSerializerScheme CreateScheme()
@@ -63,7 +63,7 @@ class JsonRpcCalculatorHandler : IJsonRpcHandler
 
 3. Register implemented handler:
 
-```
+```cs
 var builder = new WebHostBuilder()
     .UseKestrel()
     .Configure(app => app.UseJsonRpc("/calculator", new JsonRpcCalculatorHandler()))
