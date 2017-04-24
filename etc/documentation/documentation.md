@@ -3,8 +3,7 @@
 1. Define types for request parameters and result objects:
 
 ```cs
-[JsonObject(MemberSerialization.OptIn)]
-internal struct CalculatorOperands
+class CalculatorOperands
 {
     [JsonProperty("operand_1")]
     public double Operand1 { get; set; }
@@ -30,7 +29,7 @@ class JsonRpcCalculatorHandler : IJsonRpcHandler
 
     public Task HandleNotification(JsonRpcRequest request)
     {
-        throw new NotSupportedException();
+        throw new InvalidOperationException("Notifications are not supported");
     }
 
     public Task<JsonRpcResponse> HandleRequest(JsonRpcRequest request)
@@ -52,7 +51,7 @@ class JsonRpcCalculatorHandler : IJsonRpcHandler
                 break;
             default:
                 {
-                    throw new InvalidOperationException($"Unsupported operation: \"{request.Method}\""); ;
+                    throw new InvalidOperationException($"Unsupported operation: \"{request.Method}\"");
                 }
         }
 
@@ -61,12 +60,8 @@ class JsonRpcCalculatorHandler : IJsonRpcHandler
 }
 ```
 
-3. Register implemented handler:
+3. Register implemented handler in web host builder:
 
 ```cs
-var builder = new WebHostBuilder()
-    .UseKestrel()
-    .Configure(app => app.UseJsonRpc("/calculator", new JsonRpcCalculatorHandler()))
-
-...
+builder.Configure(app => app.UseJsonRpc("/calculator", new JsonRpcCalculatorHandler()))
 ```

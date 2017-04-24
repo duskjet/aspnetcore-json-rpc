@@ -22,7 +22,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
 
         public Task HandleNotification(JsonRpcRequest request)
         {
-            throw new NotSupportedException();
+            throw new InvalidOperationException("Notifications are not supported");
         }
 
         public Task<JsonRpcResponse> HandleRequest(JsonRpcRequest request)
