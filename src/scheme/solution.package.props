@@ -1,6 +1,6 @@
 ﻿<Project>
   <PropertyGroup>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>1.0.1</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Product><![CDATA[Community.AspNetCore.JsonRpc]]></Product>
     <Description><![CDATA[Provides JSON-RPC support for ASP.NET Core]]></Description>
