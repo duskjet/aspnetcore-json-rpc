@@ -30,8 +30,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
         [InlineData("Assets.invalid_method_request.json", "Assets.invalid_method_response.json")]
         [InlineData("Assets.invalid_message_request.json", "Assets.invalid_message_response.json")]
         [InlineData("Assets.invalid_processing_id_request.json", "Assets.invalid_processing_id_response.json")]
-        [InlineData("Assets.invalid_processing_request.json", "Assets.invalid_processing_response.json")]
-        public async Task Post(string requestResource, string responseResource)
+        public async Task HandlerWhenHttpPostRegular(string requestResource, string responseResource)
         {
             var requestContent = EmbeddedResourceManager.GetString(requestResource);
             var responseContentSample = EmbeddedResourceManager.GetString(responseResource);
@@ -64,8 +63,116 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
             }
         }
 
+        [Theory]
+        [InlineData("Assets.operation_plus_request.json", "Assets.operation_plus_response.json")]
+        [InlineData("Assets.operation_divide_1_request.json", "Assets.operation_divide_1_response.json")]
+        [InlineData("Assets.operation_divide_2_request.json", "Assets.operation_divide_2_response.json")]
+        [InlineData("Assets.operation_power_request.json", "Assets.operation_power_response.json")]
+        [InlineData("Assets.invalid_method_request.json", "Assets.invalid_method_response.json")]
+        [InlineData("Assets.invalid_message_request.json", "Assets.invalid_message_response.json")]
+        public async Task ServiceWhenHttpPostRegular(string requestResource, string responseResource)
+        {
+            var requestContent = EmbeddedResourceManager.GetString(requestResource);
+            var responseContentSample = EmbeddedResourceManager.GetString(responseResource);
+
+            var server = new WebHostBuilder()
+                .UseKestrel()
+                .UseXunitLogger(_output)
+                .Configure(app => app.UseJsonRpc("/service", new JsonRpcTestService()))
+                .Start("http://localhost:8080");
+
+            using (server)
+            {
+                var client = new HttpClient()
+                {
+                    BaseAddress = new Uri("http://localhost:8080")
+                };
+
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                using (client)
+                {
+                    var response = await client.PostAsync("/service", new StringContent(requestContent, Encoding.UTF8, "application/json"));
+
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+                    var responseContent = await response.Content.ReadAsStringAsync();
+
+                    Assert.True(JToken.DeepEquals(JToken.Parse(responseContentSample), JToken.Parse(responseContent)));
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("Assets.operation_ac_request.json")]
+        public async Task HandlerWhenHttpPostNotification(string requestResource)
+        {
+            var requestContent = EmbeddedResourceManager.GetString(requestResource);
+
+            var server = new WebHostBuilder()
+                .UseKestrel()
+                .UseXunitLogger(_output)
+                .Configure(app => app.UseJsonRpc("/service", new JsonRpcTestHandler()))
+                .Start("http://localhost:8080");
+
+            using (server)
+            {
+                var client = new HttpClient()
+                {
+                    BaseAddress = new Uri("http://localhost:8080")
+                };
+
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                using (client)
+                {
+                    var response = await client.PostAsync("/service", new StringContent(requestContent, Encoding.UTF8, "application/json"));
+
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+                    var responseContent = await response.Content.ReadAsStringAsync();
+
+                    Assert.Equal(string.Empty, responseContent);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("Assets.operation_ac_request.json")]
+        public async Task ServiceWhenHttpPostNotification(string requestResource)
+        {
+            var requestContent = EmbeddedResourceManager.GetString(requestResource);
+
+            var server = new WebHostBuilder()
+                .UseKestrel()
+                .UseXunitLogger(_output)
+                .Configure(app => app.UseJsonRpc("/service", new JsonRpcTestService()))
+                .Start("http://localhost:8080");
+
+            using (server)
+            {
+                var client = new HttpClient()
+                {
+                    BaseAddress = new Uri("http://localhost:8080")
+                };
+
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                using (client)
+                {
+                    var response = await client.PostAsync("/service", new StringContent(requestContent, Encoding.UTF8, "application/json"));
+
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+                    var responseContent = await response.Content.ReadAsStringAsync();
+
+                    Assert.Equal(string.Empty, responseContent);
+                }
+            }
+        }
+
         [Fact]
-        public async Task Get()
+        public async Task HandlerWhenHttpGet()
         {
             var requestContent = EmbeddedResourceManager.GetString("Assets.get_request.json");
 
@@ -99,7 +206,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
         }
 
         [Fact]
-        public async Task PostWithInvalidAcceptHeader()
+        public async Task HandlerWhenHttpPostWithInvalidAcceptHeader()
         {
             var requestContent = EmbeddedResourceManager.GetString("Assets.invalid_accept_request.json");
 
@@ -128,7 +235,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
         }
 
         [Fact]
-        public async Task PostWithInvalidContentTypeHeader()
+        public async Task HandlerWhenHttpPostWithInvalidContentTypeHeader()
         {
             var requestContent = EmbeddedResourceManager.GetString("Assets.invalid_content_type_request.json");
 

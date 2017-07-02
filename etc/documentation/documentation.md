@@ -13,7 +13,7 @@ class CalculatorOperands
 }
 ```
 
-2. Implement RPC-JSON handler interface:
+2. Implement RPC-JSON handler or service interface:
 
 ```cs
 class JsonRpcCalculatorHandler : IJsonRpcHandler
@@ -22,14 +22,14 @@ class JsonRpcCalculatorHandler : IJsonRpcHandler
     {
         var result = new JsonRpcSerializerScheme();
 
-        result.Methods["plus"] = new JsonRpcMethodScheme(typeof(CalculatorOperands));
+        result.Methods["plus"] = new JsonRpcMethodScheme(false, typeof(CalculatorOperands));
 
         return result;
     }
 
     public Task HandleNotification(JsonRpcRequest request)
     {
-        throw new InvalidOperationException("Notifications are not supported");
+        throw new JsonRpcException("Notifications are not supported");
     }
 
     public Task<JsonRpcResponse> HandleRequest(JsonRpcRequest request)
@@ -51,7 +51,7 @@ class JsonRpcCalculatorHandler : IJsonRpcHandler
                 break;
             default:
                 {
-                    throw new InvalidOperationException($"Unsupported operation: \"{request.Method}\"");
+                    throw new JsonRpcException($"Unsupported operation: \"{request.Method}\"");
                 }
         }
 
@@ -59,9 +59,24 @@ class JsonRpcCalculatorHandler : IJsonRpcHandler
     }
 }
 ```
+or
+```cs
+class JsonRpcCalculatorService : IJsonRpcService
+{
+    [JsonRpcMethod("plus")]
+    public Task<double> Plus(CalculatorOperands operands)
+    {
+        return Task.FromResult(operands.Operand1 + operands.Operand2);
+    }
+}
+```
 
-3. Register implemented handler in web host builder:
+3. Register implemented handler or service in web host builder:
 
 ```cs
 builder.Configure(app => app.UseJsonRpc("/calculator", new JsonRpcCalculatorHandler()))
+```
+or
+```cs
+builder.Configure(app => app.UseJsonRpc("/calculator", new JsonRpcCalculatorService()))
 ```

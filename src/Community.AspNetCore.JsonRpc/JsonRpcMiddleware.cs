@@ -86,16 +86,16 @@ namespace Community.AspNetCore.JsonRpc
                 {
                     if (!jsonRpcRequest.IsNotification)
                     {
-                        jsonRpcResponse = await _handler.HandleRequest(jsonRpcRequest);
+                        jsonRpcResponse = await _handler.HandleRequest(jsonRpcRequest).ConfigureAwait(false);
                     }
                     else
                     {
-                        await _handler.HandleNotification(jsonRpcRequest);
+                        await _handler.HandleNotification(jsonRpcRequest).ConfigureAwait(false);
                     }
                 }
-                catch (InvalidOperationException ex)
+                catch (JsonRpcException ex)
                 {
-                    _logger.LogTrace(1, ex, "Unknown \"{RequestId}\" request processing error", jsonRpcRequest.Id);
+                    _logger.LogTrace(1, ex, "Unknown \"{RequestId}\" request processing error: {ExceptionType}", jsonRpcRequest.Id, ex.Type);
 
                     return !jsonRpcRequest.IsNotification ? new JsonRpcResponse(_jsonRpcErrorInternal, jsonRpcRequest.Id) : default(JsonRpcResponse);
                 }
@@ -166,7 +166,7 @@ namespace Community.AspNetCore.JsonRpc
                 {
                     using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
                     {
-                        jsonRpcRequestData = _serializer.DeserializeRequestsData(await reader.ReadToEndAsync());
+                        jsonRpcRequestData = _serializer.DeserializeRequestsData(await reader.ReadToEndAsync().ConfigureAwait(false));
                     }
                 }
                 catch (JsonRpcException ex)
@@ -180,7 +180,7 @@ namespace Community.AspNetCore.JsonRpc
                 {
                     if (!jsonRpcRequestData.IsBatch)
                     {
-                        var jsonRpcResponse = await ConvertToResponse(jsonRpcRequestData.GetSingleItem());
+                        var jsonRpcResponse = await ConvertToResponse(jsonRpcRequestData.GetSingleItem()).ConfigureAwait(false);
 
                         if (jsonRpcResponse != default(JsonRpcResponse))
                         {
@@ -194,7 +194,7 @@ namespace Community.AspNetCore.JsonRpc
 
                         for (var i = 0; i < items.Count; i++)
                         {
-                            var jsonRpcResponse = await ConvertToResponse(items[i]);
+                            var jsonRpcResponse = await ConvertToResponse(items[i]).ConfigureAwait(false);
 
                             if (jsonRpcResponse != default(JsonRpcResponse))
                             {
@@ -211,7 +211,7 @@ namespace Community.AspNetCore.JsonRpc
                 context.Response.ContentType = _mediaType.ToString();
                 context.Response.ContentLength = responseBytes.Length;
 
-                await context.Response.Body.WriteAsync(responseBytes, 0, responseBytes.Length);
+                await context.Response.Body.WriteAsync(responseBytes, 0, responseBytes.Length).ConfigureAwait(false);
             }
         }
     }
