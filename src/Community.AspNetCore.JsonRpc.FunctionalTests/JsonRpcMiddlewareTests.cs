@@ -43,7 +43,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
 
             using (server)
             {
-                var client = new HttpClient()
+                var client = new HttpClient
                 {
                     BaseAddress = new Uri("http://localhost:8080")
                 };
@@ -83,7 +83,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
 
             using (server)
             {
-                var client = new HttpClient()
+                var client = new HttpClient
                 {
                     BaseAddress = new Uri("http://localhost:8080")
                 };
@@ -117,7 +117,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
 
             using (server)
             {
-                var client = new HttpClient()
+                var client = new HttpClient
                 {
                     BaseAddress = new Uri("http://localhost:8080")
                 };
@@ -128,7 +128,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
                 {
                     var response = await client.PostAsync("/service", new StringContent(requestContent, Encoding.UTF8, "application/json"));
 
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
                     var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -151,7 +151,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
 
             using (server)
             {
-                var client = new HttpClient()
+                var client = new HttpClient
                 {
                     BaseAddress = new Uri("http://localhost:8080")
                 };
@@ -162,7 +162,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
                 {
                     var response = await client.PostAsync("/service", new StringContent(requestContent, Encoding.UTF8, "application/json"));
 
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
                     var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -184,7 +184,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
 
             using (server)
             {
-                var client = new HttpClient()
+                var client = new HttpClient
                 {
                     BaseAddress = new Uri("http://localhost:8080")
                 };
@@ -200,7 +200,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
 
                     var response = await client.SendAsync(message);
 
-                    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+                    Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
                 }
             }
         }
@@ -218,7 +218,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
 
             using (server)
             {
-                var client = new HttpClient()
+                var client = new HttpClient
                 {
                     BaseAddress = new Uri("http://localhost:8080")
                 };
@@ -229,7 +229,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
                 {
                     var response = await client.PostAsync("/service", new StringContent(requestContent, Encoding.UTF8, "application/json"));
 
-                    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+                    Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
                 }
             }
         }
@@ -247,7 +247,7 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
 
             using (server)
             {
-                var client = new HttpClient()
+                var client = new HttpClient
                 {
                     BaseAddress = new Uri("http://localhost:8080")
                 };
@@ -256,11 +256,44 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
 
                 using (client)
                 {
-                    var response = await client.PostAsync("/service", new StringContent(requestContent, Encoding.UTF8, "application/javascript"));
+                    var response = await client.PostAsync("/service", new StringContent(requestContent, Encoding.UTF8, "application/octet-stream"));
 
-                    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+                    Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
                 }
             }
+        }
+
+        [Fact]
+        public void ServiceWhenMethodNamesAreNotUnique()
+        {
+            Assert.Throws<InvalidOperationException>(() =>
+                new WebHostBuilder()
+                    .UseKestrel()
+                    .UseXunitLogger(_output)
+                    .Configure(app => app.UseJsonRpc("/service", new JsonRpcTestServiceInvalidMethodName()))
+                    .Start("http://localhost:8080"));
+        }
+
+        [Fact]
+        public void ServiceWhenMethodReturnTypeIsInvalid()
+        {
+            Assert.Throws<InvalidOperationException>(() =>
+                new WebHostBuilder()
+                    .UseKestrel()
+                    .UseXunitLogger(_output)
+                    .Configure(app => app.UseJsonRpc("/service", new JsonRpcTestServiceInvalidMethodReturnType()))
+                    .Start("http://localhost:8080"));
+        }
+
+        [Fact]
+        public void ServiceWhenMethodParametersAreInvalid()
+        {
+            Assert.Throws<InvalidOperationException>(() =>
+                new WebHostBuilder()
+                    .UseKestrel()
+                    .UseXunitLogger(_output)
+                    .Configure(app => app.UseJsonRpc("/service", new JsonRpcTestServiceInvalidMethodParameters()))
+                    .Start("http://localhost:8080"));
         }
     }
 }

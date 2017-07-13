@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data.JsonRpc;
+﻿using System.Data.JsonRpc;
 
 namespace Community.AspNetCore.JsonRpc
 {

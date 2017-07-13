@@ -27,7 +27,6 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
                     {
                         return Task.CompletedTask;
                     }
-                    break;
                 default:
                     {
                         throw new JsonRpcException($"Unsupported operation: \"{request.Method}\"");

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Data.JsonRpc;
 using System.Reflection;
+using System.Resources;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
@@ -10,7 +12,8 @@ namespace Community.AspNetCore.JsonRpc
     internal sealed class JsonRpcServiceHandler : IJsonRpcHandler
     {
         private static readonly MethodInfo _handleResponseMethodInfo = typeof(JsonRpcServiceHandler).GetTypeInfo().GetDeclaredMethod(nameof(HandleResponseTask));
-        private static readonly object[] _emptyMethodParameters = new object[] { };
+        private static readonly object[] _emptyMethodParameters = { };
+        private static readonly ResourceManager _resourceManager = CreateResourceManager();
 
         private readonly IDictionary<string, Tuple<MethodInfo, Type, Type>> _definitions = new Dictionary<string, Tuple<MethodInfo, Type, Type>>(StringComparer.Ordinal);
         private readonly IJsonRpcService _service;
@@ -45,14 +48,14 @@ namespace Community.AspNetCore.JsonRpc
 
                 if (_definitions.ContainsKey(jsonRpcMethodAttribute.Name))
                 {
-                    throw new InvalidOperationException($"JSON-RPC method \"{jsonRpcMethodAttribute.Name}\" must be unique");
+                    throw new InvalidOperationException(string.Format(_resourceManager.GetString("InvalidJsonRpcMethodName"), jsonRpcMethodAttribute.Name));
                 }
 
                 var parameters = method.GetParameters();
 
                 if (parameters.Length > 1)
                 {
-                    throw new InvalidOperationException($"JSON-RPC method \"{jsonRpcMethodAttribute.Name}\" must have zero or one parameter");
+                    throw new InvalidOperationException(string.Format(_resourceManager.GetString("InvalidJsonRpcMethodParameters"), jsonRpcMethodAttribute.Name));
                 }
 
                 var parameterType = parameters.Length == 1 ? parameters[0].ParameterType : null;
@@ -86,7 +89,7 @@ namespace Community.AspNetCore.JsonRpc
                     }
                     else
                     {
-                        throw new InvalidOperationException($"JSON-RPC method \"{jsonRpcMethodAttribute.Name}\" must have return type of \"System.Threading.Tasks.Task\" or \"System.Threading.Tasks.Task`1\"");
+                        throw new InvalidOperationException(string.Format(_resourceManager.GetString("InvalidJsonRpcMethodReturnType"), jsonRpcMethodAttribute.Name));
                     }
                 }
             }
@@ -105,7 +108,8 @@ namespace Community.AspNetCore.JsonRpc
 
                 await methodTask.ConfigureAwait(false);
             }
-            catch (TargetInvocationException ex) when (ex.InnerException is JsonRpcException jrb)
+            catch (TargetInvocationException ex)
+                when (ex.InnerException is JsonRpcException)
             {
                 ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
 
@@ -142,11 +146,19 @@ namespace Community.AspNetCore.JsonRpc
             }
         }
 
-        private async Task<JsonRpcResponse> HandleResponseTask<T>(JsonRpcId id, Task<T> task)
+        private static ResourceManager CreateResourceManager()
+        {
+            var assembly = typeof(JsonRpcServiceHandler).GetTypeInfo().Assembly;
+
+            return new ResourceManager($"{assembly.GetName().Name}.Resources.Strings", assembly);
+        }
+
+        private static async Task<JsonRpcResponse> HandleResponseTask<T>(JsonRpcId id, Task<T> task)
         {
             return new JsonRpcResponse(await task.ConfigureAwait(false), id);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static object GetDefaultValue(Type type)
         {
             return type.GetTypeInfo().IsValueType ? Activator.CreateInstance(type) : null;

@@ -4,6 +4,9 @@ using System.Data.JsonRpc;
 using System.IO;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Reflection;
+using System.Resources;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -15,6 +18,7 @@ namespace Community.AspNetCore.JsonRpc
     {
         private static readonly JsonRpcError _jsonRpcErrorInternal = new JsonRpcError(-32603L, "Internal JSON-RPC error");
         private static readonly MediaTypeHeaderValue _mediaType = new MediaTypeHeaderValue("application/json");
+        private static readonly ResourceManager _resourceManager = CreateResourceManager();
 
         private readonly IJsonRpcHandler _handler;
         private readonly ILogger _logger;
@@ -70,12 +74,13 @@ namespace Community.AspNetCore.JsonRpc
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool ValidateMediaType(string value)
         {
             return MediaTypeHeaderValue.TryParse(value, out var result) && (string.Compare(result.MediaType, _mediaType.MediaType, StringComparison.OrdinalIgnoreCase) == 0);
         }
 
-        private async Task<JsonRpcResponse> ConvertToResponse(JsonRpcItem<JsonRpcRequest> item)
+        private async Task<JsonRpcResponse> ProcessRequest(JsonRpcItem<JsonRpcRequest> item)
         {
             if (item.IsValid)
             {
@@ -95,7 +100,7 @@ namespace Community.AspNetCore.JsonRpc
                 }
                 catch (JsonRpcException ex)
                 {
-                    _logger.LogTrace(1, ex, "Unknown \"{RequestId}\" request processing error: {ExceptionType}", jsonRpcRequest.Id, ex.Type);
+                    _logger.LogTrace(1, ex, _resourceManager.GetString("RequestProcessingError"), jsonRpcRequest.Id, ex.Type);
 
                     return !jsonRpcRequest.IsNotification ? new JsonRpcResponse(_jsonRpcErrorInternal, jsonRpcRequest.Id) : default(JsonRpcResponse);
                 }
@@ -104,13 +109,13 @@ namespace Community.AspNetCore.JsonRpc
                 {
                     if (jsonRpcResponse == null)
                     {
-                        _logger.LogTrace(2, "Response for the \"{RequestId}\" is (null)", jsonRpcRequest.Id);
+                        _logger.LogTrace(2, _resourceManager.GetString("ResponseIsUndefined"), jsonRpcRequest.Id);
 
                         return new JsonRpcResponse(_jsonRpcErrorInternal, jsonRpcRequest.Id);
                     }
                     if (jsonRpcRequest.Id != jsonRpcResponse.Id)
                     {
-                        _logger.LogTrace(2, "Response for the \"{RequestId}\" request has invalid identifier: \"{ResponseId}\"", jsonRpcRequest.Id, jsonRpcResponse.Id);
+                        _logger.LogTrace(2, _resourceManager.GetString("ResponseHasInvalidIdentifier"), jsonRpcRequest.Id, jsonRpcResponse.Id);
 
                         return new JsonRpcResponse(_jsonRpcErrorInternal, jsonRpcRequest.Id);
                     }
@@ -137,82 +142,112 @@ namespace Community.AspNetCore.JsonRpc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (string.Compare(context.Request.Method, "POST", StringComparison.OrdinalIgnoreCase) != 0)
+            if (string.Compare(context.Request.Method, HttpMethods.Post, StringComparison.OrdinalIgnoreCase) != 0)
             {
-                _logger.LogTrace(0, "Unsupported HTTP method: \"{Method}\"", context.Request.Method);
+                _logger.LogTrace(0, _resourceManager.GetString("UnsupportedHttpMethod"), context.Request.Method);
 
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
             }
             else if (!ValidateMediaType(context.Request.ContentType))
             {
-                _logger.LogTrace(0, "Unsupported request media type: \"{Type}\"", context.Request.ContentType);
+                _logger.LogTrace(0, _resourceManager.GetString("UnsupportedContentTypeHeader"), context.Request.ContentType);
 
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                context.Response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
             }
             else if (!ValidateMediaType(context.Request.Headers["Accept"]))
             {
-                _logger.LogTrace(0, "Unsupported response media type: \"{Type}\"", context.Request.Headers["Accept"]);
+                _logger.LogTrace(0, _resourceManager.GetString("UnsupportedAcceptHeader"), context.Request.Headers["Accept"]);
 
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                context.Response.StatusCode = (int)HttpStatusCode.NotAcceptable;
+            }
+            else if (!context.Request.ContentLength.HasValue)
+            {
+                _logger.LogTrace(0, _resourceManager.GetString("UndefinedContentLengthHeader"), context.Request.Headers["Accept"]);
+
+                context.Response.StatusCode = (int)HttpStatusCode.LengthRequired;
             }
             else
             {
-                _logger.LogInformation(0, "Processing a JSON-RPC 2.0 request to the \"{Path}\" endpoint from the \"{Address}\" address", context.Request.PathBase, context.Connection.RemoteIpAddress);
+                var requestString = default(string);
 
-                var jsonRpcRequestData = default(JsonRpcData<JsonRpcRequest>);
-                var responseString = string.Empty;
-
-                try
+                using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
                 {
-                    using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
-                    {
-                        jsonRpcRequestData = _serializer.DeserializeRequestsData(await reader.ReadToEndAsync().ConfigureAwait(false));
-                    }
-                }
-                catch (JsonRpcException ex)
-                {
-                    _logger.LogTrace(1, ex, "Unknown JSON-RPC request processing error");
-
-                    responseString = _serializer.SerializeResponse(new JsonRpcResponse(ConvertToError(ex), JsonRpcId.None));
+                    requestString = await reader.ReadToEndAsync().ConfigureAwait(false);
                 }
 
-                if (jsonRpcRequestData != null)
+                if (requestString.Length != context.Request.ContentLength.Value)
                 {
-                    if (!jsonRpcRequestData.IsBatch)
-                    {
-                        var jsonRpcResponse = await ConvertToResponse(jsonRpcRequestData.GetSingleItem()).ConfigureAwait(false);
+                    _logger.LogTrace(0, _resourceManager.GetString("InvalidContentLengthHeader"), context.Request.Headers["Accept"]);
 
-                        if (jsonRpcResponse != default(JsonRpcResponse))
-                        {
-                            responseString = _serializer.SerializeResponse(jsonRpcResponse);
-                        }
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                }
+                else
+                {
+                    _logger.LogInformation(0, _resourceManager.GetString("RequestTraceLine"), context.Request.PathBase, context.Connection.RemoteIpAddress);
+
+                    var jsonRpcRequestData = default(JsonRpcData<JsonRpcRequest>);
+                    var responseString = string.Empty;
+
+                    try
+                    {
+                        jsonRpcRequestData = _serializer.DeserializeRequestsData(requestString);
                     }
-                    else
+                    catch (JsonRpcException ex)
                     {
-                        var items = jsonRpcRequestData.GetBatchItems();
-                        var jsonRpcResponses = new List<JsonRpcResponse>(items.Count);
+                        _logger.LogTrace(1, ex, _resourceManager.GetString("RequestDeserializingError"));
 
-                        for (var i = 0; i < items.Count; i++)
+                        responseString = _serializer.SerializeResponse(new JsonRpcResponse(ConvertToError(ex), JsonRpcId.None));
+                    }
+
+                    if (jsonRpcRequestData != null)
+                    {
+                        if (!jsonRpcRequestData.IsBatch)
                         {
-                            var jsonRpcResponse = await ConvertToResponse(items[i]).ConfigureAwait(false);
+                            var jsonRpcResponse = await ProcessRequest(jsonRpcRequestData.GetSingleItem()).ConfigureAwait(false);
 
                             if (jsonRpcResponse != default(JsonRpcResponse))
                             {
-                                jsonRpcResponses.Add(jsonRpcResponse);
+                                responseString = _serializer.SerializeResponse(jsonRpcResponse);
+                            }
+                            else
+                            {
+                                context.Response.StatusCode = (int)HttpStatusCode.NoContent;
                             }
                         }
+                        else
+                        {
+                            var items = jsonRpcRequestData.GetBatchItems();
+                            var jsonRpcResponses = new List<JsonRpcResponse>(items.Count);
 
-                        responseString = _serializer.SerializeResponses(jsonRpcResponses);
+                            for (var i = 0; i < items.Count; i++)
+                            {
+                                var jsonRpcResponse = await ProcessRequest(items[i]).ConfigureAwait(false);
+
+                                if (jsonRpcResponse != default(JsonRpcResponse))
+                                {
+                                    jsonRpcResponses.Add(jsonRpcResponse);
+                                }
+                            }
+
+                            responseString = _serializer.SerializeResponses(jsonRpcResponses);
+                        }
                     }
+
+                    var responseBytes = Encoding.UTF8.GetBytes(responseString);
+
+                    context.Response.ContentType = _mediaType.ToString();
+                    context.Response.ContentLength = responseBytes.Length;
+
+                    await context.Response.Body.WriteAsync(responseBytes, 0, responseBytes.Length).ConfigureAwait(false);
                 }
-
-                var responseBytes = Encoding.UTF8.GetBytes(responseString);
-
-                context.Response.ContentType = _mediaType.ToString();
-                context.Response.ContentLength = responseBytes.Length;
-
-                await context.Response.Body.WriteAsync(responseBytes, 0, responseBytes.Length).ConfigureAwait(false);
             }
+        }
+
+        private static ResourceManager CreateResourceManager()
+        {
+            var assembly = typeof(JsonRpcMiddleware).GetTypeInfo().Assembly;
+
+            return new ResourceManager($"{assembly.GetName().Name}.Resources.Strings", assembly);
         }
     }
 }

@@ -46,4 +46,38 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests
             throw new JsonRpcException("Unknown error");
         }
     }
+
+    internal sealed class JsonRpcTestServiceInvalidMethodName : IJsonRpcService
+    {
+        [JsonRpcMethod("method_a")]
+        public Task MethodA()
+        {
+            return Task.CompletedTask;
+        }
+
+        [JsonRpcMethod("method_a")]
+        public Task MethodB()
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+
+    internal sealed class JsonRpcTestServiceInvalidMethodReturnType : IJsonRpcService
+    {
+        [JsonRpcMethod("method_a")]
+        public int MethodA()
+        {
+            return 42;
+        }
+    }
+
+    internal sealed class JsonRpcTestServiceInvalidMethodParameters : IJsonRpcService
+    {
+        [JsonRpcMethod("method_a")]
+        public Task MethodA(string paramA, string paramB)
+        {
+            return Task.CompletedTask;
+        }
+    }
 }
