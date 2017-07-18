@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 
 namespace Community.AspNetCore.JsonRpc
 {
@@ -109,13 +110,13 @@ namespace Community.AspNetCore.JsonRpc
                 {
                     if (jsonRpcResponse == null)
                     {
-                        _logger.LogTrace(2, _resourceManager.GetString("ResponseIsUndefined"), jsonRpcRequest.Id);
+                        _logger.LogTrace(2, _resourceManager.GetString("UndefinedResponse"), jsonRpcRequest.Id);
 
                         return new JsonRpcResponse(_jsonRpcErrorInternal, jsonRpcRequest.Id);
                     }
                     if (jsonRpcRequest.Id != jsonRpcResponse.Id)
                     {
-                        _logger.LogTrace(2, _resourceManager.GetString("ResponseHasInvalidIdentifier"), jsonRpcRequest.Id, jsonRpcResponse.Id);
+                        _logger.LogTrace(2, _resourceManager.GetString("InvalidResponseIdentifier"), jsonRpcRequest.Id, jsonRpcResponse.Id);
 
                         return new JsonRpcResponse(_jsonRpcErrorInternal, jsonRpcRequest.Id);
                     }
@@ -148,11 +149,23 @@ namespace Community.AspNetCore.JsonRpc
 
                 context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
             }
+            else if (context.Request.ContentType == null)
+            {
+                _logger.LogTrace(0, _resourceManager.GetString("UndefinedContentTypeHeader"));
+
+                context.Response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
+            }
             else if (!ValidateMediaType(context.Request.ContentType))
             {
                 _logger.LogTrace(0, _resourceManager.GetString("UnsupportedContentTypeHeader"), context.Request.ContentType);
 
                 context.Response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
+            }
+            else if (context.Request.Headers["Accept"] == default(StringValues))
+            {
+                _logger.LogTrace(0, _resourceManager.GetString("UndefinedAcceptHeader"));
+
+                context.Response.StatusCode = (int)HttpStatusCode.NotAcceptable;
             }
             else if (!ValidateMediaType(context.Request.Headers["Accept"]))
             {
@@ -162,7 +175,7 @@ namespace Community.AspNetCore.JsonRpc
             }
             else if (!context.Request.ContentLength.HasValue)
             {
-                _logger.LogTrace(0, _resourceManager.GetString("UndefinedContentLengthHeader"), context.Request.Headers["Accept"]);
+                _logger.LogTrace(0, _resourceManager.GetString("UndefinedContentLengthHeader"));
 
                 context.Response.StatusCode = (int)HttpStatusCode.LengthRequired;
             }
@@ -177,7 +190,7 @@ namespace Community.AspNetCore.JsonRpc
 
                 if (requestString.Length != context.Request.ContentLength.Value)
                 {
-                    _logger.LogTrace(0, _resourceManager.GetString("InvalidContentLengthHeader"), context.Request.Headers["Accept"]);
+                    _logger.LogTrace(0, _resourceManager.GetString("InvalidContentLengthHeader"), context.Request.ContentLength.Value);
 
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 }

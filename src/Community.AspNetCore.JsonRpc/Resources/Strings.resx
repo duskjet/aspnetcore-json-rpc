@@ -129,6 +129,9 @@
   <data name="InvalidJsonRpcMethodReturnType" xml:space="preserve">
     <value>Method "{0}" must have return type of "System.Threading.Tasks.Task" or "System.Threading.Tasks.Task`1"</value>
   </data>
+  <data name="InvalidResponseIdentifier" xml:space="preserve">
+    <value>Response for the "{0}" request has invalid identifier: "{1}"</value>
+  </data>
   <data name="RequestDeserializingError" xml:space="preserve">
     <value>Unknown request deserializing error</value>
   </data>
@@ -138,14 +141,17 @@
   <data name="RequestTraceLine" xml:space="preserve">
     <value>Processing a request to the "{0}" endpoint from the "{1}" address</value>
   </data>
-  <data name="ResponseHasInvalidIdentifier" xml:space="preserve">
-    <value>Response for the "{0}" request has invalid identifier: "{1}"</value>
-  </data>
-  <data name="ResponseIsUndefined" xml:space="preserve">
-    <value>Response for the "{0}" is undefined</value>
+  <data name="UndefinedAcceptHeader" xml:space="preserve">
+    <value>The Accept header is not specified</value>
   </data>
   <data name="UndefinedContentLengthHeader" xml:space="preserve">
-    <value>Undefined Content-Length header: "{0}"</value>
+    <value>The Content-Length header is not specified</value>
+  </data>
+  <data name="UndefinedContentTypeHeader" xml:space="preserve">
+    <value>The Content-Type header is not specified</value>
+  </data>
+  <data name="UndefinedResponse" xml:space="preserve">
+    <value>Response for the "{0}" is undefined</value>
   </data>
   <data name="UnsupportedAcceptHeader" xml:space="preserve">
     <value>Unsupported Accept header: "{0}"</value>

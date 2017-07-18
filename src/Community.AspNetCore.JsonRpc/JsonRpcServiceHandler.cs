@@ -131,7 +131,8 @@ namespace Community.AspNetCore.JsonRpc
 
                 return await responseTask.ConfigureAwait(false);
             }
-            catch (TargetInvocationException ex) when (ex.InnerException is JsonRpcException jrb)
+            catch (TargetInvocationException ex)
+                when (ex.InnerException is JsonRpcException jrb)
             {
                 if (jrb is JsonRpcServiceException jrs)
                 {
