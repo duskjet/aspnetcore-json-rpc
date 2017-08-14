@@ -62,7 +62,7 @@ namespace Community.AspNetCore.JsonRpc
 
                 if (method.ReturnType == typeof(Task))
                 {
-                    _definitions[jsonRpcMethodAttribute.Name] = new Tuple<MethodInfo, Type, Type>(method, parameterType, default(Type));
+                    _definitions[jsonRpcMethodAttribute.Name] = new Tuple<MethodInfo, Type, Type>(method, parameterType, default);
 
                     scheme.Methods[jsonRpcMethodAttribute.Name] = new JsonRpcMethodScheme(true, parameterType);
                 }

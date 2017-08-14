@@ -103,7 +103,7 @@ namespace Community.AspNetCore.JsonRpc
                 {
                     _logger.LogTrace(1, ex, _resourceManager.GetString("RequestProcessingError"), jsonRpcRequest.Id, ex.Type);
 
-                    return !jsonRpcRequest.IsNotification ? new JsonRpcResponse(_jsonRpcErrorInternal, jsonRpcRequest.Id) : default(JsonRpcResponse);
+                    return !jsonRpcRequest.IsNotification ? new JsonRpcResponse(_jsonRpcErrorInternal, jsonRpcRequest.Id) : default;
                 }
 
                 if (!jsonRpcRequest.IsNotification)
@@ -125,7 +125,7 @@ namespace Community.AspNetCore.JsonRpc
                 }
                 else
                 {
-                    return default(JsonRpcResponse);
+                    return default;
                 }
             }
             else
