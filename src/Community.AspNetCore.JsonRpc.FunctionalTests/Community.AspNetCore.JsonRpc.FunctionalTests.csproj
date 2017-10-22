@@ -7,15 +7,15 @@
     <EmbeddedResource Include="Assets\*.json" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Community.AspNetCore.Logging.Xunit" Version="1.1.0" />
+    <PackageReference Include="Community.AspNetCore.Logging.Xunit" Version="1.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
     <PackageReference Include="System.Data.JsonRpc" Version="1.2.2" />
-    <PackageReference Include="xunit" Version="2.2.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
+    <PackageReference Include="xunit" Version="2.3.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Community.AspNetCore.JsonRpc\Community.AspNetCore.JsonRpc.csproj" />
