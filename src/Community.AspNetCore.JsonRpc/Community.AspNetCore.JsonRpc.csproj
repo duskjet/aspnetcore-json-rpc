@@ -3,7 +3,6 @@
   <Import Project="..\scheme\solution.package.props" />
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <OutputPath>$(RepositoryPath)\bin\bin\$(AssemblyName)\$(Configuration)\</OutputPath>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
