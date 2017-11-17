@@ -10,17 +10,11 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests.Resources
     [DebuggerStepThrough]
     internal static class EmbeddedResourceManager
     {
-        private static readonly Assembly _assembly;
-        private static readonly string _assemblyName;
-
-        static EmbeddedResourceManager()
-        {
-            _assembly = typeof(EmbeddedResourceManager).GetTypeInfo().Assembly;
-            _assemblyName = _assembly.GetName().Name;
-        }
+        private static readonly Assembly _assembly = Assembly.GetExecutingAssembly();
+        private static readonly string _assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
 
         /// <summary>Returns the value of the specified embedded string resource.</summary>
-        /// <param name="name">The name of the embedded resource to retrieve. </param>
+        /// <param name="name">The name of the embedded resource to retrieve.</param>
         /// <returns>The value of the embedded resource.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="name" /> is <see langword="null" />.</exception>
         /// <exception cref="InvalidOperationException">The specified embedded resource is not found.</exception>
@@ -33,14 +27,15 @@ namespace Community.AspNetCore.JsonRpc.FunctionalTests.Resources
 
             using (var bufferStream = new MemoryStream())
             {
-                var resourceStream = _assembly.GetManifestResourceStream(FormattableString.Invariant($"{_assemblyName}.{name}"));
-
-                if (resourceStream == null)
+                using (var resourceStream = _assembly.GetManifestResourceStream(FormattableString.Invariant($"{_assemblyName}.{name}")))
                 {
-                    throw new InvalidOperationException(FormattableString.Invariant($"The specified resource \"{name}\" is not found"));
-                }
+                    if (resourceStream == null)
+                    {
+                        throw new InvalidOperationException(FormattableString.Invariant($"The specified resource \"{name}\" is not found"));
+                    }
 
-                resourceStream.CopyTo(bufferStream);
+                    resourceStream.CopyTo(bufferStream);
+                }
 
                 return Encoding.UTF8.GetString(bufferStream.ToArray());
             }
