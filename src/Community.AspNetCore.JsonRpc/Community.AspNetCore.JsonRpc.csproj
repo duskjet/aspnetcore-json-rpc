@@ -1,12 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\scheme\solution.props" />
-  <Import Project="..\scheme\solution.package.props" />
+  <Import Project="$(MSBuildThisFileDirectory)../solution.props" />
+  <PropertyGroup>
+    <VersionPrefix>1.2.2</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
+    <Product><![CDATA[Community.AspNetCore.JsonRpc]]></Product>
+    <Description><![CDATA[Provides JSON-RPC support for ASP.NET Core]]></Description>
+    <Authors><![CDATA[Alexander Kozlenko]]></Authors>
+    <Copyright><![CDATA[© Alexander Kozlenko. All rights reserved.]]></Copyright>
+    <PackageTags><![CDATA[aspnetcore json-rpc]]></PackageTags>
+    <PackageProjectUrl>https://github.com/alexanderkozlenko/aspnetcore-json-rpc</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.github.com/alexanderkozlenko/aspnetcore-json-rpc/master/LICENSE</PackageLicenseUrl>
+  </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <OutputPath>$(RepositoryPath)/bin/bin/$(AssemblyName)/$(Configuration)/</OutputPath>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)../solution.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>True</SignAssembly>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <DebugType>none</DebugType>
   </PropertyGroup>
   <ItemGroup>
