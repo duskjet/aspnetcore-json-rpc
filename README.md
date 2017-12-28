@@ -75,7 +75,7 @@ class CalculatorHandler : IJsonRpcHandler
 }
 ```
 ```cs
-class CaculatorService
+class CalculatorService
 {
     [JsonRpcName("pin")]
     public Task Ping()
