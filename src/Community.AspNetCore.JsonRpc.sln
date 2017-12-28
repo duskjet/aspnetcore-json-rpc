@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.AspNetCore.JsonRpc", "Community.AspNetCore.JsonRpc\Community.AspNetCore.JsonRpc.csproj", "{0945A84E-051E-4836-9E8A-44A7533EAA5E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.AspNetCore.JsonRpc.FunctionalTests", "Community.AspNetCore.JsonRpc.FunctionalTests\Community.AspNetCore.JsonRpc.FunctionalTests.csproj", "{098593F5-AF4D-48F9-B675-3E8852F638A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.AspNetCore.JsonRpc.Tests", "Community.AspNetCore.JsonRpc.Tests\Community.AspNetCore.JsonRpc.Tests.csproj", "{098593F5-AF4D-48F9-B675-3E8852F638A8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

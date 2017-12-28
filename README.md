@@ -6,83 +6,108 @@ Provides [JSON-RPC 2.0](http://www.jsonrpc.org/specification) support for ASP.NE
 
 ### Sample of using JSON-RPC middleware
 
-1. Define types for request parameters and result objects:
+1. Implement a handler or service:
 
 ```cs
-class CalculatorOperands
-{
-    [JsonProperty("operand_1")]
-    public double Operand1 { get; set; }
-
-    [JsonProperty("operand_2")]
-    public double Operand2 { get; set; }
-}
-```
-
-2. Implement RPC-JSON handler or service interface:
-
-```cs
-class JsonRpcCalculatorHandler : IJsonRpcHandler
+class CalculatorHandler : IJsonRpcHandler
 {
     public JsonRpcSerializerScheme CreateScheme()
     {
-        var result = new JsonRpcSerializerScheme();
+        var scheme = new JsonRpcSerializerScheme();
 
-        result.Methods["plus"] = new JsonRpcMethodScheme(false, typeof(CalculatorOperands));
+        scheme.Methods["pin"] = new JsonRpcMethodScheme();
+        scheme.Methods["acl"] = new JsonRpcMethodScheme();
+        scheme.Methods["add"] = new JsonRpcMethodScheme(
+            new[]
+            {
+                typeof(long),
+                typeof(long)
+            });
+        scheme.Methods["sub"] = new JsonRpcMethodScheme(
+            new Dictionary<string, Type>
+            {
+                ["p1"] = typeof(long),
+                ["p2"] = typeof(long)
+            });
 
-        return result;
+        return scheme;
     }
 
-    public Task HandleNotification(JsonRpcRequest request)
+    public Task<JsonRpcResponse> Handle(JsonRpcRequest request)
     {
-        throw new JsonRpcException("Notifications are not supported");
-    }
-
-    public Task<JsonRpcResponse> HandleRequest(JsonRpcRequest request)
-    {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        var operands = (CalculatorOperands)request.Params;
         var response = default(JsonRpcResponse);
 
         switch (request.Method)
         {
-            case "plus":
+            case "pin":
                 {
-                    response = new JsonRpcResponse(operands.Operand1 + operands.Operand2, request.Id);
                 }
                 break;
-            default:
+            case "acl":
                 {
-                    throw new JsonRpcException($"Unsupported operation: \"{request.Method}\"");
+                    var error = new JsonRpcError(100L, "Operation is not available");
+                    
+                    response = new JsonRpcResponse(error, request.Id);
                 }
+                break;
+            case "add":
+                {
+                    var operand1 = request.ParamsByPosition[0];
+                    var operand2 = request.ParamsByPosition[1];
+                    var result = operand1 - operand2;
+                    
+                    response = new JsonRpcResponse(result, request.Id);
+                }
+                break;
+            case "sub":
+                {
+                    var operand1 = request.ParamsByName["o1"];
+                    var operand2 = request.ParamsByName["o2"];
+                    var result = operand1 - operand2;
+                    
+                    response = new JsonRpcResponse(result, request.Id);
+                }
+                break;
         }
 
         return Task.FromResult(response);
     }
 }
 ```
-or
 ```cs
-class JsonRpcCalculatorService : IJsonRpcService
+class CaculatorService
 {
-    [JsonRpcMethod("plus")]
-    public Task<double> Plus(CalculatorOperands operands)
+    [JsonRpcName("pin")]
+    public Task Ping()
     {
-        return Task.FromResult(operands.Operand1 + operands.Operand2);
+        return Task.CompletedTask;
+    }
+
+    [JsonRpcName("acl")]
+    public Task Clear()
+    {
+        throw new JsonRpcServiceException(100L, "Operation is not available");
+    }
+
+    [JsonRpcName("add")]
+    public Task<long> Add(long operand1, long operand2)
+    {
+        return Task.FromResult(operand1 + operand2);
+    }
+
+    [JsonRpcName("sub")]
+    public Task<long> Substract([JsonRpcName("o1")]long operand1, [JsonRpcName("o2")]long operand2)
+    {
+        return Task.FromResult(operand1 - operand2);
     }
 }
 ```
 
-3. Register implemented handler or service in web host builder:
+2. Register the implemented handler or service in web host builder:
 
 ```cs
-builder.Configure(app => app.UseJsonRpc("/calculator", new JsonRpcCalculatorHandler()))
+builder.Configure(app => app.UseJsonRpcHandler("/calculator", new JsonRpcCalculatorHandler()))
 ```
-or
 ```cs
-builder.Configure(app => app.UseJsonRpc("/calculator", new JsonRpcCalculatorService()))
+builder.Configure(app => app.UseJsonRpcService("/calculator", new JsonRpcCalculatorService()))
 ```

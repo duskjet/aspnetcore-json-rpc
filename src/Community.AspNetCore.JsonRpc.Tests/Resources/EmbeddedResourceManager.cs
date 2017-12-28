@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 
-namespace Community.AspNetCore.JsonRpc.FunctionalTests.Resources
+namespace Community.AspNetCore.JsonRpc.Tests.Resources
 {
     /// <summary>Represents a resource manager that provides convenient access to embedded resources at run time.</summary>
     [DebuggerStepThrough]

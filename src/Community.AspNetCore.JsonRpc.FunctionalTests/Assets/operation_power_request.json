@@ -1,9 +1,0 @@
-{
-    "jsonrpc": "2.0",
-    "id": "1cd2c27e-6c61-40d5-b30e-ca8e89456d2b",
-    "method": "power",
-    "params": {
-        "operand_1": 1.0,
-        "operand_2": 2.0
-    }
-}
