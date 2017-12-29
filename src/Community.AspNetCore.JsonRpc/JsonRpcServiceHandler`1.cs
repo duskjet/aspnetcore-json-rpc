@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
 using Community.AspNetCore.JsonRpc.Resources;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Community.AspNetCore.JsonRpc
 {
@@ -13,11 +14,20 @@ namespace Community.AspNetCore.JsonRpc
     {
         private readonly IDictionary<string, MethodInfo> _methodMap = new Dictionary<string, MethodInfo>(StringComparer.Ordinal);
         private readonly IDictionary<string, string[]> _parameterMaps = new Dictionary<string, string[]>(StringComparer.Ordinal);
-        private readonly object _target;
+        private readonly T _service;
 
-        public JsonRpcServiceHandler(object target)
+        public JsonRpcServiceHandler(IServiceProvider serviceProvider, object args)
         {
-            _target = target;
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+            if (args == null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
+
+            _service = ActivatorUtilities.CreateInstance<T>(serviceProvider, (object[])args);
         }
 
         public JsonRpcSerializerScheme CreateScheme()
@@ -159,7 +169,7 @@ namespace Community.AspNetCore.JsonRpc
             {
                 try
                 {
-                    await ((Task)methodInfo.Invoke(_target, parameters)).ConfigureAwait(false);
+                    await ((Task)methodInfo.Invoke(_service, parameters)).ConfigureAwait(false);
                 }
                 catch (TargetInvocationException ex)
                     when (ex.InnerException is JsonRpcServiceException iex)
@@ -175,7 +185,7 @@ namespace Community.AspNetCore.JsonRpc
             {
                 try
                 {
-                    var result = await ((dynamic)methodInfo.Invoke(_target, parameters)).ConfigureAwait(false) as object;
+                    var result = await ((dynamic)methodInfo.Invoke(_service, parameters)).ConfigureAwait(false) as object;
 
                     return new JsonRpcResponse(result, request.Id);
                 }

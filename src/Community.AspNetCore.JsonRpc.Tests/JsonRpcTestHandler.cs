@@ -11,23 +11,20 @@ namespace Community.AspNetCore.JsonRpc.Tests
         {
             var scheme = new JsonRpcSerializerScheme();
 
-            scheme.Methods["ac"] = new JsonRpcMethodScheme();
-
-            var paramsSchemeDivide = new Dictionary<string, Type>
-            {
-                ["operand_1"] = typeof(double),
-                ["operand_2"] = typeof(double)
-            };
-
-            scheme.Methods["divide"] = new JsonRpcMethodScheme(paramsSchemeDivide);
-
-            var paramsSchemeMinus = new[]
-            {
-                typeof(double),
-                typeof(double)
-            };
-
-            scheme.Methods["minus"] = new JsonRpcMethodScheme(paramsSchemeMinus);
+            scheme.Methods["pin"] = new JsonRpcMethodScheme();
+            scheme.Methods["clr"] = new JsonRpcMethodScheme();
+            scheme.Methods["add"] = new JsonRpcMethodScheme(
+                new[]
+                {
+                    typeof(long),
+                    typeof(long)
+                });
+            scheme.Methods["sub"] = new JsonRpcMethodScheme(
+                new Dictionary<string, Type>
+                {
+                    ["o1"] = typeof(long),
+                    ["o2"] = typeof(long)
+                });
 
             return scheme;
         }
@@ -38,35 +35,27 @@ namespace Community.AspNetCore.JsonRpc.Tests
 
             switch (request.Method)
             {
-                case "ac":
+                case "clr":
                     {
+                        var error = new JsonRpcError(100L, "OPERATION_NOT_AVAILABLE");
+
+                        response = new JsonRpcResponse(error, request.Id);
                     }
                     break;
-                case "divide":
+                case "add":
                     {
-                        var operand1 = (double)request.ParamsByName["operand_1"];
-                        var operand2 = (double)request.ParamsByName["operand_2"];
+                        var operand1 = (long)request.ParamsByPosition[0];
+                        var operand2 = (long)request.ParamsByPosition[1];
 
-                        if (operand2 == 0)
-                        {
-                            response = new JsonRpcResponse(new JsonRpcError(100, "Operand 2 equals zero"), request.Id);
-                        }
-                        else
-                        {
-                            var result = operand1 / operand2;
-
-                            response = new JsonRpcResponse(result, request.Id);
-                        }
+                        response = new JsonRpcResponse(operand1 + operand2, request.Id);
                     }
                     break;
-                case "minus":
+                case "sub":
                     {
-                        var operand1 = (double)request.ParamsByPosition[0];
-                        var operand2 = (double)request.ParamsByPosition[1];
+                        var operand1 = (long)request.ParamsByName["o1"];
+                        var operand2 = (long)request.ParamsByName["o2"];
 
-                        var result = operand1 - operand2;
-
-                        response = new JsonRpcResponse(result, request.Id);
+                        response = new JsonRpcResponse(operand1 - operand2, request.Id);
                     }
                     break;
             }

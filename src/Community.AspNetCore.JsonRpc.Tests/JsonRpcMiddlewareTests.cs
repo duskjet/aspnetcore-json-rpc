@@ -25,19 +25,19 @@ namespace Community.AspNetCore.JsonRpc.Tests
         }
 
         [Theory]
-        [InlineData("ac")]
-        [InlineData("divide_1")]
-        [InlineData("divide_2")]
-        [InlineData("minus")]
+        [InlineData("pin")]
+        [InlineData("clr")]
+        [InlineData("add")]
+        [InlineData("sub")]
         public async Task Handler(string test)
         {
-            var requestContentSample = EmbeddedResourceManager.GetString($"Assets.method_{test}_req.json");
-            var responseContentSample = EmbeddedResourceManager.GetString($"Assets.method_{test}_res.json");
+            var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");
+            var responseContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_res.json");
 
             var server = new WebHostBuilder()
                 .UseKestrel()
                 .UseXunitLogger(_output)
-                .Configure(app => app.UseJsonRpcHandler("/jsonrpc", new JsonRpcTestHandler()))
+                .Configure(app => app.UseJsonRpcHandler<JsonRpcTestHandler>())
                 .Start(_TEST_SERVER_ADDRESS);
 
             using (server)
@@ -52,7 +52,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
                 using (client)
                 {
                     var requestContent = new StringContent(requestContentSample, Encoding.UTF8, "application/json");
-                    var response = await client.PostAsync("/jsonrpc", requestContent).ConfigureAwait(false);
+                    var response = await client.PostAsync(string.Empty, requestContent).ConfigureAwait(false);
 
                     if (responseContentSample != string.Empty)
                     {
@@ -71,19 +71,19 @@ namespace Community.AspNetCore.JsonRpc.Tests
         }
 
         [Theory]
-        [InlineData("ac")]
-        [InlineData("divide_1")]
-        [InlineData("divide_2")]
-        [InlineData("minus")]
+        [InlineData("pin")]
+        [InlineData("clr")]
+        [InlineData("add")]
+        [InlineData("sub")]
         public async Task Service(string test)
         {
-            var requestContentSample = EmbeddedResourceManager.GetString($"Assets.method_{test}_req.json");
-            var responseContentSample = EmbeddedResourceManager.GetString($"Assets.method_{test}_res.json");
+            var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");
+            var responseContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_res.json");
 
             var server = new WebHostBuilder()
                 .UseKestrel()
                 .UseXunitLogger(_output)
-                .Configure(app => app.UseJsonRpcService("/jsonrpc", new JsonRpcTestService()))
+                .Configure(app => app.UseJsonRpcService<JsonRpcTestService>())
                 .Start(_TEST_SERVER_ADDRESS);
 
             using (server)
@@ -98,7 +98,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
                 using (client)
                 {
                     var requestContent = new StringContent(requestContentSample, Encoding.UTF8, "application/json");
-                    var response = await client.PostAsync("/jsonrpc", requestContent).ConfigureAwait(false);
+                    var response = await client.PostAsync(string.Empty, requestContent).ConfigureAwait(false);
 
                     if (responseContentSample != string.Empty)
                     {

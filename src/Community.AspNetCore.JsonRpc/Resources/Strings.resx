@@ -123,6 +123,9 @@
   <data name="handler.response.undefined" xml:space="preserve">
     <value>A response is required for the request "{0}"</value>
   </data>
+  <data name="middleware.invalid_type" xml:space="preserve">
+    <value>The specified type {0} is invalid</value>
+  </data>
   <data name="service.method.duplicate_name" xml:space="preserve">
     <value>The service contains methods with the same name: "{0}"</value>
   </data>

@@ -9,24 +9,35 @@ using System.Text;
 using System.Threading.Tasks;
 using Community.AspNetCore.JsonRpc.Resources;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Community.AspNetCore.JsonRpc
 {
-    internal sealed class JsonRpcMiddleware
+    internal sealed class JsonRpcMiddleware<T>
+        where T : IJsonRpcHandler
     {
         private static readonly MediaTypeHeaderValue _mediaType = new MediaTypeHeaderValue("application/json");
 
-        private readonly IJsonRpcHandler _handler;
+        private readonly T _handler;
         private readonly ILogger _logger;
         private readonly JsonRpcSerializer _serializer;
 
-        public JsonRpcMiddleware(RequestDelegate next, IJsonRpcHandler handler, ILoggerFactory loggerFactory)
+        public JsonRpcMiddleware(RequestDelegate next, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, object args)
         {
-            _handler = handler;
-            _serializer = CreateSerializer(handler.CreateScheme());
-            _logger = loggerFactory?.CreateLogger<JsonRpcMiddleware>();
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+            if (args == null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
+
+            _handler = ActivatorUtilities.CreateInstance<T>(serviceProvider, (object[])args);
+            _serializer = CreateSerializer(_handler.CreateScheme());
+            _logger = loggerFactory?.CreateLogger<JsonRpcMiddleware<T>>();
             _mediaType.CharSet = Encoding.UTF8.WebName;
         }
 

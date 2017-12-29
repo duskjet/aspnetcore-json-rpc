@@ -3,6 +3,6 @@
     "id": "1cd2c27e-6c61-40d5-b30e-ca8e89456d2b",
     "error": {
         "code": 100,
-        "message": "Operand 2 equals zero"
+        "message": "OPERATION_NOT_AVAILABLE"
     }
 }

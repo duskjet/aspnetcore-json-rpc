@@ -6,8 +6,6 @@ Provides [JSON-RPC 2.0](http://www.jsonrpc.org/specification) support for ASP.NE
 
 ### Sample of using JSON-RPC middleware
 
-1. Implement a handler or service:
-
 ```cs
 class CalculatorHandler : IJsonRpcHandler
 {
@@ -16,16 +14,18 @@ class CalculatorHandler : IJsonRpcHandler
         var scheme = new JsonRpcSerializerScheme();
 
         scheme.Methods["pin"] = new JsonRpcMethodScheme();
-        scheme.Methods["acl"] = new JsonRpcMethodScheme();
+        scheme.Methods["clr"] = new JsonRpcMethodScheme();
         scheme.Methods["add"] = new JsonRpcMethodScheme(
             new[]
             {
-                typeof(long), typeof(long)
+                typeof(long),
+                typeof(long)
             });
         scheme.Methods["sub"] = new JsonRpcMethodScheme(
             new Dictionary<string, Type>
             {
-                ["o1"] = typeof(long), ["o2"] = typeof(long)
+                ["o1"] = typeof(long),
+                ["o2"] = typeof(long)
             });
 
         return scheme;
@@ -37,25 +37,25 @@ class CalculatorHandler : IJsonRpcHandler
 
         switch (request.Method)
         {
-            case "acl":
+            case "clr":
                 {
-                    var error = new JsonRpcError(100L, "Operation is not available");
+                    var error = new JsonRpcError(100L, "OPERATION_NOT_AVAILABLE");
                     
                     response = new JsonRpcResponse(error, request.Id);
                 }
                 break;
             case "add":
                 {
-                    var operand1 = request.ParamsByPosition[0];
-                    var operand2 = request.ParamsByPosition[1];
+                    var operand1 = (long)request.ParamsByPosition[0];
+                    var operand2 = (long)request.ParamsByPosition[1];
                     
                     response = new JsonRpcResponse(operand1 + operand2, request.Id);
                 }
                 break;
             case "sub":
                 {
-                    var operand1 = request.ParamsByName["o1"];
-                    var operand2 = request.ParamsByName["o2"];
+                    var operand1 = (long)request.ParamsByName["o1"];
+                    var operand2 = (long)request.ParamsByName["o2"];
                     
                     response = new JsonRpcResponse(operand1 - operand2, request.Id);
                 }
@@ -67,6 +67,10 @@ class CalculatorHandler : IJsonRpcHandler
 }
 ```
 ```cs
+builder.Configure(app => app.UseJsonRpcHandler<CalculatorHandler>());
+```
+or
+```cs
 class CalculatorService
 {
     [JsonRpcName("pin")]
@@ -75,10 +79,10 @@ class CalculatorService
         return Task.CompletedTask;
     }
 
-    [JsonRpcName("acl")]
+    [JsonRpcName("clr")]
     public Task Clear()
     {
-        throw new JsonRpcServiceException(100L, "Operation is not available");
+        throw new JsonRpcServiceException(100L, "OPERATION_NOT_AVAILABLE");
     }
 
     [JsonRpcName("add")]
@@ -94,12 +98,6 @@ class CalculatorService
     }
 }
 ```
-
-2. Register the implemented handler or service in web host builder:
-
 ```cs
-builder.Configure(app => app.UseJsonRpcHandler("/calculator", new JsonRpcCalculatorHandler()))
-```
-```cs
-builder.Configure(app => app.UseJsonRpcService("/calculator", new JsonRpcCalculatorService()))
+builder.Configure(app => app.UseJsonRpcService<CalculatorService>());
 ```

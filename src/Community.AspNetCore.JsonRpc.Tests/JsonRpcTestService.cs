@@ -4,25 +4,26 @@ namespace Community.AspNetCore.JsonRpc.Tests
 {
     internal sealed class JsonRpcTestService
     {
-        [JsonRpcName("ac")]
-        public Task AllClear()
+        [JsonRpcName("pin")]
+        public Task Ping()
         {
             return Task.CompletedTask;
         }
 
-        [JsonRpcName("divide")]
-        public Task<double> Divide([JsonRpcName("operand_1")]double operand1, [JsonRpcName("operand_2")]double operand2)
+        [JsonRpcName("clr")]
+        public Task Clear()
         {
-            if (operand2 == 0)
-            {
-                throw new JsonRpcServiceException(100, "Operand 2 equals zero");
-            }
-
-            return Task.FromResult(operand1 / operand2);
+            throw new JsonRpcServiceException(100L, "OPERATION_NOT_AVAILABLE");
         }
 
-        [JsonRpcName("minus")]
-        public Task<double> Minus(double operand1, double operand2)
+        [JsonRpcName("add")]
+        public Task<long> Add(long operand1, long operand2)
+        {
+            return Task.FromResult(operand1 + operand2);
+        }
+
+        [JsonRpcName("sub")]
+        public Task<long> Substract([JsonRpcName("o1")]long operand1, [JsonRpcName("o2")]long operand2)
         {
             return Task.FromResult(operand1 - operand2);
         }
