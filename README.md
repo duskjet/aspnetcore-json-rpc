@@ -20,14 +20,12 @@ class CalculatorHandler : IJsonRpcHandler
         scheme.Methods["add"] = new JsonRpcMethodScheme(
             new[]
             {
-                typeof(long),
-                typeof(long)
+                typeof(long), typeof(long)
             });
         scheme.Methods["sub"] = new JsonRpcMethodScheme(
             new Dictionary<string, Type>
             {
-                ["p1"] = typeof(long),
-                ["p2"] = typeof(long)
+                ["o1"] = typeof(long), ["o2"] = typeof(long)
             });
 
         return scheme;
@@ -39,10 +37,6 @@ class CalculatorHandler : IJsonRpcHandler
 
         switch (request.Method)
         {
-            case "pin":
-                {
-                }
-                break;
             case "acl":
                 {
                     var error = new JsonRpcError(100L, "Operation is not available");
@@ -54,18 +48,16 @@ class CalculatorHandler : IJsonRpcHandler
                 {
                     var operand1 = request.ParamsByPosition[0];
                     var operand2 = request.ParamsByPosition[1];
-                    var result = operand1 - operand2;
                     
-                    response = new JsonRpcResponse(result, request.Id);
+                    response = new JsonRpcResponse(operand1 + operand2, request.Id);
                 }
                 break;
             case "sub":
                 {
                     var operand1 = request.ParamsByName["o1"];
                     var operand2 = request.ParamsByName["o2"];
-                    var result = operand1 - operand2;
                     
-                    response = new JsonRpcResponse(result, request.Id);
+                    response = new JsonRpcResponse(operand1 - operand2, request.Id);
                 }
                 break;
         }
