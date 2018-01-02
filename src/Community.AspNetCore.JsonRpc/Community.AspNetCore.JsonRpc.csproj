@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Version>1.4.0</Version>
-    <Product><![CDATA[Community.AspNetCore.JsonRpc]]></Product>
+    <Version>1.4.1</Version>
     <Description><![CDATA[Provides JSON-RPC support for ASP.NET Core]]></Description>
     <Authors><![CDATA[Alexander Kozlenko]]></Authors>
     <Copyright><![CDATA[© Alexander Kozlenko. All rights reserved.]]></Copyright>
-    <PackageTags><![CDATA[aspnetcore json-rpc]]></PackageTags>
+    <PackageTags><![CDATA[aspnetcore json-rpc json rpc]]></PackageTags>
     <PackageProjectUrl>https://github.com/alexanderkozlenko/aspnetcore-json-rpc</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.github.com/alexanderkozlenko/aspnetcore-json-rpc/master/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
@@ -25,6 +24,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="System.Buffers" Version="4.4.0" />
-    <PackageReference Include="System.Data.JsonRpc" Version="1.4.1" />
+    <PackageReference Include="System.Data.JsonRpc" Version="1.4.2" />
   </ItemGroup>
 </Project>
