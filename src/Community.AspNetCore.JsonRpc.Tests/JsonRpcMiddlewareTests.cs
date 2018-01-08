@@ -1,4 +1,3 @@
-using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -7,6 +6,7 @@ using System.Threading.Tasks;
 using Community.AspNetCore.JsonRpc.Tests.Resources;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -15,8 +15,6 @@ namespace Community.AspNetCore.JsonRpc.Tests
 {
     public sealed class JsonRpcMiddlewareTests
     {
-        private const string _TEST_SERVER_ADDRESS = "http://localhost:8080";
-
         private readonly ITestOutputHelper _output;
 
         public JsonRpcMiddlewareTests(ITestOutputHelper output)
@@ -34,25 +32,19 @@ namespace Community.AspNetCore.JsonRpc.Tests
             var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");
             var responseContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_res.json");
 
-            var server = new WebHostBuilder()
-                .UseKestrel()
-                .UseXunitLogger(_output)
-                .Configure(app => app.UseJsonRpcHandler<JsonRpcTestHandler>())
-                .Start(_TEST_SERVER_ADDRESS);
+            var builder = new WebHostBuilder().UseXunitLogger(_output).Configure(app => app.UseJsonRpcHandler<JsonRpcTestHandler>());
 
-            using (server)
+            using (var server = new TestServer(builder))
             {
-                var client = new HttpClient
+                using (var client = server.CreateClient())
                 {
-                    BaseAddress = new Uri(_TEST_SERVER_ADDRESS)
-                };
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                using (client)
-                {
                     var requestContent = new StringContent(requestContentSample, Encoding.UTF8, "application/json");
-                    var response = await client.PostAsync(string.Empty, requestContent).ConfigureAwait(false);
+
+                    requestContent.Headers.ContentLength = requestContentSample.Length;
+
+                    var response = await client.PostAsync("/", requestContent).ConfigureAwait(false);
 
                     if (responseContentSample != string.Empty)
                     {
@@ -80,25 +72,19 @@ namespace Community.AspNetCore.JsonRpc.Tests
             var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");
             var responseContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_res.json");
 
-            var server = new WebHostBuilder()
-                .UseKestrel()
-                .UseXunitLogger(_output)
-                .Configure(app => app.UseJsonRpcService<JsonRpcTestService>())
-                .Start(_TEST_SERVER_ADDRESS);
+            var builder = new WebHostBuilder().UseXunitLogger(_output).Configure(app => app.UseJsonRpcService<JsonRpcTestService>());
 
-            using (server)
+            using (var server = new TestServer(builder))
             {
-                var client = new HttpClient
+                using (var client = server.CreateClient())
                 {
-                    BaseAddress = new Uri(_TEST_SERVER_ADDRESS)
-                };
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                using (client)
-                {
                     var requestContent = new StringContent(requestContentSample, Encoding.UTF8, "application/json");
-                    var response = await client.PostAsync(string.Empty, requestContent).ConfigureAwait(false);
+
+                    requestContent.Headers.ContentLength = requestContentSample.Length;
+
+                    var response = await client.PostAsync("/", requestContent).ConfigureAwait(false);
 
                     if (responseContentSample != string.Empty)
                     {
