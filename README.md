@@ -4,8 +4,6 @@ Provides [JSON-RPC 2.0](http://www.jsonrpc.org/specification) support for ASP.NE
 
 [![NuGet package](https://img.shields.io/nuget/v/Community.AspNetCore.JsonRpc.svg?style=flat-square)](https://www.nuget.org/packages/Community.AspNetCore.JsonRpc)
 
-### Sample of using JSON-RPC middleware
-
 ```cs
 class CalculatorHandler : IJsonRpcHandler
 {
