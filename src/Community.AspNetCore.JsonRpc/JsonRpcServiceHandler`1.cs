@@ -30,12 +30,12 @@ namespace Community.AspNetCore.JsonRpc
             _service = ActivatorUtilities.CreateInstance<T>(serviceProvider, (object[])args);
         }
 
-        public JsonRpcSerializerScheme CreateScheme()
+        public IReadOnlyDictionary<string, JsonRpcRequestContract> CreateScheme()
         {
             _methodMap.Clear();
             _parameterMaps.Clear();
 
-            var scheme = new JsonRpcSerializerScheme();
+            var scheme = new Dictionary<string, JsonRpcRequestContract>();
 
             foreach (var methodInfo in typeof(T).GetMethods(BindingFlags.Instance | BindingFlags.Public))
             {
@@ -48,24 +48,20 @@ namespace Community.AspNetCore.JsonRpc
                 if (!(methodInfo.ReturnType == typeof(Task)) && !(methodInfo.ReturnType.IsGenericType && (methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))))
                 {
                     throw new InvalidOperationException(
-                        string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.invalid_type"), methodNameAttribute.Value));
+                        string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.invalid_type"), methodInfo.Name, typeof(T)));
                 }
                 if (_methodMap.ContainsKey(methodNameAttribute.Value))
                 {
                     throw new InvalidOperationException(
-                        string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.duplicate_name"), methodNameAttribute.Value));
+                        string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.invalid_name"), typeof(T), methodNameAttribute.Value));
                 }
 
                 _methodMap[methodNameAttribute.Value] = methodInfo;
 
-                var methodScheme = default(JsonRpcMethodScheme);
+                var methodContract = JsonRpcRequestContract.Default;
                 var methodParameters = methodInfo.GetParameters();
 
-                if (methodParameters.Length == 0)
-                {
-                    methodScheme = new JsonRpcMethodScheme();
-                }
-                else
+                if (methodParameters.Length > 0)
                 {
                     if (methodParameters[0].GetCustomAttribute<JsonRpcNameAttribute>() == null)
                     {
@@ -76,13 +72,13 @@ namespace Community.AspNetCore.JsonRpc
                             if (methodParameters[i].GetCustomAttribute<JsonRpcNameAttribute>() != null)
                             {
                                 throw new InvalidOperationException(
-                                    string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.parameter.name.unexpected"), methodParameters[i].Name));
+                                    string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.parameter.unexpected_name"), methodInfo.Name, typeof(T), methodParameters[i].Name));
                             }
 
                             methodParameterTypes[i] = methodParameters[i].ParameterType;
                         }
 
-                        methodScheme = new JsonRpcMethodScheme(methodParameterTypes);
+                        methodContract = new JsonRpcRequestContract(methodParameterTypes);
                     }
                     else
                     {
@@ -97,12 +93,12 @@ namespace Community.AspNetCore.JsonRpc
                             if (parameterNameAttribute == null)
                             {
                                 throw new InvalidOperationException(
-                                    string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.parameter.name.undefined"), methodParameters[i].Name));
+                                    string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.parameter.undefined_name"), methodInfo.Name, typeof(T), methodParameters[i].Name));
                             }
                             if (methodParameterTypes.ContainsKey(parameterNameAttribute.Value))
                             {
                                 throw new InvalidOperationException(
-                                    string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.parameter.name.duplicate_name"), methodNameAttribute.Value, parameterNameAttribute.Value));
+                                    string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.parameter.invalid_name"), methodInfo.Name, typeof(T), parameterNameAttribute.Value));
 
                             }
 
@@ -111,11 +107,16 @@ namespace Community.AspNetCore.JsonRpc
                             _parameterMaps[methodNameAttribute.Value][i] = parameterNameAttribute.Value;
                         }
 
-                        methodScheme = new JsonRpcMethodScheme(methodParameterTypes);
+                        methodContract = new JsonRpcRequestContract(methodParameterTypes);
                     }
                 }
 
-                scheme.Methods[methodNameAttribute.Value] = methodScheme;
+                scheme[methodNameAttribute.Value] = methodContract;
+            }
+
+            if (scheme.Count == 0)
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Strings.GetString("handler.empty_scheme"), typeof(T)));
             }
 
             return scheme;
@@ -148,8 +149,7 @@ namespace Community.AspNetCore.JsonRpc
                         {
                             if (!request.ParamsByName.TryGetValue(parameterMap[i], out var parameterValue))
                             {
-                                var error = new JsonRpcError(-32602L,
-                                    string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.request.parameter.undefined"), parameterMap[i]));
+                                var error = new JsonRpcError(-32602L, string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.request.parameter.undefined_value"), parameterMap[i], request.Method));
 
                                 return new JsonRpcResponse(error, request.Id);
                             }

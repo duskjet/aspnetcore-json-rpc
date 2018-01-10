@@ -117,31 +117,34 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="handler.empty_scheme" xml:space="preserve">
+    <value>The service {0} doesn't define any JSON-RPC method</value>
+  </data>
+  <data name="handler.request.system_message" xml:space="preserve">
+    <value>The system request "{0}" is not supported</value>
+  </data>
   <data name="handler.response.id.invalid_value" xml:space="preserve">
     <value>The same identifier is required for the request "{0}"</value>
   </data>
-  <data name="handler.response.undefined" xml:space="preserve">
-    <value>A response is required for the request "{0}"</value>
-  </data>
   <data name="middleware.invalid_type" xml:space="preserve">
-    <value>The specified type {0} is invalid</value>
+    <value>The specified middleware type {0} is invalid</value>
   </data>
-  <data name="service.method.duplicate_name" xml:space="preserve">
-    <value>The service contains methods with the same name: "{0}"</value>
+  <data name="service.method.invalid_name" xml:space="preserve">
+    <value>The service {0} contains methods with the same JSON-RPC name: "{1}"</value>
   </data>
   <data name="service.method.invalid_type" xml:space="preserve">
-    <value>The method "{0}" has invalid return type</value>
+    <value>The method {0} of the service {1} has invalid return type</value>
   </data>
-  <data name="service.method.parameter.name.duplicate_name" xml:space="preserve">
-    <value>The method "{0}" contains parameters with the same name: "{1}"</value>
+  <data name="service.method.parameter.invalid_name" xml:space="preserve">
+    <value>The method {0} of the service {1} contains parameters with the same JSON-RPC name: "{2}"</value>
   </data>
-  <data name="service.method.parameter.name.undefined" xml:space="preserve">
-    <value>The parameter "{0}" does not have a JSON-RPC name</value>
+  <data name="service.method.parameter.undefined_name" xml:space="preserve">
+    <value>The method {0} of the service {1} contains the parameter {2} without a JSON-RPC name</value>
   </data>
-  <data name="service.method.parameter.name.unexpected" xml:space="preserve">
-    <value>The parameter "{0}" must not have a JSON-RPC name</value>
+  <data name="service.method.parameter.unexpected_name" xml:space="preserve">
+    <value>The method {0} of the service {1} contains the parameter {2} with an unexpected JSON-RPC name</value>
   </data>
-  <data name="service.request.parameter.undefined" xml:space="preserve">
-    <value>The parameter "{0}" is required</value>
+  <data name="service.request.parameter.undefined_value" xml:space="preserve">
+    <value>The parameter "{0}" is required for the method "{1}"</value>
   </data>
 </root>

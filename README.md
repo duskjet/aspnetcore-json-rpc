@@ -7,26 +7,25 @@ Provides [JSON-RPC 2.0](http://www.jsonrpc.org/specification) support for ASP.NE
 ```cs
 class CalculatorHandler : IJsonRpcHandler
 {
-    public JsonRpcSerializerScheme CreateScheme()
+    public IReadOnlyDictionary<string, JsonRpcRequestContract> CreateScheme()
     {
-        var scheme = new JsonRpcSerializerScheme();
-
-        scheme.Methods["pin"] = new JsonRpcMethodScheme();
-        scheme.Methods["clr"] = new JsonRpcMethodScheme();
-        scheme.Methods["add"] = new JsonRpcMethodScheme(
-            new[]
-            {
-                typeof(long),
-                typeof(long)
-            });
-        scheme.Methods["sub"] = new JsonRpcMethodScheme(
-            new Dictionary<string, Type>
-            {
-                ["o1"] = typeof(long),
-                ["o2"] = typeof(long)
-            });
-
-        return scheme;
+        return new Dictionary<string, JsonRpcRequestContract>
+        {
+            ["pin"] = JsonRpcRequestContract.Default,
+            ["clr"] = JsonRpcRequestContract.Default,
+            ["add"] = new JsonRpcRequestContract(
+                new[]
+                {
+                    typeof(long),
+                    typeof(long)
+                }),
+            ["sub"] = new JsonRpcRequestContract(
+                new Dictionary<string, Type>
+                {
+                    ["o1"] = typeof(long),
+                    ["o2"] = typeof(long)
+                })
+        };
     }
 
     public Task<JsonRpcResponse> Handle(JsonRpcRequest request)

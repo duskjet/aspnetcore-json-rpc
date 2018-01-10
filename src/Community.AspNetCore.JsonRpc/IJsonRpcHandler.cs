@@ -1,4 +1,5 @@
-﻿using System.Data.JsonRpc;
+﻿using System.Collections.Generic;
+using System.Data.JsonRpc;
 using System.Threading.Tasks;
 
 namespace Community.AspNetCore.JsonRpc
@@ -7,8 +8,8 @@ namespace Community.AspNetCore.JsonRpc
     public interface IJsonRpcHandler
     {
         /// <summary>Creates a type scheme for the <see cref="JsonRpcSerializer" />.</summary>
-        /// <returns>A <see cref="JsonRpcSerializerScheme" /> instance.</returns>
-        JsonRpcSerializerScheme CreateScheme();
+        /// <returns>The container with request contracts.</returns>
+        IReadOnlyDictionary<string, JsonRpcRequestContract> CreateScheme();
 
         /// <summary>Handles a JSON-RPC request and create a response if it is required.</summary>
         /// <param name="request">The JSON-RPC request.</param>

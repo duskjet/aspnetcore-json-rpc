@@ -20,9 +20,9 @@ namespace Community.AspNetCore.JsonRpc
     {
         private static readonly MediaTypeHeaderValue _mediaType = new MediaTypeHeaderValue("application/json");
 
+        private readonly JsonRpcSerializer _serializer = new JsonRpcSerializer();
         private readonly T _handler;
         private readonly ILogger _logger;
-        private readonly JsonRpcSerializer _serializer;
 
         public JsonRpcMiddleware(RequestDelegate next, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, object args)
         {
@@ -36,9 +36,13 @@ namespace Community.AspNetCore.JsonRpc
             }
 
             _handler = ActivatorUtilities.CreateInstance<T>(serviceProvider, (object[])args);
-            _serializer = CreateSerializer(_handler.CreateScheme());
             _logger = loggerFactory?.CreateLogger<JsonRpcMiddleware<T>>();
             _mediaType.CharSet = Encoding.UTF8.WebName;
+
+            foreach (var kvp in _handler.CreateScheme())
+            {
+                _serializer.RequestContracts[kvp.Key] = kvp.Value;
+            }
         }
 
         public async Task Invoke(HttpContext context)
@@ -86,7 +90,7 @@ namespace Community.AspNetCore.JsonRpc
                     {
                         responseString = _serializer.SerializeResponse(new JsonRpcResponse(ConvertExceptionToError(ex), JsonRpcId.None));
 
-                        _logger?.LogInformation(0, "JSON-RPC \"{0}\" [1] -> [1]", context.Request.PathBase);
+                        _logger?.LogInformation("JSON-RPC \"{0}\" [1] -> [1]", context.Request.PathBase);
                     }
 
                     if (jsonRpcRequestData != null)
@@ -99,13 +103,13 @@ namespace Community.AspNetCore.JsonRpc
                             {
                                 responseString = _serializer.SerializeResponse(jsonRpcResponse);
 
-                                _logger?.LogInformation(0, "JSON-RPC \"{0}\" [1] -> [1]", context.Request.PathBase);
+                                _logger?.LogInformation("JSON-RPC \"{0}\" [1] -> [1]", context.Request.PathBase);
                             }
                             else
                             {
                                 context.Response.StatusCode = (int)HttpStatusCode.NoContent;
 
-                                _logger?.LogInformation(0, "JSON-RPC \"{0}\" [1] -> [0]", context.Request.PathBase);
+                                _logger?.LogInformation("JSON-RPC \"{0}\" [1] -> [0]", context.Request.PathBase);
                             }
                         }
                         else
@@ -124,7 +128,7 @@ namespace Community.AspNetCore.JsonRpc
 
                             responseString = _serializer.SerializeResponses(jsonRpcResponses);
 
-                            _logger?.LogInformation(0, "JSON-RPC \"{0}\" [{1}] -> [{2}]", context.Request.PathBase, jsonRpcRequestData.BatchItems.Count, jsonRpcResponses.Count);
+                            _logger?.LogInformation("JSON-RPC \"{0}\" [{1}] -> [{2}]", context.Request.PathBase, jsonRpcRequestData.BatchItems.Count, jsonRpcResponses.Count);
                         }
                     }
 
@@ -149,6 +153,8 @@ namespace Community.AspNetCore.JsonRpc
 
                 if (request.IsSystem)
                 {
+                    _logger?.LogInformation(Strings.GetString("handler.request.system_message"), request.Method);
+
                     return null;
                 }
 
@@ -156,10 +162,6 @@ namespace Community.AspNetCore.JsonRpc
 
                 if (!request.IsNotification)
                 {
-                    if (response == null)
-                    {
-                        throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Strings.GetString("handler.response.undefined"), request.Id));
-                    }
                     if (request.Id != response.Id)
                     {
                         throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Strings.GetString("handler.response.id.invalid_value"), request.Id));
@@ -176,16 +178,6 @@ namespace Community.AspNetCore.JsonRpc
             {
                 return new JsonRpcResponse(ConvertExceptionToError(item.Exception), item.Exception.MessageId);
             }
-        }
-
-        private static JsonRpcSerializer CreateSerializer(JsonRpcSerializerScheme scheme)
-        {
-            var settings = new JsonRpcSerializerSettings
-            {
-                JsonSerializerBufferPool = new JsonRpcBufferPool()
-            };
-
-            return new JsonRpcSerializer(scheme, settings);
         }
 
         private static JsonRpcError ConvertExceptionToError(JsonRpcException exception)
