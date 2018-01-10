@@ -130,13 +130,13 @@
     <value>The specified middleware type {0} is invalid</value>
   </data>
   <data name="service.method.invalid_name" xml:space="preserve">
-    <value>The service {0} contains methods with the same JSON-RPC name: "{1}"</value>
+    <value>The service {0} contains multiple definitions for the JSON-RPC method "{1}"</value>
   </data>
   <data name="service.method.invalid_type" xml:space="preserve">
     <value>The method {0} of the service {1} has invalid return type</value>
   </data>
   <data name="service.method.parameter.invalid_name" xml:space="preserve">
-    <value>The method {0} of the service {1} contains parameters with the same JSON-RPC name: "{2}"</value>
+    <value>The method {0} of the service {1} contains multiple definitions for the JSON-RPC parameter "{2}"</value>
   </data>
   <data name="service.method.parameter.undefined_name" xml:space="preserve">
     <value>The method {0} of the service {1} contains the parameter {2} without a JSON-RPC name</value>

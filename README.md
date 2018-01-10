@@ -98,3 +98,5 @@ class CalculatorService
 ```cs
 builder.Configure(app => app.UseJsonRpcService<CalculatorService>());
 ```
+
+`JsonRpcName` attribute can be used on an interface as well.

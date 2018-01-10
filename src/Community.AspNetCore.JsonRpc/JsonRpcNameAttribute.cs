@@ -3,6 +3,7 @@
 namespace Community.AspNetCore.JsonRpc
 {
     /// <summary>Defines a JSON-RPC named item.</summary>
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Parameter)]
     public sealed class JsonRpcNameAttribute : Attribute
     {
         /// <summary>Initializes a new instance of the <see cref="JsonRpcNameAttribute" /> class.</summary>
