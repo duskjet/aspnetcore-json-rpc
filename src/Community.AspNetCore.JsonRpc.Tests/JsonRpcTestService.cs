@@ -7,8 +7,8 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [JsonRpcName("pin")]
         Task Ping();
 
-        [JsonRpcName("clr")]
-        Task Clear();
+        [JsonRpcName("mrc")]
+        Task<long> MemoryRecall();
 
         [JsonRpcName("add")]
         Task<long> Add(long operand1, long operand2);
@@ -24,7 +24,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
             return Task.CompletedTask;
         }
 
-        public Task Clear()
+        public Task<long> MemoryRecall()
         {
             throw new JsonRpcServiceException(100L, "OPERATION_NOT_AVAILABLE");
         }

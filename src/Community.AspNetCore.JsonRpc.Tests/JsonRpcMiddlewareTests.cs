@@ -24,9 +24,9 @@ namespace Community.AspNetCore.JsonRpc.Tests
 
         [Theory]
         [InlineData("pin")]
-        [InlineData("clr")]
         [InlineData("add")]
         [InlineData("sub")]
+        [InlineData("mrc")]
         public async Task Handler(string test)
         {
             var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");
@@ -64,9 +64,9 @@ namespace Community.AspNetCore.JsonRpc.Tests
 
         [Theory]
         [InlineData("pin")]
-        [InlineData("clr")]
         [InlineData("add")]
         [InlineData("sub")]
+        [InlineData("mrc")]
         public async Task Service(string test)
         {
             var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");

@@ -160,14 +160,14 @@ namespace Community.AspNetCore.JsonRpc
 
                 var response = await _handler.Handle(request).ConfigureAwait(false);
 
-                if (!request.IsNotification)
+                if (response != null)
                 {
                     if (request.Id != response.Id)
                     {
                         throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Strings.GetString("handler.response.id.invalid_value"), request.Id));
                     }
 
-                    return response;
+                    return !request.IsNotification ? response : null;
                 }
                 else
                 {

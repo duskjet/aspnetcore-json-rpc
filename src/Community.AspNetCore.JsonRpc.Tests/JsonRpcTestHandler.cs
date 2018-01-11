@@ -12,7 +12,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
             return new Dictionary<string, JsonRpcRequestContract>
             {
                 ["pin"] = JsonRpcRequestContract.Default,
-                ["clr"] = JsonRpcRequestContract.Default,
+                ["mrc"] = JsonRpcRequestContract.Default,
                 ["add"] = new JsonRpcRequestContract(
                     new[]
                     {
@@ -34,7 +34,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
 
             switch (request.Method)
             {
-                case "clr":
+                case "mrc":
                     {
                         var error = new JsonRpcError(100L, "OPERATION_NOT_AVAILABLE");
 

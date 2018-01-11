@@ -12,8 +12,9 @@ namespace Community.AspNetCore.JsonRpc
     internal sealed class JsonRpcServiceHandler<T> : IJsonRpcHandler
         where T : class
     {
-        private readonly Dictionary<string, (MethodInfo, string[])> _methods = new Dictionary<string, (MethodInfo, string[])>(StringComparer.Ordinal);
-        private readonly Dictionary<string, JsonRpcRequestContract> _scheme = new Dictionary<string, JsonRpcRequestContract>(StringComparer.Ordinal);
+        private readonly Dictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> _metadata =
+            new Dictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])>(StringComparer.Ordinal);
+
         private readonly T _service;
 
         public JsonRpcServiceHandler(IServiceProvider serviceProvider, object args)
@@ -29,25 +30,15 @@ namespace Community.AspNetCore.JsonRpc
 
             _service = ActivatorUtilities.CreateInstance<T>(serviceProvider, (object[])args);
 
-            var outcome = new Dictionary<string, (JsonRpcRequestContract, MethodInfo, string[])>(StringComparer.Ordinal);
+            AcquireContracts(_metadata, typeof(T));
 
-            AcquireContracts(outcome, typeof(T));
-
-            if (outcome.Count == 0)
+            if (_metadata.Count == 0)
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Strings.GetString("handler.empty_scheme"), typeof(T)));
             }
-
-            foreach (var kvp in outcome)
-            {
-                var (contract, method, parametersPositions) = kvp.Value;
-
-                _methods[kvp.Key] = (method, parametersPositions);
-                _scheme[kvp.Key] = contract;
-            }
         }
 
-        private static void AcquireContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, string[])> contracts, Type type)
+        private static void AcquireContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> contracts, Type type)
         {
             if (type == null)
             {
@@ -63,7 +54,7 @@ namespace Community.AspNetCore.JsonRpc
             }
         }
 
-        private static void AcquireContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, string[])> scheme, IEnumerable<MethodInfo> methods)
+        private static void AcquireContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> scheme, IEnumerable<MethodInfo> methods)
         {
             foreach (var method in methods)
             {
@@ -86,7 +77,7 @@ namespace Community.AspNetCore.JsonRpc
 
                 var methodContract = JsonRpcRequestContract.Default;
                 var parameters = method.GetParameters();
-                var parametersPositions = default(string[]);
+                var parametersBindings = default(string[]);
 
                 if (parameters.Length > 0)
                 {
@@ -111,7 +102,7 @@ namespace Community.AspNetCore.JsonRpc
                     {
                         var parametersContract = new Dictionary<string, Type>(parameters.Length, StringComparer.Ordinal);
 
-                        parametersPositions = new string[parameters.Length];
+                        parametersBindings = new string[parameters.Length];
 
                         for (var i = 0; i < parameters.Length; i++)
                         {
@@ -130,59 +121,108 @@ namespace Community.AspNetCore.JsonRpc
                             }
 
                             parametersContract[parameterNameAttribute.Value] = parameters[i].ParameterType;
-                            parametersPositions[i] = parameterNameAttribute.Value;
+                            parametersBindings[i] = parameterNameAttribute.Value;
                         }
 
                         methodContract = new JsonRpcRequestContract(parametersContract);
                     }
                 }
 
-                scheme[methodNameAttribute.Value] = (methodContract, method, parametersPositions);
+                scheme[methodNameAttribute.Value] = (methodContract, method, parameters, parametersBindings);
             }
         }
 
         IReadOnlyDictionary<string, JsonRpcRequestContract> IJsonRpcHandler.CreateScheme()
         {
-            return _scheme;
+            var result = new Dictionary<string, JsonRpcRequestContract>(_metadata.Count, StringComparer.Ordinal);
+
+            foreach (var kvp in _metadata)
+            {
+                result[kvp.Key] = kvp.Value.Item1;
+            }
+
+            return result;
         }
 
         async Task<JsonRpcResponse> IJsonRpcHandler.Handle(JsonRpcRequest request)
         {
-            var (method, parametersPositions) = _methods[request.Method];
-            var parameters = default(object[]);
+            var (contract, method, parameters, parametersBindings) = _metadata[request.Method];
+            var parametersValues = default(object[]);
 
-            switch (request.ParamsType)
+            if (contract.ParamsType != request.ParamsType)
+            {
+                if (!request.IsNotification)
+                {
+                    var message = string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.request.parameters.invalid_structure"), request.Method);
+
+                    return new JsonRpcResponse(new JsonRpcError(-32602L, message), request.Id);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            switch (contract.ParamsType)
             {
                 case JsonRpcParamsType.ByPosition:
                     {
-                        parameters = new object[request.ParamsByPosition.Count];
-
-                        for (var i = 0; i < parameters.Length; i++)
+                        if (request.ParamsByPosition.Count != parameters.Length)
                         {
-                            parameters[i] = request.ParamsByPosition[i];
+                            if (!request.IsNotification)
+                            {
+                                var message = string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.request.parameters.invalid_count"), request.Method);
+
+                                return new JsonRpcResponse(new JsonRpcError(-32602L, message), request.Id);
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
+
+                        parametersValues = new object[parameters.Length];
+
+                        for (var i = 0; i < parametersValues.Length; i++)
+                        {
+                            parametersValues[i] = request.ParamsByPosition[i];
                         }
                     }
                     break;
                 case JsonRpcParamsType.ByName:
                     {
-                        parameters = new object[parametersPositions.Length];
+                        parametersValues = new object[parameters.Length];
 
-                        for (var i = 0; i < parameters.Length; i++)
+                        for (var i = 0; i < parametersValues.Length; i++)
                         {
-                            if (!request.ParamsByName.TryGetValue(parametersPositions[i], out var parameterValue))
+                            if (!request.ParamsByName.TryGetValue(parametersBindings[i], out var parameterValue))
                             {
-                                var error = new JsonRpcError(-32602L, string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.request.parameter.undefined_value"), parametersPositions[i], request.Method));
+                                if (parameters[i].HasDefaultValue)
+                                {
+                                    parameterValue = parameters[i].DefaultValue;
+                                }
+                                else
+                                {
+                                    if (!request.IsNotification)
+                                    {
+                                        var message = string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.request.parameter.undefined_value"), request.Method, parametersBindings[i]);
 
-                                return new JsonRpcResponse(error, request.Id);
+                                        return new JsonRpcResponse(new JsonRpcError(-32602L, message), request.Id);
+                                    }
+                                    else
+                                    {
+                                        return null;
+                                    }
+                                }
                             }
 
-                            parameters[i] = parameterValue;
+                            parametersValues[i] = parameterValue;
                         }
                     }
                     break;
                 default:
                     {
-                        parameters = Array.Empty<object>();
+                        parametersValues = Array.Empty<object>();
                     }
                     break;
             }
@@ -191,14 +231,11 @@ namespace Community.AspNetCore.JsonRpc
             {
                 try
                 {
-                    await ((Task)method.Invoke(_service, parameters)).ConfigureAwait(false);
+                    await ((Task)method.Invoke(_service, parametersValues)).ConfigureAwait(false);
                 }
                 catch (TargetInvocationException ex)
-                    when (ex.InnerException is JsonRpcServiceException iex)
+                    when (ex.InnerException is JsonRpcServiceException)
                 {
-                    var error = new JsonRpcError(iex.Code, iex.Message, iex.RpcData);
-
-                    return new JsonRpcResponse(error, request.Id);
                 }
 
                 return null;
@@ -207,16 +244,12 @@ namespace Community.AspNetCore.JsonRpc
             {
                 try
                 {
-                    var result = await ((dynamic)method.Invoke(_service, parameters)).ConfigureAwait(false) as object;
-
-                    return new JsonRpcResponse(result, request.Id);
+                    return new JsonRpcResponse(await ((dynamic)method.Invoke(_service, parametersValues)).ConfigureAwait(false) as object, request.Id);
                 }
                 catch (TargetInvocationException ex)
                     when (ex.InnerException is JsonRpcServiceException iex)
                 {
-                    var error = new JsonRpcError(iex.Code, iex.Message, iex.RpcData);
-
-                    return new JsonRpcResponse(error, request.Id);
+                    return new JsonRpcResponse(new JsonRpcError(iex.Code, iex.Message, iex.RpcData), request.Id);
                 }
             }
         }
