@@ -1,11 +1,11 @@
 ## Community.AspNetCore.JsonRpc
 
-Provides [JSON-RPC 2.0](http://www.jsonrpc.org/specification) support for ASP.NET Core based on [JSON-RPC 2.0 Transport: HTTP](https://www.simple-is-better.org/json-rpc/transport_http.html) proposal.
+[JSON-RPC 2.0](http://www.jsonrpc.org/specification) middleware for ASP.NET Core based on [JSON-RPC 2.0 Transport: HTTP](https://www.simple-is-better.org/json-rpc/transport_http.html) specification.
 
 [![NuGet package](https://img.shields.io/nuget/v/Community.AspNetCore.JsonRpc.svg?style=flat-square)](https://www.nuget.org/packages/Community.AspNetCore.JsonRpc)
 
 ```cs
-class CalculatorHandler : IJsonRpcHandler
+public class CalculatorHandler : IJsonRpcHandler
 {
     public IReadOnlyDictionary<string, JsonRpcRequestContract> CreateScheme()
     {
@@ -68,7 +68,7 @@ builder.Configure(app => app.UseJsonRpcHandler<CalculatorHandler>());
 ```
 or
 ```cs
-class CalculatorService
+public class CalculatorService
 {
     [JsonRpcName("pin")]
     public Task Ping()
