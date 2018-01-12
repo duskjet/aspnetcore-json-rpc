@@ -12,7 +12,7 @@ class CalculatorHandler : IJsonRpcHandler
         return new Dictionary<string, JsonRpcRequestContract>
         {
             ["pin"] = JsonRpcRequestContract.Default,
-            ["clr"] = JsonRpcRequestContract.Default,
+            ["mrc"] = JsonRpcRequestContract.Default,
             ["add"] = new JsonRpcRequestContract(
                 new[]
                 {
@@ -34,7 +34,7 @@ class CalculatorHandler : IJsonRpcHandler
 
         switch (request.Method)
         {
-            case "clr":
+            case "mrc":
                 {
                     var error = new JsonRpcError(100L, "OPERATION_NOT_AVAILABLE");
                     
@@ -76,8 +76,8 @@ class CalculatorService
         return Task.CompletedTask;
     }
 
-    [JsonRpcName("clr")]
-    public Task Clear()
+    [JsonRpcName("mrc")]
+    public Task<long> MemoryRecall()
     {
         throw new JsonRpcServiceException(100L, "OPERATION_NOT_AVAILABLE");
     }
