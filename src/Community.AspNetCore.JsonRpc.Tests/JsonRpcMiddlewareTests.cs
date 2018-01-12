@@ -7,6 +7,7 @@ using Community.AspNetCore.JsonRpc.Tests.Resources;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -32,7 +33,9 @@ namespace Community.AspNetCore.JsonRpc.Tests
             var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");
             var responseContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_res.json");
 
-            var builder = new WebHostBuilder().UseXunitLogger(_output).Configure(app => app.UseJsonRpcHandler<JsonRpcTestHandler>());
+            var builder = new WebHostBuilder()
+                .ConfigureLogging(_ => _.AddXunit(_output))
+                .Configure(_ => _.UseJsonRpcHandler<JsonRpcTestHandler>());
 
             using (var server = new TestServer(builder))
             {
@@ -72,7 +75,9 @@ namespace Community.AspNetCore.JsonRpc.Tests
             var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");
             var responseContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_res.json");
 
-            var builder = new WebHostBuilder().UseXunitLogger(_output).Configure(app => app.UseJsonRpcService<JsonRpcTestService>());
+            var builder = new WebHostBuilder()
+                .ConfigureLogging(_ => _.AddXunit(_output))
+                .Configure(_ => _.UseJsonRpcService<JsonRpcTestService>());
 
             using (var server = new TestServer(builder))
             {
