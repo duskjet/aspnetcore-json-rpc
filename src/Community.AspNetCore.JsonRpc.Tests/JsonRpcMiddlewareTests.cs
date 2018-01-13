@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -23,19 +24,12 @@ namespace Community.AspNetCore.JsonRpc.Tests
             _output = output;
         }
 
-        [Theory]
-        [InlineData("pin")]
-        [InlineData("add")]
-        [InlineData("sub")]
-        [InlineData("mrc")]
-        public async Task Handler(string test)
+        private async Task TestMiddlewareAsync(Action<IApplicationBuilder> action, string test)
         {
             var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");
             var responseContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_res.json");
 
-            var builder = new WebHostBuilder()
-                .ConfigureLogging(_ => _.AddXunit(_output))
-                .Configure(_ => _.UseJsonRpcHandler<JsonRpcTestHandler>());
+            var builder = new WebHostBuilder().ConfigureLogging(_ => _.AddXunit(_output)).Configure(action);
 
             using (var server = new TestServer(builder))
             {
@@ -55,7 +49,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
 
                         var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-                        Assert.True(JToken.DeepEquals(JToken.Parse(responseContentSample), JToken.Parse(responseContent)));
+                        Assert.True(JToken.DeepEquals(JToken.Parse(responseContentSample), JToken.Parse(responseContent)), "Actual JSON string differs from expected");
                     }
                     else
                     {
@@ -70,41 +64,19 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("add")]
         [InlineData("sub")]
         [InlineData("mrc")]
-        public async Task Service(string test)
+        public async Task JsonRpcHandler(string test)
         {
-            var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");
-            var responseContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_res.json");
+            await TestMiddlewareAsync(_ => _.UseJsonRpcHandler<JsonRpcTestHandler>(), test);
+        }
 
-            var builder = new WebHostBuilder()
-                .ConfigureLogging(_ => _.AddXunit(_output))
-                .Configure(_ => _.UseJsonRpcService<JsonRpcTestService>());
-
-            using (var server = new TestServer(builder))
-            {
-                using (var client = server.CreateClient())
-                {
-                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                    var requestContent = new StringContent(requestContentSample, Encoding.UTF8, "application/json");
-
-                    requestContent.Headers.ContentLength = requestContentSample.Length;
-
-                    var response = await client.PostAsync("/", requestContent).ConfigureAwait(false);
-
-                    if (responseContentSample != string.Empty)
-                    {
-                        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-                        var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-                        Assert.True(JToken.DeepEquals(JToken.Parse(responseContentSample), JToken.Parse(responseContent)));
-                    }
-                    else
-                    {
-                        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-                    }
-                }
-            }
+        [Theory]
+        [InlineData("pin")]
+        [InlineData("add")]
+        [InlineData("sub")]
+        [InlineData("mrc")]
+        public async Task JsonRpcService(string test)
+        {
+            await TestMiddlewareAsync(_ => _.UseJsonRpcService<JsonRpcTestService>(), test);
         }
     }
 }
