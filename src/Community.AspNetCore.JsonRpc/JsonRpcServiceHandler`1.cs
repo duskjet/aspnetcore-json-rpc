@@ -155,7 +155,7 @@ namespace Community.AspNetCore.JsonRpc
                 {
                     var message = string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.request.parameters.invalid_structure"), request.Method);
 
-                    return new JsonRpcResponse(new JsonRpcError(-32602L, message), request.Id);
+                    return new JsonRpcResponse(new JsonRpcError((long)JsonRpcErrorType.InvalidParams, message), request.Id);
                 }
                 else
                 {
@@ -173,7 +173,7 @@ namespace Community.AspNetCore.JsonRpc
                             {
                                 var message = string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.request.parameters.invalid_count"), request.Method);
 
-                                return new JsonRpcResponse(new JsonRpcError(-32602L, message), request.Id);
+                                return new JsonRpcResponse(new JsonRpcError((long)JsonRpcErrorType.InvalidParams, message), request.Id);
                             }
                             else
                             {
@@ -207,7 +207,7 @@ namespace Community.AspNetCore.JsonRpc
                                     {
                                         var message = string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.request.parameter.undefined_value"), request.Method, parametersBindings[i]);
 
-                                        return new JsonRpcResponse(new JsonRpcError(-32602L, message), request.Id);
+                                        return new JsonRpcResponse(new JsonRpcError((long)JsonRpcErrorType.InvalidParams, message), request.Id);
                                     }
                                     else
                                     {

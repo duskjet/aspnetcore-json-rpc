@@ -188,27 +188,27 @@ namespace Community.AspNetCore.JsonRpc
             {
                 case JsonRpcExceptionType.Parsing:
                     {
-                        code = -32700L;
+                        code = (long)JsonRpcErrorType.Parsing;
                     }
                     break;
                 case JsonRpcExceptionType.InvalidParams:
                     {
-                        code = -32602L;
+                        code = (long)JsonRpcErrorType.InvalidParams;
                     }
                     break;
                 case JsonRpcExceptionType.InvalidMethod:
                     {
-                        code = -32601L;
+                        code = (long)JsonRpcErrorType.InvalidMethod;
                     }
                     break;
                 case JsonRpcExceptionType.InvalidMessage:
                     {
-                        code = -32600L;
+                        code = (long)JsonRpcErrorType.InvalidRequest;
                     }
                     break;
                 default:
                     {
-                        code = -32603L;
+                        code = (long)JsonRpcErrorType.Internal;
                     }
                     break;
             }
