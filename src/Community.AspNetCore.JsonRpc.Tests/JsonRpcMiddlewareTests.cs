@@ -41,7 +41,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
 
                     requestContent.Headers.ContentLength = requestContentSample.Length;
 
-                    var response = await client.PostAsync("/", requestContent).ConfigureAwait(false);
+                    var response = await client.PostAsync(server.BaseAddress, requestContent).ConfigureAwait(false);
 
                     if (responseContentSample != string.Empty)
                     {
@@ -60,20 +60,20 @@ namespace Community.AspNetCore.JsonRpc.Tests
         }
 
         [Theory]
-        [InlineData("pin")]
-        [InlineData("add")]
-        [InlineData("sub")]
-        [InlineData("mrc")]
+        [InlineData("nam")]
+        [InlineData("pos")]
+        [InlineData("err")]
+        [InlineData("not")]
         public async Task JsonRpcHandler(string test)
         {
             await TestMiddlewareAsync(_ => _.UseJsonRpcHandler<JsonRpcTestHandler>(), test);
         }
 
         [Theory]
-        [InlineData("pin")]
-        [InlineData("add")]
-        [InlineData("sub")]
-        [InlineData("mrc")]
+        [InlineData("nam")]
+        [InlineData("pos")]
+        [InlineData("err")]
+        [InlineData("not")]
         public async Task JsonRpcService(string test)
         {
             await TestMiddlewareAsync(_ => _.UseJsonRpcService<JsonRpcTestService>(), test);

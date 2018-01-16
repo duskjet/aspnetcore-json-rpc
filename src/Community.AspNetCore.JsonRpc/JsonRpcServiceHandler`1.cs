@@ -12,7 +12,7 @@ namespace Community.AspNetCore.JsonRpc
     internal sealed class JsonRpcServiceHandler<T> : IJsonRpcHandler
         where T : class
     {
-        private readonly Dictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> _metadata =
+        private readonly IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> _metadata =
             new Dictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])>(StringComparer.Ordinal);
 
         private readonly T _service;
@@ -231,7 +231,7 @@ namespace Community.AspNetCore.JsonRpc
             {
                 try
                 {
-                    await ((Task)method.Invoke(_service, parametersValues)).ConfigureAwait(false);
+                    await ((dynamic)method.Invoke(_service, parametersValues)).ConfigureAwait(false);
                 }
                 catch (TargetInvocationException ex)
                     when (ex.InnerException is JsonRpcServiceException)

@@ -1,0 +1,20 @@
+[
+    {
+        "jsonrpc": "2.0",
+        "method": "req_pos",
+        "params": [
+            "8aac783f-5133-4260-b181-8b2b9758d4b6",
+            "ae3de99a-88e4-44cb-871f-02c14e83c4f7"
+        ],
+        "id": "37f67ce5-a2ce-4c9a-aa48-82b898958be8"
+    },
+    {
+        "jsonrpc": "2.0",
+        "method": "req_pos",
+        "params": [
+            "fe96cc38-e25c-48f2-b464-630645d7c083",
+            "7bcfcab7-5d9e-4144-bdd1-3ccc2ad25e19"
+        ],
+        "id": "a846b75a-0c4b-4750-b505-644c94ecc7c0"
+    }
+]

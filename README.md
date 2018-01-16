@@ -11,20 +11,20 @@ public class CalculatorHandler : IJsonRpcHandler
     {
         return new Dictionary<string, JsonRpcRequestContract>
         {
-            ["pin"] = JsonRpcRequestContract.Default,
-            ["mrc"] = JsonRpcRequestContract.Default,
-            ["add"] = new JsonRpcRequestContract(
+            ["nam"] = new JsonRpcRequestContract(
+                new Dictionary<string, Type>
+                {
+                    ["pr1"] = typeof(long),
+                    ["pr2"] = typeof(long)
+                }),
+            ["pos"] = new JsonRpcRequestContract(
                 new[]
                 {
                     typeof(long),
                     typeof(long)
                 }),
-            ["sub"] = new JsonRpcRequestContract(
-                new Dictionary<string, Type>
-                {
-                    ["o1"] = typeof(long),
-                    ["o2"] = typeof(long)
-                })
+            ["err"] = JsonRpcRequestContract.Default,
+            ["not"] = JsonRpcRequestContract.Default
         };
     }
 
@@ -34,27 +34,31 @@ public class CalculatorHandler : IJsonRpcHandler
 
         switch (request.Method)
         {
-            case "mrc":
+            case "nam":
                 {
-                    var error = new JsonRpcError(100L, "OPERATION_NOT_AVAILABLE");
-                    
-                    response = new JsonRpcResponse(error, request.Id);
+                    var operand1 = (long)request.ParamsByName["pr1"];
+                    var operand2 = (long)request.ParamsByName["pr2"];
+
+                    response = new JsonRpcResponse(operand1 - operand2, request.Id);
                 }
                 break;
-            case "add":
+            case "pos":
                 {
                     var operand1 = (long)request.ParamsByPosition[0];
                     var operand2 = (long)request.ParamsByPosition[1];
-                    
+
                     response = new JsonRpcResponse(operand1 + operand2, request.Id);
                 }
                 break;
-            case "sub":
+            case "err":
                 {
-                    var operand1 = (long)request.ParamsByName["o1"];
-                    var operand2 = (long)request.ParamsByName["o2"];
-                    
-                    response = new JsonRpcResponse(operand1 - operand2, request.Id);
+                    var error = new JsonRpcError(100L, "94cccbe7-d613-4aca-8940-9298892b8ee6");
+
+                    response = new JsonRpcResponse(error, request.Id);
+                }
+                break;
+            case "not":
+                {
                 }
                 break;
         }
@@ -70,28 +74,28 @@ or
 ```cs
 public class CalculatorService
 {
-    [JsonRpcName("pin")]
-    public Task Ping()
+    [JsonRpcName("nam")]
+    public Task<long> MethodWithParamsByName([JsonRpcName("pr1")] long parameter1, [JsonRpcName("pr2")] long parameter2)
+    {
+        return Task.FromResult(parameter1 - parameter2);
+    }
+
+    [JsonRpcName("pos")]
+    public Task<long> MethodWithParamsByPosition(long parameter1, long parameter2)
+    {
+        return Task.FromResult(parameter1 + parameter2);
+    }
+
+    [JsonRpcName("err")]
+    public Task<long> MethodWithErrorResponse()
+    {
+        throw new JsonRpcServiceException(100L, "94cccbe7-d613-4aca-8940-9298892b8ee6");
+    }
+
+    [JsonRpcName("not")]
+    public Task MethodWithNotification()
     {
         return Task.CompletedTask;
-    }
-
-    [JsonRpcName("mrc")]
-    public Task<long> MemoryRecall()
-    {
-        throw new JsonRpcServiceException(100L, "OPERATION_NOT_AVAILABLE");
-    }
-
-    [JsonRpcName("add")]
-    public Task<long> Add(long operand1, long operand2)
-    {
-        return Task.FromResult(operand1 + operand2);
-    }
-
-    [JsonRpcName("sub")]
-    public Task<long> Substract([JsonRpcName("o1")]long operand1, [JsonRpcName("o2")]long operand2)
-    {
-        return Task.FromResult(operand1 - operand2);
     }
 }
 ```

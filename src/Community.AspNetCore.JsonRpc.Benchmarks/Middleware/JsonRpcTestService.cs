@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
 
-namespace Community.AspNetCore.JsonRpc.Tests
+namespace Community.AspNetCore.JsonRpc.Benchmarks.Middleware
 {
     internal sealed class JsonRpcTestService
     {
         [JsonRpcName("nam")]
-        public Task<long> MethodWithParamsByName([JsonRpcName("pr1")] long parameter1, [JsonRpcName("pr2")] long parameter2)
+        public Task<long> MethodWithParamsByName([JsonRpcName("pr1")]long parameter1, [JsonRpcName("pr2")]long parameter2)
         {
             return Task.FromResult(parameter1 - parameter2);
         }
