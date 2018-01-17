@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.JsonRpc;
 using System.Threading.Tasks;
 
-namespace Community.AspNetCore.JsonRpc.Tests
+namespace Community.AspNetCore.JsonRpc.Tests.Middleware
 {
     internal sealed class JsonRpcTestHandler : IJsonRpcHandler
     {

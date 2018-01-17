@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Community.AspNetCore.JsonRpc.Tests
+namespace Community.AspNetCore.JsonRpc.Tests.Middleware
 {
     internal sealed class JsonRpcTestService
     {
