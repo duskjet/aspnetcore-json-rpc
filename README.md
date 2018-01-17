@@ -5,7 +5,7 @@
 [![NuGet package](https://img.shields.io/nuget/v/Community.AspNetCore.JsonRpc.svg?style=flat-square)](https://www.nuget.org/packages/Community.AspNetCore.JsonRpc)
 
 ```cs
-public class CalculatorHandler : IJsonRpcHandler
+public class MyJsonRpcHandler : IJsonRpcHandler
 {
     public IReadOnlyDictionary<string, JsonRpcRequestContract> CreateScheme()
     {
@@ -36,18 +36,18 @@ public class CalculatorHandler : IJsonRpcHandler
         {
             case "nam":
                 {
-                    var operand1 = (long)request.ParamsByName["pr1"];
-                    var operand2 = (long)request.ParamsByName["pr2"];
+                    var parameter1 = (long)request.ParamsByName["pr1"];
+                    var parameter2 = (long)request.ParamsByName["pr2"];
 
-                    response = new JsonRpcResponse(operand1 - operand2, request.Id);
+                    response = new JsonRpcResponse(parameter1 - parameter2, request.Id);
                 }
                 break;
             case "pos":
                 {
-                    var operand1 = (long)request.ParamsByPosition[0];
-                    var operand2 = (long)request.ParamsByPosition[1];
+                    var parameter1 = (long)request.ParamsByPosition[0];
+                    var parameter2 = (long)request.ParamsByPosition[1];
 
-                    response = new JsonRpcResponse(operand1 + operand2, request.Id);
+                    response = new JsonRpcResponse(parameter1 + parameter2, request.Id);
                 }
                 break;
             case "err":
@@ -68,11 +68,11 @@ public class CalculatorHandler : IJsonRpcHandler
 }
 ```
 ```cs
-builder.Configure(app => app.UseJsonRpcHandler<CalculatorHandler>());
+builder.Configure(_ => _.UseJsonRpcHandler<MyJsonRpcHandler>());
 ```
 or
 ```cs
-public class CalculatorService
+public class MyJsonRpcService
 {
     [JsonRpcName("nam")]
     public Task<long> MethodWithParamsByName([JsonRpcName("pr1")] long parameter1, [JsonRpcName("pr2")] long parameter2)
@@ -100,7 +100,8 @@ public class CalculatorService
 }
 ```
 ```cs
-builder.Configure(app => app.UseJsonRpcService<CalculatorService>());
+builder.Configure(_ => _.UseJsonRpcService<MyJsonRpcService>());
 ```
 
-`JsonRpcName` attribute can be used on an interface as well.
+- `JsonRpcName` attribute can be used on an interface as well.
+- Parameters provided by name can utilize default parameter value if the particular parameter is not provided by the client.

@@ -36,18 +36,18 @@ namespace Community.AspNetCore.JsonRpc.Tests
             {
                 case "nam":
                     {
-                        var operand1 = (long)request.ParamsByName["pr1"];
-                        var operand2 = (long)request.ParamsByName["pr2"];
+                        var parameter1 = (long)request.ParamsByName["pr1"];
+                        var parameter2 = (long)request.ParamsByName["pr2"];
 
-                        response = new JsonRpcResponse(operand1 - operand2, request.Id);
+                        response = new JsonRpcResponse(parameter1 - parameter2, request.Id);
                     }
                     break;
                 case "pos":
                     {
-                        var operand1 = (long)request.ParamsByPosition[0];
-                        var operand2 = (long)request.ParamsByPosition[1];
+                        var parameter1 = (long)request.ParamsByPosition[0];
+                        var parameter2 = (long)request.ParamsByPosition[1];
 
-                        response = new JsonRpcResponse(operand1 + operand2, request.Id);
+                        response = new JsonRpcResponse(parameter1 + parameter2, request.Id);
                     }
                     break;
                 case "err":
