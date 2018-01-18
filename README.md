@@ -103,5 +103,7 @@ public class MyJsonRpcService
 builder.Configure(_ => _.UseJsonRpcService<MyJsonRpcService>());
 ```
 
+### Features
+
 - `JsonRpcName` attribute can be used on an interface as well.
 - Parameters provided by name can utilize default parameter value if the particular parameter is not provided by the client.

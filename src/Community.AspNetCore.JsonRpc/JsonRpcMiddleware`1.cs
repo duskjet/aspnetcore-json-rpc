@@ -78,7 +78,6 @@ namespace Community.AspNetCore.JsonRpc
                 }
                 else
                 {
-
                     var jsonRpcRequestData = default(JsonRpcData<JsonRpcRequest>);
                     var responseString = string.Empty;
 
@@ -88,7 +87,7 @@ namespace Community.AspNetCore.JsonRpc
                     }
                     catch (JsonRpcException ex)
                     {
-                        responseString = _serializer.SerializeResponse(new JsonRpcResponse(ConvertExceptionToError(ex), JsonRpcId.None));
+                        responseString = _serializer.SerializeResponse(new JsonRpcResponse(ConvertExceptionToError(ex), default));
 
                         _logger?.LogInformation("JSON-RPC \"{0}\" [1] -> [1]", context.Request.PathBase);
                     }
