@@ -4,22 +4,18 @@ using System.Data.JsonRpc;
 using System.Globalization;
 using System.IO;
 using System.Net;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Community.AspNetCore.JsonRpc.Resources;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
 
 namespace Community.AspNetCore.JsonRpc
 {
     internal sealed class JsonRpcMiddleware<T>
         where T : IJsonRpcHandler
     {
-        private static readonly MediaTypeHeaderValue _mediaType = new MediaTypeHeaderValue("application/json");
-
         private readonly JsonRpcSerializer _serializer = new JsonRpcSerializer();
         private readonly T _handler;
         private readonly ILogger _logger;
@@ -37,7 +33,6 @@ namespace Community.AspNetCore.JsonRpc
 
             _handler = ActivatorUtilities.CreateInstance<T>(serviceProvider, (object[])args);
             _logger = loggerFactory?.CreateLogger<JsonRpcMiddleware<T>>();
-            _mediaType.CharSet = Encoding.UTF8.WebName;
 
             foreach (var kvp in _handler.CreateScheme())
             {
@@ -51,11 +46,11 @@ namespace Community.AspNetCore.JsonRpc
             {
                 context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
             }
-            else if ((context.Request.ContentType == null) || !ValidateMediaType(context.Request.ContentType))
+            else if (string.Compare(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase) != 0)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
             }
-            else if ((context.Request.Headers["Accept"] == default(StringValues)) || !ValidateMediaType(context.Request.Headers["Accept"]))
+            else if (string.Compare(context.Request.Headers["Accept"], "application/json", StringComparison.OrdinalIgnoreCase) != 0)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotAcceptable;
             }
@@ -69,7 +64,7 @@ namespace Community.AspNetCore.JsonRpc
 
                 using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
                 {
-                    requestString = await reader.ReadToEndAsync().ConfigureAwait(false);
+                    requestString = reader.ReadToEnd();
                 }
 
                 if (requestString.Length != context.Request.ContentLength.Value)
@@ -79,7 +74,7 @@ namespace Community.AspNetCore.JsonRpc
                 else
                 {
                     var jsonRpcRequestData = default(JsonRpcData<JsonRpcRequest>);
-                    var responseString = string.Empty;
+                    var responseString = default(string);
 
                     try
                     {
@@ -96,7 +91,7 @@ namespace Community.AspNetCore.JsonRpc
                     {
                         if (jsonRpcRequestData.IsSingle)
                         {
-                            var jsonRpcResponse = await InvokeHandler(jsonRpcRequestData.SingleItem).ConfigureAwait(false);
+                            var jsonRpcResponse = await InvokeHandlerAsync(jsonRpcRequestData.SingleItem).ConfigureAwait(false);
 
                             if (jsonRpcResponse != null)
                             {
@@ -117,7 +112,7 @@ namespace Community.AspNetCore.JsonRpc
 
                             for (var i = 0; i < jsonRpcRequestData.BatchItems.Count; i++)
                             {
-                                var jsonRpcResponse = await InvokeHandler(jsonRpcRequestData.BatchItems[i]).ConfigureAwait(false);
+                                var jsonRpcResponse = await InvokeHandlerAsync(jsonRpcRequestData.BatchItems[i]).ConfigureAwait(false);
 
                                 if (jsonRpcResponse != null)
                                 {
@@ -131,20 +126,19 @@ namespace Community.AspNetCore.JsonRpc
                         }
                     }
 
-                    var responseBytes = Encoding.UTF8.GetBytes(responseString);
-
-                    context.Response.ContentType = _mediaType.ToString();
-                    context.Response.ContentLength = responseBytes.Length;
-
-                    if ((HttpStatusCode)context.Response.StatusCode != HttpStatusCode.NoContent)
+                    if (context.Response.StatusCode != (int)HttpStatusCode.NoContent)
                     {
-                        await context.Response.Body.WriteAsync(responseBytes, 0, responseBytes.Length).ConfigureAwait(false);
+                        var responseBytes = Encoding.UTF8.GetBytes(responseString);
+
+                        context.Response.ContentType = "application/json";
+                        context.Response.ContentLength = responseBytes.Length;
+                        context.Response.Body.Write(responseBytes, 0, responseBytes.Length);
                     }
                 }
             }
         }
 
-        private async Task<JsonRpcResponse> InvokeHandler(JsonRpcItem<JsonRpcRequest> item)
+        private async Task<JsonRpcResponse> InvokeHandlerAsync(JsonRpcItem<JsonRpcRequest> item)
         {
             if (item.IsValid)
             {
@@ -213,11 +207,6 @@ namespace Community.AspNetCore.JsonRpc
             }
 
             return new JsonRpcError(code, exception.Message);
-        }
-
-        private static bool ValidateMediaType(string value)
-        {
-            return MediaTypeHeaderValue.TryParse(value, out var result) && (string.Compare(result.MediaType, _mediaType.MediaType, StringComparison.OrdinalIgnoreCase) == 0);
         }
     }
 }
