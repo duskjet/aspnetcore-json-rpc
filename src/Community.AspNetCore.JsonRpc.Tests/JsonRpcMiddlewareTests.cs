@@ -2,7 +2,6 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 using Community.AspNetCore.JsonRpc.Tests.Middleware;
 using Community.AspNetCore.JsonRpc.Tests.Resources;
@@ -38,8 +37,9 @@ namespace Community.AspNetCore.JsonRpc.Tests
                 {
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                    var requestContent = new StringContent(requestContentSample, Encoding.UTF8, "application/json");
+                    var requestContent = new StringContent(requestContentSample);
 
+                    requestContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                     requestContent.Headers.ContentLength = requestContentSample.Length;
 
                     var response = await client.PostAsync(server.BaseAddress, requestContent).ConfigureAwait(false);
