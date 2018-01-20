@@ -110,7 +110,7 @@ namespace Community.AspNetCore.JsonRpc
                         {
                             var jsonRpcResponses = new List<JsonRpcResponse>(jsonRpcRequestData.BatchItems.Count);
 
-                            for (var i = 0; i < jsonRpcRequestData.BatchItems.Count; i++)
+                            for (var i = 0; i < jsonRpcResponses.Count; i++)
                             {
                                 var jsonRpcResponse = await InvokeHandlerAsync(jsonRpcRequestData.BatchItems[i]).ConfigureAwait(false);
 
