@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -49,8 +50,11 @@ namespace Community.AspNetCore.JsonRpc.Tests
                         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
                         var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        var responseContentToken = JToken.Parse(responseContent);
 
-                        Assert.True(JToken.DeepEquals(JToken.Parse(responseContentSample), JToken.Parse(responseContent)), "Actual JSON string differs from expected");
+                        _output.WriteLine(responseContentToken.ToString(Formatting.Indented));
+
+                        Assert.True(JToken.DeepEquals(JToken.Parse(responseContentSample), responseContentToken), "Actual JSON string differs from expected");
                     }
                     else
                     {
@@ -65,9 +69,10 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("pos")]
         [InlineData("err")]
         [InlineData("not")]
-        public async Task JsonRpcHandler(string test)
+        [InlineData("unk")]
+        public Task UseJsonRpcHandler(string test)
         {
-            await TestMiddlewareAsync(_ => _.UseJsonRpcHandler<JsonRpcTestHandler>(), test);
+            return TestMiddlewareAsync(_ => _.UseJsonRpcHandler<JsonRpcTestHandler>(), test);
         }
 
         [Theory]
@@ -75,9 +80,10 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("pos")]
         [InlineData("err")]
         [InlineData("not")]
-        public async Task JsonRpcService(string test)
+        [InlineData("unk")]
+        public Task UseJsonRpcService(string test)
         {
-            await TestMiddlewareAsync(_ => _.UseJsonRpcService<JsonRpcTestService>(), test);
+            return TestMiddlewareAsync(_ => _.UseJsonRpcService<JsonRpcTestService>(), test);
         }
     }
 }

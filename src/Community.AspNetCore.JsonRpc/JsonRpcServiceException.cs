@@ -11,9 +11,15 @@ namespace Community.AspNetCore.JsonRpc
         /// <param name="code">The number that indicates the error type that occurred.</param>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="data">The value that contains additional information about the error.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="message" /> is <see langword="null" />.</exception>
         public JsonRpcServiceException(long code, string message, object data = null)
             : base(message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             Code = code;
             RpcData = data;
         }

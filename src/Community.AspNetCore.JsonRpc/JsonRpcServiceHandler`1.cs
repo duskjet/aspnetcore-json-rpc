@@ -12,10 +12,20 @@ namespace Community.AspNetCore.JsonRpc
     internal sealed class JsonRpcServiceHandler<T> : IJsonRpcHandler
         where T : class
     {
-        private readonly IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> _metadata =
+        private static readonly IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> _metadata =
             new Dictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])>(StringComparer.Ordinal);
 
         private readonly T _service;
+
+        static JsonRpcServiceHandler()
+        {
+            AcquireContracts(_metadata, typeof(T));
+
+            if (_metadata.Count == 0)
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Strings.GetString("handler.empty_scheme"), typeof(T)));
+            }
+        }
 
         public JsonRpcServiceHandler(IServiceProvider serviceProvider, object args)
         {
@@ -29,13 +39,6 @@ namespace Community.AspNetCore.JsonRpc
             }
 
             _service = ActivatorUtilities.CreateInstance<T>(serviceProvider, (object[])args);
-
-            AcquireContracts(_metadata, typeof(T));
-
-            if (_metadata.Count == 0)
-            {
-                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Strings.GetString("handler.empty_scheme"), typeof(T)));
-            }
         }
 
         private static void AcquireContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> contracts, Type type)
