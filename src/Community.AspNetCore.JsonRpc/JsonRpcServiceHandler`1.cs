@@ -20,11 +20,6 @@ namespace Community.AspNetCore.JsonRpc
         static JsonRpcServiceHandler()
         {
             AcquireContracts(_metadata, typeof(T));
-
-            if (_metadata.Count == 0)
-            {
-                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Strings.GetString("handler.empty_scheme"), typeof(T)));
-            }
         }
 
         public JsonRpcServiceHandler(IServiceProvider serviceProvider, object args)

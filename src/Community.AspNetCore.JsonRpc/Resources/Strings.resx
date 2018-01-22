@@ -117,17 +117,59 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="handler.empty_scheme" xml:space="preserve">
-    <value>The service {0} doesn't define any JSON-RPC method</value>
-  </data>
-  <data name="handler.request.system_message" xml:space="preserve">
-    <value>The system request "{0}" is not supported</value>
-  </data>
-  <data name="handler.response.id.invalid_value" xml:space="preserve">
-    <value>The same identifier is required for the request "{0}"</value>
-  </data>
   <data name="middleware.invalid_type" xml:space="preserve">
     <value>The specified middleware type {0} is invalid</value>
+  </data>
+  <data name="handler.request_data.accepted_batch" xml:space="preserve">
+    <value>{0} JSON-RPC batch with {1} request(s) to the path "{2}" is accepted for processing</value>
+  </data>
+  <data name="handler.request_data.accepted_single" xml:space="preserve">
+    <value>{0} JSON-RPC request to the path "{1}" is accepted for processing</value>
+  </data>
+  <data name="handler.request_data.declined" xml:space="preserve">
+    <value>{0} JSON-RPC request to the path "{1}" is not accepted for processing</value>
+  </data>
+  <data name="handler.response.handled_notification" xml:space="preserve">
+    <value>{0} JSON-RPC request to the method "{1}" processed as notification</value>
+  </data>
+  <data name="handler.response.handled_notification_as_response" xml:space="preserve">
+    <value>{0} JSON-RPC request "{1}" to the method "{2}" processed as notification</value>
+  </data>
+  <data name="handler.response.handled_response_as_notification" xml:space="preserve">
+    <value>{0} JSON-RPC request to the method "{1}" processed as notification</value>
+  </data>
+  <data name="handler.response.handled_with_error" xml:space="preserve">
+    <value>{0} JSON-RPC request "{1}" to the method "{2}" processed with error {3}</value>
+  </data>
+  <data name="handler.response.handled_with_result" xml:space="preserve">
+    <value>{0} JSON-RPC request "{1}" to the method "{2}" processed successfully</value>
+  </data>
+  <data name="handler.request.invalid_message" xml:space="preserve">
+    <value>{0} JSON-RPC request "{1}" is not considered as a valid request</value>
+  </data>
+  <data name="handler.response.id.invalid_value" xml:space="preserve">
+    <value>Request and response identifiers are different</value>
+  </data>
+  <data name="handler.scheme.method.system_name" xml:space="preserve">
+    <value>The declared JSON-RPC method is system extension</value>
+  </data>
+  <data name="handler.scheme.method.undefined_name" xml:space="preserve">
+    <value>The declared JSON-RPC method name is not defined</value>
+  </data>
+  <data name="rpc.error.internal" xml:space="preserve">
+    <value>An error occurred during processing the request</value>
+  </data>
+  <data name="rpc.error.invalid_method" xml:space="preserve">
+    <value>The specified method does not exist or is not available</value>
+  </data>
+  <data name="rpc.error.invalid_params" xml:space="preserve">
+    <value>The specified method parameters are invalid</value>
+  </data>
+  <data name="rpc.error.invalid_request" xml:space="preserve">
+    <value>The provided message is not a valid request</value>
+  </data>
+  <data name="rpc.error.parsing" xml:space="preserve">
+    <value>The provided JSON is invalid</value>
   </data>
   <data name="service.method.invalid_name" xml:space="preserve">
     <value>The service {0} contains multiple definitions for the JSON-RPC method "{1}"</value>

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.JsonRpc;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Community.AspNetCore.JsonRpc.Resources;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,13 +18,18 @@ namespace Community.AspNetCore.JsonRpc
     {
         private readonly JsonRpcSerializer _serializer = new JsonRpcSerializer();
         private readonly T _handler;
+        private readonly bool _productionEnvironment;
         private readonly ILogger _logger;
 
-        public JsonRpcMiddleware(RequestDelegate next, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, object args)
+        public JsonRpcMiddleware(RequestDelegate next, IServiceProvider serviceProvider, IHostingEnvironment hostingEnvironment, ILoggerFactory loggerFactory, object args)
         {
             if (serviceProvider == null)
             {
                 throw new ArgumentNullException(nameof(serviceProvider));
+            }
+            if (hostingEnvironment == null)
+            {
+                throw new ArgumentNullException(nameof(hostingEnvironment));
             }
             if (args == null)
             {
@@ -32,10 +37,20 @@ namespace Community.AspNetCore.JsonRpc
             }
 
             _handler = ActivatorUtilities.CreateInstance<T>(serviceProvider, (object[])args);
+            _productionEnvironment = hostingEnvironment.EnvironmentName != EnvironmentName.Development;
             _logger = loggerFactory?.CreateLogger<JsonRpcMiddleware<T>>();
 
             foreach (var kvp in _handler.CreateScheme())
             {
+                if (kvp.Key == null)
+                {
+                    throw new InvalidOperationException(Strings.GetString("handler.scheme.method.undefined_name"));
+                }
+                if (kvp.Key.StartsWith("rpc.", StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException(Strings.GetString("handler.scheme.method.system_name"));
+                }
+
                 _serializer.RequestContracts[kvp.Key] = kvp.Value;
             }
         }
@@ -82,37 +97,37 @@ namespace Community.AspNetCore.JsonRpc
                     }
                     catch (JsonRpcException ex)
                     {
-                        responseString = _serializer.SerializeResponse(new JsonRpcResponse(ConvertExceptionToError(ex), default));
+                        _logger?.LogError(1000, ex, Strings.GetString("handler.request_data.declined"), context.TraceIdentifier, context.Request.PathBase);
 
-                        _logger?.LogInformation("JSON-RPC \"{0}\" [1] -> [1]", context.Request.PathBase);
+                        responseString = _serializer.SerializeResponse(new JsonRpcResponse(ConvertExceptionToError(ex), default));
                     }
 
                     if (jsonRpcRequestData != null)
                     {
                         if (jsonRpcRequestData.IsSingle)
                         {
-                            var jsonRpcResponse = await InvokeHandlerAsync(jsonRpcRequestData.SingleItem).ConfigureAwait(false);
+                            _logger?.LogTrace(4010, Strings.GetString("handler.request_data.accepted_single"), context.TraceIdentifier, context.Request.PathBase);
+
+                            var jsonRpcResponse = await InvokeHandlerAsync(jsonRpcRequestData.SingleItem, context.TraceIdentifier).ConfigureAwait(false);
 
                             if (jsonRpcResponse != null)
                             {
                                 responseString = _serializer.SerializeResponse(jsonRpcResponse);
-
-                                _logger?.LogInformation("JSON-RPC \"{0}\" [1] -> [1]", context.Request.PathBase);
                             }
                             else
                             {
                                 context.Response.StatusCode = (int)HttpStatusCode.NoContent;
-
-                                _logger?.LogInformation("JSON-RPC \"{0}\" [1] -> [0]", context.Request.PathBase);
                             }
                         }
                         else
                         {
+                            _logger?.LogTrace(4020, Strings.GetString("handler.request_data.accepted_batch"), context.TraceIdentifier, jsonRpcRequestData.BatchItems.Count, context.Request.PathBase);
+
                             var jsonRpcResponses = new List<JsonRpcResponse>(jsonRpcRequestData.BatchItems.Count);
 
-                            for (var i = 0; i < jsonRpcResponses.Count; i++)
+                            for (var i = 0; i < jsonRpcRequestData.BatchItems.Count; i++)
                             {
-                                var jsonRpcResponse = await InvokeHandlerAsync(jsonRpcRequestData.BatchItems[i]).ConfigureAwait(false);
+                                var jsonRpcResponse = await InvokeHandlerAsync(jsonRpcRequestData.BatchItems[i], context.TraceIdentifier).ConfigureAwait(false);
 
                                 if (jsonRpcResponse != null)
                                 {
@@ -121,8 +136,6 @@ namespace Community.AspNetCore.JsonRpc
                             }
 
                             responseString = _serializer.SerializeResponses(jsonRpcResponses);
-
-                            _logger?.LogInformation("JSON-RPC \"{0}\" [{1}] -> [{2}]", context.Request.PathBase, jsonRpcRequestData.BatchItems.Count, jsonRpcResponses.Count);
                         }
                     }
 
@@ -138,75 +151,105 @@ namespace Community.AspNetCore.JsonRpc
             }
         }
 
-        private async Task<JsonRpcResponse> InvokeHandlerAsync(JsonRpcItem<JsonRpcRequest> item)
+        private async Task<JsonRpcResponse> InvokeHandlerAsync(JsonRpcItem<JsonRpcRequest> item, string traceIdentifier)
         {
+            var response = default(JsonRpcResponse);
+
             if (item.IsValid)
             {
                 var request = item.Message;
 
-                if (request.IsSystem)
-                {
-                    _logger?.LogInformation(Strings.GetString("handler.request.system_message"), request.Method);
-
-                    return null;
-                }
-
-                var response = await _handler.Handle(request).ConfigureAwait(false);
+                response = await _handler.Handle(request).ConfigureAwait(false);
 
                 if (response != null)
                 {
                     if (request.Id != response.Id)
                     {
-                        throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Strings.GetString("handler.response.id.invalid_value"), request.Id));
+                        throw new InvalidOperationException(Strings.GetString("handler.response.id.invalid_value"));
                     }
 
-                    return !request.IsNotification ? response : null;
+                    if (!request.IsNotification)
+                    {
+                        if (response.Success)
+                        {
+                            _logger?.LogInformation(3000, Strings.GetString("handler.response.handled_with_result"), traceIdentifier, request.Id, request.Method);
+                        }
+                        else
+                        {
+                            _logger?.LogInformation(3010, Strings.GetString("handler.response.handled_with_error"), traceIdentifier, request.Id, request.Method, response.Error.Code);
+                        }
+                    }
+                    else
+                    {
+                        response = null;
+
+                        _logger?.LogWarning(2010, Strings.GetString("handler.response.handled_response_as_notification"), traceIdentifier, request.Method);
+                    }
                 }
                 else
                 {
-                    return null;
+                    if (request.IsNotification)
+                    {
+                        _logger?.LogInformation(3020, Strings.GetString("handler.response.handled_notification"), traceIdentifier, request.Method);
+                    }
+                    else
+                    {
+                        _logger?.LogWarning(2000, Strings.GetString("handler.response.handled_notification_as_response"), traceIdentifier, request.Id, request.Method);
+                    }
                 }
             }
             else
             {
-                return new JsonRpcResponse(ConvertExceptionToError(item.Exception), item.Exception.MessageId);
+                var exception = item.Exception;
+
+                response = new JsonRpcResponse(ConvertExceptionToError(exception), exception.MessageId);
+
+                _logger?.LogError(1100, exception, Strings.GetString("handler.request.invalid_message"), traceIdentifier, exception.MessageId);
             }
+
+            return response;
         }
 
-        private static JsonRpcError ConvertExceptionToError(JsonRpcException exception)
+        private JsonRpcError ConvertExceptionToError(JsonRpcException exception)
         {
             var code = default(long);
+            var message = default(string);
 
             switch (exception.Type)
             {
                 case JsonRpcExceptionType.Parsing:
                     {
                         code = (long)JsonRpcErrorType.Parsing;
+                        message = !_productionEnvironment ? exception.Message : Strings.GetString("rpc.error.parsing");
                     }
                     break;
                 case JsonRpcExceptionType.InvalidParams:
                     {
                         code = (long)JsonRpcErrorType.InvalidParams;
+                        message = !_productionEnvironment ? exception.Message : Strings.GetString("rpc.error.invalid_params");
                     }
                     break;
                 case JsonRpcExceptionType.InvalidMethod:
                     {
                         code = (long)JsonRpcErrorType.InvalidMethod;
+                        message = !_productionEnvironment ? exception.Message : Strings.GetString("rpc.error.invalid_method");
                     }
                     break;
                 case JsonRpcExceptionType.InvalidMessage:
                     {
                         code = (long)JsonRpcErrorType.InvalidRequest;
+                        message = !_productionEnvironment ? exception.Message : Strings.GetString("rpc.error.invalid_request");
                     }
                     break;
                 default:
                     {
                         code = (long)JsonRpcErrorType.Internal;
+                        message = !_productionEnvironment ? exception.Message : Strings.GetString("rpc.error.internal");
                     }
                     break;
             }
 
-            return new JsonRpcError(code, exception.Message);
+            return new JsonRpcError(code, message);
         }
     }
 }

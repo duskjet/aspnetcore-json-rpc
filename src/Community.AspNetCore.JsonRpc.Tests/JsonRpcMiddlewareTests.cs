@@ -30,7 +30,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
             var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");
             var responseContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_res.json");
 
-            var builder = new WebHostBuilder().ConfigureLogging(_ => _.AddXunit(_output)).Configure(action);
+            var builder = new WebHostBuilder().ConfigureLogging(_ => _.SetMinimumLevel(LogLevel.Trace).AddXunit(_output)).Configure(action);
 
             using (var server = new TestServer(builder))
             {
@@ -70,6 +70,8 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("err")]
         [InlineData("not")]
         [InlineData("unk")]
+        [InlineData("sys")]
+        [InlineData("bat")]
         public Task UseJsonRpcHandler(string test)
         {
             return TestMiddlewareAsync(_ => _.UseJsonRpcHandler<JsonRpcTestHandler>(), test);
@@ -81,6 +83,8 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("err")]
         [InlineData("not")]
         [InlineData("unk")]
+        [InlineData("sys")]
+        [InlineData("bat")]
         public Task UseJsonRpcService(string test)
         {
             return TestMiddlewareAsync(_ => _.UseJsonRpcService<JsonRpcTestService>(), test);
