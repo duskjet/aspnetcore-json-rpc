@@ -147,38 +147,10 @@ namespace Community.AspNetCore.JsonRpc
             var (contract, method, parameters, parametersBindings) = _metadata[request.Method];
             var parametersValues = default(object[]);
 
-            if (contract.ParamsType != request.ParamsType)
-            {
-                if (!request.IsNotification)
-                {
-                    var message = string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.request.parameters.invalid_structure"), request.Method);
-
-                    return new JsonRpcResponse(new JsonRpcError((long)JsonRpcErrorType.InvalidParams, message), request.Id);
-                }
-                else
-                {
-                    return null;
-                }
-            }
-
             switch (contract.ParamsType)
             {
                 case JsonRpcParamsType.ByPosition:
                     {
-                        if (request.ParamsByPosition.Count != parameters.Length)
-                        {
-                            if (!request.IsNotification)
-                            {
-                                var message = string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.request.parameters.invalid_count"), request.Method);
-
-                                return new JsonRpcResponse(new JsonRpcError((long)JsonRpcErrorType.InvalidParams, message), request.Id);
-                            }
-                            else
-                            {
-                                return null;
-                            }
-                        }
-
                         parametersValues = new object[parameters.Length];
 
                         for (var i = 0; i < parametersValues.Length; i++)

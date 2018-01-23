@@ -189,10 +189,4 @@
   <data name="service.request.parameter.undefined_value" xml:space="preserve">
     <value>The method "{0}" requires the parameter "{1}"</value>
   </data>
-  <data name="service.request.parameters.invalid_count" xml:space="preserve">
-    <value>The method "{0}" has invalid parameters count</value>
-  </data>
-  <data name="service.request.parameters.invalid_structure" xml:space="preserve">
-    <value>The method "{0}" has invalid parameters structure</value>
-  </data>
 </root>
