@@ -190,11 +190,6 @@ namespace Community.AspNetCore.JsonRpc
                         }
                     }
                     break;
-                default:
-                    {
-                        parametersValues = Array.Empty<object>();
-                    }
-                    break;
             }
 
             if (request.IsNotification || !method.ReturnType.IsGenericType)
