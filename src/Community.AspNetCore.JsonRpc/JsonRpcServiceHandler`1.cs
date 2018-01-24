@@ -165,11 +165,11 @@ namespace Community.AspNetCore.JsonRpc
 
                         for (var i = 0; i < parametersValues.Length; i++)
                         {
-                            if (!request.ParamsByName.TryGetValue(parametersBindings[i], out var parameterValue))
+                            if (!request.ParamsByName.TryGetValue(parametersBindings[i], out parametersValues[i]))
                             {
                                 if (parameters[i].HasDefaultValue)
                                 {
-                                    parameterValue = parameters[i].DefaultValue;
+                                    parametersValues[i] = parameters[i].DefaultValue;
                                 }
                                 else
                                 {
@@ -185,8 +185,6 @@ namespace Community.AspNetCore.JsonRpc
                                     }
                                 }
                             }
-
-                            parametersValues[i] = parameterValue;
                         }
                     }
                     break;
