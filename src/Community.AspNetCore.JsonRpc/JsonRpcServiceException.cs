@@ -2,9 +2,7 @@
 
 namespace Community.AspNetCore.JsonRpc
 {
-    /// <summary>
-    /// A JSON-RPC service exception.
-    /// </summary>
+    /// <summary>A JSON-RPC service exception which indicates a JSON-RPC error response.</summary>
     public sealed class JsonRpcServiceException : Exception
     {
         /// <summary>Initializes a new instance of the <see cref="JsonRpcServiceException" /> class.</summary>
@@ -24,7 +22,7 @@ namespace Community.AspNetCore.JsonRpc
             RpcData = data;
         }
 
-        /// <summary>Gets a number that indicates the error type that occurred.</summary>
+        /// <summary>Gets a number that indicates the error code that occurred.</summary>
         public long Code
         {
             get;
