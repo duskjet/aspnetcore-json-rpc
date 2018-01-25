@@ -13,11 +13,10 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="builder">The <see cref="IApplicationBuilder" /> instance to configure.</param>
         /// <param name="type">The type of the handler.</param>
         /// <param name="path">The request path for JSON-RPC methods.</param>
-        /// <param name="args">The arguments to pass to the handler type instance's constructor.</param>
         /// <returns>The <see cref="IApplicationBuilder" /> instance.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="type" /> is <see langword="null" />.</exception>
         /// <exception cref="InvalidOperationException"><paramref name="type" /> is not a class or doesn't implement <see cref="IJsonRpcHandler" /> interface.</exception>
-        public static IApplicationBuilder UseJsonRpcHandler(this IApplicationBuilder builder, Type type, PathString path = default, params object[] args)
+        public static IApplicationBuilder UseJsonRpcHandler(this IApplicationBuilder builder, Type type, PathString path = default)
         {
             if (type == null)
             {
@@ -28,30 +27,28 @@ namespace Microsoft.AspNetCore.Builder
                 throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Strings.GetString("middleware.invalid_type"), type));
             }
 
-            return builder.Map(path, configuration => configuration.UseMiddleware(typeof(JsonRpcMiddleware<>).MakeGenericType(type), (object)args));
+            return builder.Map(path, configuration => configuration.UseMiddleware(typeof(JsonRpcMiddleware<>).MakeGenericType(type)));
         }
 
         /// <summary>Registers a JSON-RPC 2.0 handler.</summary>
         /// <param name="builder">The <see cref="IApplicationBuilder" /> instance to configure.</param>
         /// <param name="path">The request path for JSON-RPC methods.</param>
-        /// <param name="args">The arguments to pass to the handler type instance's constructor.</param>
         /// <typeparam name="T">The type of the handler.</typeparam>
         /// <returns>The <see cref="IApplicationBuilder" /> instance.</returns>
-        public static IApplicationBuilder UseJsonRpcHandler<T>(this IApplicationBuilder builder, PathString path = default, params object[] args)
+        public static IApplicationBuilder UseJsonRpcHandler<T>(this IApplicationBuilder builder, PathString path = default)
             where T : class, IJsonRpcHandler
         {
-            return builder.Map(path, configuration => configuration.UseMiddleware<JsonRpcMiddleware<T>>((object)args));
+            return builder.Map(path, configuration => configuration.UseMiddleware<JsonRpcMiddleware<T>>());
         }
 
         /// <summary>Registers a JSON-RPC 2.0 service.</summary>
         /// <param name="builder">The <see cref="IApplicationBuilder" /> instance to configure.</param>
         /// <param name="type">The type of the service.</param>
         /// <param name="path">The request path for JSON-RPC methods.</param>
-        /// <param name="args">The arguments to pass to the service type instance's constructor.</param>
         /// <returns>The <see cref="IApplicationBuilder" /> instance.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="type" /> is <see langword="null" />.</exception>
         /// <exception cref="InvalidOperationException"><paramref name="type" /> is not a class.</exception>
-        public static IApplicationBuilder UseJsonRpcService(this IApplicationBuilder builder, Type type, PathString path = default, params object[] args)
+        public static IApplicationBuilder UseJsonRpcService(this IApplicationBuilder builder, Type type, PathString path = default)
         {
             if (type == null)
             {
@@ -62,19 +59,18 @@ namespace Microsoft.AspNetCore.Builder
                 throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Strings.GetString("middleware.invalid_type"), type));
             }
 
-            return builder.UseJsonRpcHandler(typeof(JsonRpcServiceHandler<>).MakeGenericType(type), path, (object)args);
+            return builder.UseJsonRpcHandler(typeof(JsonRpcServiceHandler<>).MakeGenericType(type), path);
         }
 
         /// <summary>Registers a JSON-RPC 2.0 service.</summary>
         /// <param name="builder">The <see cref="IApplicationBuilder" /> instance to configure.</param>
         /// <param name="path">The request path for JSON-RPC methods.</param>
-        /// <param name="args">The arguments to pass to the service type instance's constructor.</param>
         /// <typeparam name="T">The type of the service.</typeparam>
         /// <returns>The <see cref="IApplicationBuilder" /> instance.</returns>
-        public static IApplicationBuilder UseJsonRpcService<T>(this IApplicationBuilder builder, PathString path = default, params object[] args)
+        public static IApplicationBuilder UseJsonRpcService<T>(this IApplicationBuilder builder, PathString path = default)
             where T : class
         {
-            return builder.UseJsonRpcHandler<JsonRpcServiceHandler<T>>(path, (object)args);
+            return builder.UseJsonRpcHandler<JsonRpcServiceHandler<T>>(path);
         }
     }
 }

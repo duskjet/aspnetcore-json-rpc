@@ -22,18 +22,14 @@ namespace Community.AspNetCore.JsonRpc
             AcquireContracts(_metadata, typeof(T));
         }
 
-        public JsonRpcServiceHandler(IServiceProvider serviceProvider, object args)
+        public JsonRpcServiceHandler(IServiceProvider serviceProvider)
         {
             if (serviceProvider == null)
             {
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
-            if (args == null)
-            {
-                throw new ArgumentNullException(nameof(args));
-            }
 
-            _service = ActivatorUtilities.CreateInstance<T>(serviceProvider, (object[])args);
+            _service = ActivatorUtilities.CreateInstance<T>(serviceProvider);
         }
 
         private static void AcquireContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> contracts, Type type)

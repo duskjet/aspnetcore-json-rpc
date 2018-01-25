@@ -21,7 +21,7 @@ namespace Community.AspNetCore.JsonRpc
         private readonly bool _productionEnvironment;
         private readonly ILogger _logger;
 
-        public JsonRpcMiddleware(RequestDelegate next, IServiceProvider serviceProvider, IHostingEnvironment hostingEnvironment, ILoggerFactory loggerFactory, object args)
+        public JsonRpcMiddleware(RequestDelegate next, IServiceProvider serviceProvider, IHostingEnvironment hostingEnvironment, ILoggerFactory loggerFactory)
         {
             if (serviceProvider == null)
             {
@@ -31,12 +31,8 @@ namespace Community.AspNetCore.JsonRpc
             {
                 throw new ArgumentNullException(nameof(hostingEnvironment));
             }
-            if (args == null)
-            {
-                throw new ArgumentNullException(nameof(args));
-            }
 
-            _handler = ActivatorUtilities.CreateInstance<T>(serviceProvider, (object[])args);
+            _handler = ActivatorUtilities.CreateInstance<T>(serviceProvider);
             _productionEnvironment = hostingEnvironment.EnvironmentName != EnvironmentName.Development;
             _logger = loggerFactory?.CreateLogger<JsonRpcMiddleware<T>>();
 
