@@ -28,7 +28,7 @@ public class MyJsonRpcHandler : IJsonRpcHandler
         };
     }
 
-    public Task<JsonRpcResponse> Handle(JsonRpcRequest request)
+    public Task<JsonRpcResponse> HandleAsync(JsonRpcRequest request)
     {
         var response = default(JsonRpcResponse);
 
@@ -68,7 +68,9 @@ public class MyJsonRpcHandler : IJsonRpcHandler
 }
 ```
 ```cs
-builder.Configure(_ => _.UseJsonRpcHandler<MyJsonRpcHandler>());
+builder
+    .ConfigureServices(_ => _.AddJsonRpcHandler<MyJsonRpcHandler>())
+    .Configure(_ => _.UseJsonRpcHandler<MyJsonRpcHandler>("/api/v1"));
 ```
 or
 ```cs
@@ -100,10 +102,13 @@ public class MyJsonRpcService
 }
 ```
 ```cs
-builder.Configure(_ => _.UseJsonRpcService<MyJsonRpcService>());
+builder
+    .ConfigureServices(_ => _.AddJsonRpcService<MyJsonRpcService>())
+    .Configure(_ => _.UseJsonRpcService<MyJsonRpcService>("/api/v1"));
 ```
 
 ### Features
 
+- A handler or a service which implements `IDisposable` interface will be automatically disposed on scope exit.
 - `JsonRpcName` attribute can be used on an interface as well.
 - Parameters provided by name can utilize default parameter value if the particular parameter is not provided by the client.

@@ -28,7 +28,7 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Middleware
             };
         }
 
-        public Task<JsonRpcResponse> Handle(JsonRpcRequest request)
+        public Task<JsonRpcResponse> HandleAsync(JsonRpcRequest request)
         {
             var response = default(JsonRpcResponse);
 

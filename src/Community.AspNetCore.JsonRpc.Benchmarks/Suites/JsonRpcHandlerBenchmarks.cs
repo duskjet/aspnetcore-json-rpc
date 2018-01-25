@@ -8,13 +8,13 @@ using BenchmarkDotNet.Attributes;
 using Community.AspNetCore.JsonRpc.Benchmarks.Framework;
 using Community.AspNetCore.JsonRpc.Benchmarks.Middleware;
 using Community.AspNetCore.JsonRpc.Benchmarks.Resources;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 
 namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
 {
-    [BenchmarkSuite("JsonRpcHandler")]
+    [BenchmarkSuite("JsonRpcMiddleware")]
     public abstract class JsonRpcHandlerBenchmarks
     {
         private readonly IDictionary<string, string> _resources = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -26,8 +26,8 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
 
         protected JsonRpcHandlerBenchmarks()
         {
-            _serverHandler = new TestServer(new WebHostBuilder().Configure(_ => _.UseJsonRpcHandler<JsonRpcTestHandler>()));
-            _serverService = new TestServer(new WebHostBuilder().Configure(_ => _.UseJsonRpcService<JsonRpcTestService>()));
+            _serverHandler = new TestServer(ConfigureHandler(new WebHostBuilder()));
+            _serverService = new TestServer(ConfigureService(new WebHostBuilder()));
             _clientHandler = _serverHandler.CreateClient();
             _clientService = _serverService.CreateClient();
             _clientHandler.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -37,6 +37,20 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
             {
                 _resources[asset] = EmbeddedResourceManager.GetString($"Assets.{asset}.json");
             }
+        }
+
+        private static IWebHostBuilder ConfigureHandler(IWebHostBuilder builder)
+        {
+            return builder
+                .ConfigureServices(_ => _.AddJsonRpcService<JsonRpcTestService>())
+                .Configure(_ => _.UseJsonRpcService<JsonRpcTestService>());
+        }
+
+        private static IWebHostBuilder ConfigureService(IWebHostBuilder builder)
+        {
+            return builder
+                .ConfigureServices(_ => _.AddJsonRpcService<JsonRpcTestService>())
+                .Configure(_ => _.UseJsonRpcService<JsonRpcTestService>());
         }
 
         private HttpContent CreateHttpContent(string asset)

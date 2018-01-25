@@ -5,7 +5,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Community.AspNetCore.JsonRpc.Tests.Middleware;
 using Community.AspNetCore.JsonRpc.Tests.Resources;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Logging;
@@ -25,12 +25,14 @@ namespace Community.AspNetCore.JsonRpc.Tests
             _output = output;
         }
 
-        private async Task TestMiddlewareAsync(Action<IApplicationBuilder> action, string test)
+        private async Task InvokeMiddlewareTestAsync(Action<IWebHostBuilder> configurator, string test)
         {
             var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");
             var responseContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_res.json");
 
-            var builder = new WebHostBuilder().ConfigureLogging(_ => _.SetMinimumLevel(LogLevel.Trace).AddXunit(_output)).Configure(action);
+            var builder = new WebHostBuilder().ConfigureLogging(_ => _.SetMinimumLevel(LogLevel.Trace).AddXunit(_output));
+
+            configurator.Invoke(builder);
 
             using (var server = new TestServer(builder))
             {
@@ -43,13 +45,13 @@ namespace Community.AspNetCore.JsonRpc.Tests
                     requestContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                     requestContent.Headers.ContentLength = requestContentSample.Length;
 
-                    var response = await client.PostAsync(server.BaseAddress, requestContent).ConfigureAwait(false);
+                    var response1 = await client.PostAsync("/api/v1", requestContent).ConfigureAwait(false);
 
                     if (responseContentSample != string.Empty)
                     {
-                        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                        Assert.Equal(HttpStatusCode.OK, response1.StatusCode);
 
-                        var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        var responseContent = await response1.Content.ReadAsStringAsync().ConfigureAwait(false);
                         var responseContentToken = JToken.Parse(responseContent);
 
                         _output.WriteLine(responseContentToken.ToString(Formatting.Indented));
@@ -58,8 +60,12 @@ namespace Community.AspNetCore.JsonRpc.Tests
                     }
                     else
                     {
-                        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+                        Assert.Equal(HttpStatusCode.NoContent, response1.StatusCode);
                     }
+
+                    var response2 = await client.PostAsync("/api/v2", requestContent).ConfigureAwait(false);
+
+                    Assert.Equal(HttpStatusCode.NotFound, response2.StatusCode);
                 }
             }
         }
@@ -72,9 +78,16 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("unk")]
         [InlineData("sys")]
         [InlineData("bat")]
-        public Task UseJsonRpcHandler(string test)
+        public async Task UseJsonRpcHandler(string test)
         {
-            return TestMiddlewareAsync(_ => _.UseJsonRpcHandler<JsonRpcTestHandler>(), test);
+            void ConfigureMiddleware(IWebHostBuilder builder)
+            {
+                builder
+                    .ConfigureServices(_ => _.AddJsonRpcHandler<JsonRpcTestHandler>())
+                    .Configure(_ => _.UseJsonRpcHandler<JsonRpcTestHandler>("/api/v1"));
+            }
+
+            await InvokeMiddlewareTestAsync(ConfigureMiddleware, test);
         }
 
         [Theory]
@@ -85,9 +98,16 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("unk")]
         [InlineData("sys")]
         [InlineData("bat")]
-        public Task UseJsonRpcService(string test)
+        public async Task UseJsonRpcService(string test)
         {
-            return TestMiddlewareAsync(_ => _.UseJsonRpcService<JsonRpcTestService>(), test);
+            void ConfigureMiddleware(IWebHostBuilder builder)
+            {
+                builder
+                    .ConfigureServices(_ => _.AddJsonRpcService<JsonRpcTestService>())
+                    .Configure(_ => _.UseJsonRpcService<JsonRpcTestService>("/api/v1"));
+            }
+
+            await InvokeMiddlewareTestAsync(ConfigureMiddleware, test);
         }
     }
 }

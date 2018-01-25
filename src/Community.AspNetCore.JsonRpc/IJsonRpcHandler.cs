@@ -11,9 +11,9 @@ namespace Community.AspNetCore.JsonRpc
         /// <returns>A dictionary with JSON-RPC request contracts.</returns>
         IReadOnlyDictionary<string, JsonRpcRequestContract> CreateScheme();
 
-        /// <summary>Handles a JSON-RPC request and returns a JSON-RPC response or <see langword="null" /> for a notification.</summary>
+        /// <summary>Handles a JSON-RPC request and returns a JSON-RPC response or <see langword="null" /> for a notification as an asynchronous operation.</summary>
         /// <param name="request">The JSON-RPC request.</param>
-        /// <returns>A JSON-RPC response or <see langword="null" />.</returns>
-        Task<JsonRpcResponse> Handle(JsonRpcRequest request);
+        /// <returns>A task that represents the asynchronous operation. The task result is a JSON-RPC response or <see langword="null" /> for a notification.</returns>
+        Task<JsonRpcResponse> HandleAsync(JsonRpcRequest request);
     }
 }

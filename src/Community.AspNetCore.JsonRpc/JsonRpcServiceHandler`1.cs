@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Community.AspNetCore.JsonRpc
 {
-    internal sealed class JsonRpcServiceHandler<T> : IJsonRpcHandler
+    internal sealed class JsonRpcServiceHandler<T> : IJsonRpcHandler, IDisposable
         where T : class
     {
         private static readonly IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> _metadata =
@@ -138,7 +138,7 @@ namespace Community.AspNetCore.JsonRpc
             return result;
         }
 
-        async Task<JsonRpcResponse> IJsonRpcHandler.Handle(JsonRpcRequest request)
+        async Task<JsonRpcResponse> IJsonRpcHandler.HandleAsync(JsonRpcRequest request)
         {
             var (contract, method, parameters, parametersBindings) = _metadata[request.Method];
             var parametersValues = default(object[]);
@@ -211,6 +211,11 @@ namespace Community.AspNetCore.JsonRpc
                     return new JsonRpcResponse(new JsonRpcError(iex.Code, iex.Message, iex.RpcData), request.Id);
                 }
             }
+        }
+
+        void IDisposable.Dispose()
+        {
+            (_service as IDisposable)?.Dispose();
         }
     }
 }

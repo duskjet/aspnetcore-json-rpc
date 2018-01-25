@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Community.AspNetCore.JsonRpc
 {
-    internal sealed class JsonRpcMiddleware<T>
+    internal sealed class JsonRpcMiddleware<T> : IMiddleware, IDisposable
         where T : IJsonRpcHandler
     {
         private readonly JsonRpcSerializer _serializer = new JsonRpcSerializer();
@@ -21,7 +21,7 @@ namespace Community.AspNetCore.JsonRpc
         private readonly bool _productionEnvironment;
         private readonly ILogger _logger;
 
-        public JsonRpcMiddleware(RequestDelegate next, IServiceProvider serviceProvider, IHostingEnvironment hostingEnvironment, ILoggerFactory loggerFactory)
+        public JsonRpcMiddleware(IServiceProvider serviceProvider, IHostingEnvironment hostingEnvironment, ILoggerFactory loggerFactory)
         {
             if (serviceProvider == null)
             {
@@ -51,7 +51,7 @@ namespace Community.AspNetCore.JsonRpc
             }
         }
 
-        public async Task Invoke(HttpContext context)
+        async Task IMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)
         {
             if (string.Compare(context.Request.Method, HttpMethods.Post, StringComparison.OrdinalIgnoreCase) != 0)
             {
@@ -155,7 +155,7 @@ namespace Community.AspNetCore.JsonRpc
             {
                 var request = item.Message;
 
-                response = await _handler.Handle(request).ConfigureAwait(false);
+                response = await _handler.HandleAsync(request).ConfigureAwait(false);
 
                 if (response != null)
                 {
@@ -246,6 +246,12 @@ namespace Community.AspNetCore.JsonRpc
             }
 
             return new JsonRpcError(code, message);
+        }
+
+        void IDisposable.Dispose()
+        {
+            _serializer.Dispose();
+            (_handler as IDisposable)?.Dispose();
         }
     }
 }
