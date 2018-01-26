@@ -1,6 +1,6 @@
 ## Community.AspNetCore.JsonRpc
 
-[JSON-RPC 2.0](http://www.jsonrpc.org/specification) middleware for ASP.NET Core based on [JSON-RPC 2.0 Transport: HTTP](https://www.simple-is-better.org/json-rpc/transport_http.html) specification.
+[JSON-RPC 2.0](http://www.jsonrpc.org/specification) middleware for ASP.NET Core 2.0 based on [JSON-RPC 2.0 Transport: HTTP](https://www.simple-is-better.org/json-rpc/transport_http.html) specification.
 
 [![NuGet package](https://img.shields.io/nuget/v/Community.AspNetCore.JsonRpc.svg?style=flat-square)](https://www.nuget.org/packages/Community.AspNetCore.JsonRpc)
 
