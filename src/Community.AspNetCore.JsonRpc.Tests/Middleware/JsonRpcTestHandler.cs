@@ -2,11 +2,24 @@
 using System.Collections.Generic;
 using System.Data.JsonRpc;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Community.AspNetCore.JsonRpc.Tests.Middleware
 {
     internal sealed class JsonRpcTestHandler : IJsonRpcHandler
     {
+        private readonly ILogger _logger;
+
+        public JsonRpcTestHandler(ILoggerFactory loggerFactory)
+        {
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            _logger = loggerFactory.CreateLogger<JsonRpcTestHandler>();
+        }
+
         public IReadOnlyDictionary<string, JsonRpcRequestContract> CreateScheme()
         {
             return new Dictionary<string, JsonRpcRequestContract>(StringComparer.Ordinal)
@@ -59,6 +72,7 @@ namespace Community.AspNetCore.JsonRpc.Tests.Middleware
                     break;
                 case "not":
                     {
+                        _logger.LogInformation("Notification received");
                     }
                     break;
             }

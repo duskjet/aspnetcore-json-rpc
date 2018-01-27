@@ -1,9 +1,23 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Community.AspNetCore.JsonRpc.Tests.Middleware
 {
     internal sealed class JsonRpcTestService
     {
+        private readonly ILogger _logger;
+
+        public JsonRpcTestService(ILoggerFactory loggerFactory)
+        {
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            _logger = loggerFactory.CreateLogger<JsonRpcTestService>();
+        }
+
         [JsonRpcName("nam")]
         public Task<long> MethodWithParamsByName([JsonRpcName("pr1")] long parameter1, [JsonRpcName("pr2")] long parameter2)
         {
@@ -25,6 +39,8 @@ namespace Community.AspNetCore.JsonRpc.Tests.Middleware
         [JsonRpcName("not")]
         public Task MethodWithNotification()
         {
+            _logger.LogInformation("Notification received");
+
             return Task.CompletedTask;
         }
     }
