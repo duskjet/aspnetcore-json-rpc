@@ -12,14 +12,28 @@ namespace Community.AspNetCore.JsonRpc
     internal sealed class JsonRpcServiceHandler<T> : IJsonRpcHandler, IDisposable
         where T : class
     {
-        private static readonly IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> _metadata =
-            new Dictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])>(StringComparer.Ordinal);
+        private static readonly IReadOnlyDictionary<string, (MethodInfo, ParameterInfo[], string[])> _metadata;
+        private static readonly IReadOnlyDictionary<string, JsonRpcRequestContract> _scheme;
 
         private readonly T _service;
 
         static JsonRpcServiceHandler()
         {
-            AcquireContracts(_metadata, typeof(T));
+            var blueprint = new Dictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])>(StringComparer.Ordinal);
+
+            AcquireContracts(blueprint, typeof(T));
+
+            var metadata = new Dictionary<string, (MethodInfo, ParameterInfo[], string[])>(blueprint.Count, StringComparer.Ordinal);
+            var scheme = new Dictionary<string, JsonRpcRequestContract>(blueprint.Count, StringComparer.Ordinal);
+
+            foreach (var kvp in blueprint)
+            {
+                metadata[kvp.Key] = (kvp.Value.Item2, kvp.Value.Item3, kvp.Value.Item4);
+                scheme[kvp.Key] = kvp.Value.Item1;
+            }
+
+            _metadata = metadata;
+            _scheme = scheme;
         }
 
         public JsonRpcServiceHandler(IServiceProvider serviceProvider)
@@ -32,23 +46,23 @@ namespace Community.AspNetCore.JsonRpc
             _service = ActivatorUtilities.CreateInstance<T>(serviceProvider);
         }
 
-        private static void AcquireContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> contracts, Type type)
+        private static void AcquireContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> blueprint, Type type)
         {
             if (type == null)
             {
                 return;
             }
 
-            AcquireContracts(contracts, type.GetMethods(BindingFlags.Instance | BindingFlags.Public));
-            AcquireContracts(contracts, type.BaseType);
+            AcquireContracts(blueprint, type.GetMethods(BindingFlags.Instance | BindingFlags.Public));
+            AcquireContracts(blueprint, type.BaseType);
 
             foreach (var interfaceType in type.GetInterfaces())
             {
-                AcquireContracts(contracts, interfaceType);
+                AcquireContracts(blueprint, interfaceType);
             }
         }
 
-        private static void AcquireContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> scheme, IEnumerable<MethodInfo> methods)
+        private static void AcquireContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> blueprint, IEnumerable<MethodInfo> methods)
         {
             foreach (var method in methods)
             {
@@ -63,7 +77,7 @@ namespace Community.AspNetCore.JsonRpc
                     throw new InvalidOperationException(
                         string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.invalid_type"), method.Name, typeof(T)));
                 }
-                if (scheme.ContainsKey(methodNameAttribute.Value))
+                if (blueprint.ContainsKey(methodNameAttribute.Value))
                 {
                     throw new InvalidOperationException(
                         string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.invalid_name"), typeof(T), methodNameAttribute.Value));
@@ -122,28 +136,21 @@ namespace Community.AspNetCore.JsonRpc
                     }
                 }
 
-                scheme[methodNameAttribute.Value] = (methodContract, method, parameters, parametersBindings);
+                blueprint[methodNameAttribute.Value] = (methodContract, method, parameters, parametersBindings);
             }
         }
 
         IReadOnlyDictionary<string, JsonRpcRequestContract> IJsonRpcHandler.CreateScheme()
         {
-            var result = new Dictionary<string, JsonRpcRequestContract>(_metadata.Count, StringComparer.Ordinal);
-
-            foreach (var kvp in _metadata)
-            {
-                result[kvp.Key] = kvp.Value.Item1;
-            }
-
-            return result;
+            return _scheme;
         }
 
         async Task<JsonRpcResponse> IJsonRpcHandler.HandleAsync(JsonRpcRequest request)
         {
-            var (contract, method, parameters, parametersBindings) = _metadata[request.Method];
+            var (method, parameters, parametersBindings) = _metadata[request.Method];
             var parametersValues = default(object[]);
 
-            switch (contract.ParamsType)
+            switch (request.ParamsType)
             {
                 case JsonRpcParamsType.ByPosition:
                     {

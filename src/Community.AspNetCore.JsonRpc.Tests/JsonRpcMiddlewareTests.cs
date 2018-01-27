@@ -85,6 +85,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("unk")]
         [InlineData("sys")]
         [InlineData("bat")]
+        [InlineData("ipt")]
         public async Task UseJsonRpcHandler(string test)
         {
             void ConfigureMiddleware(IWebHostBuilder whb)
@@ -105,6 +106,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("unk")]
         [InlineData("sys")]
         [InlineData("bat")]
+        [InlineData("ipt")]
         public async Task UseJsonRpcService(string test)
         {
             void ConfigureMiddleware(IWebHostBuilder whb)
