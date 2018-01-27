@@ -27,10 +27,17 @@ namespace Community.AspNetCore.JsonRpc.Tests
 
         private async Task InvokeMiddlewareTestAsync(Action<IWebHostBuilder> configurator, string test)
         {
+            void ConfigureLogging(ILoggingBuilder lb)
+            {
+                lb
+                    .SetMinimumLevel(LogLevel.Trace)
+                    .AddXunit(_output);
+            }
+
             var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");
             var responseContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_res.json");
 
-            var builder = new WebHostBuilder().ConfigureLogging(_ => _.SetMinimumLevel(LogLevel.Trace).AddXunit(_output));
+            var builder = new WebHostBuilder().ConfigureLogging(ConfigureLogging);
 
             configurator.Invoke(builder);
 
@@ -80,9 +87,9 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("bat")]
         public async Task UseJsonRpcHandler(string test)
         {
-            void ConfigureMiddleware(IWebHostBuilder builder)
+            void ConfigureMiddleware(IWebHostBuilder whb)
             {
-                builder
+                whb
                     .ConfigureServices(_ => _.AddJsonRpcHandler<JsonRpcTestHandler>())
                     .Configure(_ => _.UseJsonRpcHandler<JsonRpcTestHandler>("/api/v1"));
             }
@@ -100,9 +107,9 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("bat")]
         public async Task UseJsonRpcService(string test)
         {
-            void ConfigureMiddleware(IWebHostBuilder builder)
+            void ConfigureMiddleware(IWebHostBuilder whb)
             {
-                builder
+                whb
                     .ConfigureServices(_ => _.AddJsonRpcService<JsonRpcTestService>())
                     .Configure(_ => _.UseJsonRpcService<JsonRpcTestService>("/api/v1"));
             }
