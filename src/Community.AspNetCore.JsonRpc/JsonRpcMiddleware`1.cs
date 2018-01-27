@@ -86,6 +86,11 @@ namespace Community.AspNetCore.JsonRpc
                     try
                     {
                         jsonRpcRequestData = _serializer.DeserializeRequestData(requestString);
+
+                        if (context.RequestAborted.IsCancellationRequested)
+                        {
+                            return;
+                        }
                     }
                     catch (JsonRpcException ex)
                     {
@@ -101,6 +106,11 @@ namespace Community.AspNetCore.JsonRpc
                             _logger?.LogTrace(4010, Strings.GetString("handler.request_data.accepted_single"), context.TraceIdentifier, context.Request.PathBase);
 
                             var jsonRpcResponse = await InvokeHandlerAsync(jsonRpcRequestData.SingleItem, context.TraceIdentifier).ConfigureAwait(false);
+
+                            if (context.RequestAborted.IsCancellationRequested)
+                            {
+                                return;
+                            }
 
                             if (jsonRpcResponse != null)
                             {
@@ -121,6 +131,10 @@ namespace Community.AspNetCore.JsonRpc
                             {
                                 var jsonRpcResponse = await InvokeHandlerAsync(jsonRpcRequestData.BatchItems[i], context.TraceIdentifier).ConfigureAwait(false);
 
+                                if (context.RequestAborted.IsCancellationRequested)
+                                {
+                                    return;
+                                }
                                 if (jsonRpcResponse != null)
                                 {
                                     jsonRpcResponses.Add(jsonRpcResponse);
@@ -128,6 +142,11 @@ namespace Community.AspNetCore.JsonRpc
                             }
 
                             responseString = _serializer.SerializeResponses(jsonRpcResponses);
+
+                            if (context.RequestAborted.IsCancellationRequested)
+                            {
+                                return;
+                            }
                         }
                     }
 
