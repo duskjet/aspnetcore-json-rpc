@@ -27,13 +27,9 @@ namespace Community.AspNetCore.JsonRpc
             {
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
-            if (hostingEnvironment == null)
-            {
-                throw new ArgumentNullException(nameof(hostingEnvironment));
-            }
 
             _handler = ActivatorUtilities.CreateInstance<T>(serviceProvider);
-            _productionEnvironment = hostingEnvironment.EnvironmentName != EnvironmentName.Development;
+            _productionEnvironment = hostingEnvironment?.EnvironmentName != EnvironmentName.Development;
             _logger = loggerFactory?.CreateLogger<JsonRpcMiddleware<T>>();
 
             foreach (var kvp in _handler.CreateScheme())
