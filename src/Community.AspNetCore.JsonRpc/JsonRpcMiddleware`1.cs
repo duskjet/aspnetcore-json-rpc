@@ -105,7 +105,7 @@ namespace Community.AspNetCore.JsonRpc
                         {
                             _logger?.LogTrace(4010, Strings.GetString("handler.request_data.accepted_single"), context.TraceIdentifier, context.Request.PathBase);
 
-                            var jsonRpcResponse = await InvokeHandlerAsync(jsonRpcRequestData.SingleItem, context.TraceIdentifier).ConfigureAwait(false);
+                            var jsonRpcResponse = await InvokeHandlerAsync(context, jsonRpcRequestData.SingleItem).ConfigureAwait(false);
 
                             if (context.RequestAborted.IsCancellationRequested)
                             {
@@ -125,11 +125,11 @@ namespace Community.AspNetCore.JsonRpc
                         {
                             _logger?.LogTrace(4020, Strings.GetString("handler.request_data.accepted_batch"), context.TraceIdentifier, jsonRpcRequestData.BatchItems.Count, context.Request.PathBase);
 
-                            var jsonRpcResponses = new List<JsonRpcResponse>(jsonRpcRequestData.BatchItems.Count);
+                            var jsonRpcResponses = new List<JsonRpcResponse>();
 
                             for (var i = 0; i < jsonRpcRequestData.BatchItems.Count; i++)
                             {
-                                var jsonRpcResponse = await InvokeHandlerAsync(jsonRpcRequestData.BatchItems[i], context.TraceIdentifier).ConfigureAwait(false);
+                                var jsonRpcResponse = await InvokeHandlerAsync(context, jsonRpcRequestData.BatchItems[i]).ConfigureAwait(false);
 
                                 if (context.RequestAborted.IsCancellationRequested)
                                 {
@@ -162,7 +162,7 @@ namespace Community.AspNetCore.JsonRpc
             }
         }
 
-        private async Task<JsonRpcResponse> InvokeHandlerAsync(JsonRpcItem<JsonRpcRequest> item, string traceIdentifier)
+        private async Task<JsonRpcResponse> InvokeHandlerAsync(HttpContext context, JsonRpcItem<JsonRpcRequest> item)
         {
             var response = default(JsonRpcResponse);
 
@@ -183,29 +183,29 @@ namespace Community.AspNetCore.JsonRpc
                     {
                         if (response.Success)
                         {
-                            _logger?.LogInformation(3000, Strings.GetString("handler.response.handled_with_result"), traceIdentifier, request.Id, request.Method);
+                            _logger?.LogInformation(3000, Strings.GetString("handler.response.handled_with_result"), context.TraceIdentifier, request.Id, request.Method);
                         }
                         else
                         {
-                            _logger?.LogInformation(3010, Strings.GetString("handler.response.handled_with_error"), traceIdentifier, request.Id, request.Method, response.Error.Code);
+                            _logger?.LogInformation(3010, Strings.GetString("handler.response.handled_with_error"), context.TraceIdentifier, request.Id, request.Method, response.Error.Code);
                         }
                     }
                     else
                     {
                         response = null;
 
-                        _logger?.LogWarning(2010, Strings.GetString("handler.response.handled_response_as_notification"), traceIdentifier, request.Method);
+                        _logger?.LogWarning(2010, Strings.GetString("handler.response.handled_response_as_notification"), context.TraceIdentifier, request.Method);
                     }
                 }
                 else
                 {
                     if (request.IsNotification)
                     {
-                        _logger?.LogInformation(3020, Strings.GetString("handler.response.handled_notification"), traceIdentifier, request.Method);
+                        _logger?.LogInformation(3020, Strings.GetString("handler.response.handled_notification"), context.TraceIdentifier, request.Method);
                     }
                     else
                     {
-                        _logger?.LogWarning(2000, Strings.GetString("handler.response.handled_notification_as_response"), traceIdentifier, request.Id, request.Method);
+                        _logger?.LogWarning(2000, Strings.GetString("handler.response.handled_notification_as_response"), context.TraceIdentifier, request.Id, request.Method);
                     }
                 }
             }
@@ -215,7 +215,7 @@ namespace Community.AspNetCore.JsonRpc
 
                 response = new JsonRpcResponse(ConvertExceptionToError(exception), exception.MessageId);
 
-                _logger?.LogError(1100, exception, Strings.GetString("handler.request.invalid_message"), traceIdentifier, exception.MessageId);
+                _logger?.LogError(1100, exception, Strings.GetString("handler.request.invalid_message"), context.TraceIdentifier, exception.MessageId);
             }
 
             return response;
