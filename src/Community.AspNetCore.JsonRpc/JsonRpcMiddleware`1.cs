@@ -16,7 +16,7 @@ namespace Community.AspNetCore.JsonRpc
     internal sealed class JsonRpcMiddleware<T> : IMiddleware, IDisposable
         where T : IJsonRpcHandler
     {
-        private readonly JsonRpcSerializer _serializer = new JsonRpcSerializer();
+        private readonly JsonRpcSerializer _serializer;
         private readonly T _handler;
         private readonly bool _productionEnvironment;
         private readonly ILogger _logger;
@@ -32,13 +32,17 @@ namespace Community.AspNetCore.JsonRpc
             _productionEnvironment = hostingEnvironment?.EnvironmentName != EnvironmentName.Development;
             _logger = loggerFactory?.CreateLogger<JsonRpcMiddleware<T>>();
 
-            foreach (var kvp in _handler.CreateScheme())
+            var scheme = _handler.CreateScheme();
+
+            _serializer = new JsonRpcSerializer(new Dictionary<string, JsonRpcRequestContract>(scheme.Count, StringComparer.Ordinal));
+
+            foreach (var kvp in scheme)
             {
                 if (kvp.Key == null)
                 {
                     throw new InvalidOperationException(Strings.GetString("handler.scheme.method.undefined_name"));
                 }
-                if (kvp.Key.StartsWith("rpc.", StringComparison.Ordinal))
+                if (JsonRpcRequest.IsSystemMethod(kvp.Key))
                 {
                     throw new InvalidOperationException(Strings.GetString("handler.scheme.method.system_name"));
                 }
