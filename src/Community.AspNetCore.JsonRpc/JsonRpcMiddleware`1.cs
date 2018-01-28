@@ -34,7 +34,11 @@ namespace Community.AspNetCore.JsonRpc
 
             var scheme = _handler.CreateScheme();
 
-            _serializer = new JsonRpcSerializer(new Dictionary<string, JsonRpcRequestContract>(scheme.Count, StringComparer.Ordinal));
+            _serializer = new JsonRpcSerializer(
+                new Dictionary<string, JsonRpcRequestContract>(scheme.Count, StringComparer.Ordinal),
+                new Dictionary<string, JsonRpcResponseContract>(0),
+                new Dictionary<JsonRpcId, string>(0),
+                new Dictionary<JsonRpcId, JsonRpcResponseContract>(0));
 
             foreach (var kvp in scheme)
             {
