@@ -6,7 +6,8 @@
 
 ### Features
 
-- A handler or a service which implements `IDisposable` interface will be automatically disposed on scope exit.
+- A handler or a service han be acquired from a service provider or instantiated directly for a request scope.
+- A handler or a service which implements `IDisposable` interface will be automatically disposed on request scope exit.
 - `JsonRpcName` attribute can be used on an interface as well.
 - Parameters provided by name can utilize default parameter value if the particular parameter is not provided by the client.
 
@@ -44,8 +45,8 @@ public class MyJsonRpcService
 ```
 ```cs
 builder
-    .ConfigureServices(_ => _.AddJsonRpcService<MyJsonRpcService>())
-    .Configure(_ => _.UseJsonRpcService<MyJsonRpcService>("/api"));
+    .ConfigureServices(sc => sc.AddJsonRpcService<MyJsonRpcService>())
+    .Configure(ab => ab.UseJsonRpcService<MyJsonRpcService>("/api"))
 ```
 or
 ```cs
@@ -113,6 +114,6 @@ public class MyJsonRpcHandler : IJsonRpcHandler
 ```
 ```cs
 builder
-    .ConfigureServices(_ => _.AddJsonRpcHandler<MyJsonRpcHandler>())
-    .Configure(_ => _.UseJsonRpcHandler<MyJsonRpcHandler>("/api"));
+    .ConfigureServices(sc => sc.AddJsonRpcHandler<MyJsonRpcHandler>())
+    .Configure(ab => ab.UseJsonRpcHandler<MyJsonRpcHandler>("/api"))
 ```
