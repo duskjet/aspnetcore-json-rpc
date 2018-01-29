@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.JsonRpc;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Community.AspNetCore.JsonRpc.Resources;
 using Microsoft.Extensions.DependencyInjection;
@@ -200,6 +201,11 @@ namespace Community.AspNetCore.JsonRpc
                     await ((dynamic)method.Invoke(_service, parametersValues)).ConfigureAwait(false);
                 }
                 catch (TargetInvocationException ex)
+                    when (ex.InnerException is OperationCanceledException oce)
+                {
+                    ExceptionDispatchInfo.Capture(oce).Throw();
+                }
+                catch (TargetInvocationException ex)
                     when (ex.InnerException is JsonRpcServiceException)
                 {
                 }
@@ -211,6 +217,13 @@ namespace Community.AspNetCore.JsonRpc
                 try
                 {
                     return new JsonRpcResponse(await ((dynamic)method.Invoke(_service, parametersValues)).ConfigureAwait(false) as object, request.Id);
+                }
+                catch (TargetInvocationException ex)
+                    when (ex.InnerException is OperationCanceledException oce)
+                {
+                    ExceptionDispatchInfo.Capture(oce).Throw();
+
+                    return null;
                 }
                 catch (TargetInvocationException ex)
                     when (ex.InnerException is JsonRpcServiceException iex)

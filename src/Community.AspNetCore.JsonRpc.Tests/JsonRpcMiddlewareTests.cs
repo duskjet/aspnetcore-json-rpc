@@ -59,6 +59,9 @@ namespace Community.AspNetCore.JsonRpc.Tests
                         Assert.Equal(HttpStatusCode.OK, response1.StatusCode);
 
                         var responseContent = await response1.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                        Assert.False(string.IsNullOrEmpty(responseContent), "Actual response content is empty");
+
                         var responseContentToken = JToken.Parse(responseContent);
 
                         _output.WriteLine(responseContentToken.ToString(Formatting.Indented));

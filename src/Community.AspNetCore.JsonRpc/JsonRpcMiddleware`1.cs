@@ -113,7 +113,17 @@ namespace Community.AspNetCore.JsonRpc
                         {
                             _logger?.LogTrace(4010, Strings.GetString("handler.request_data.accepted_single"), context.TraceIdentifier, context.Request.PathBase);
 
-                            var jsonRpcResponse = await InvokeHandlerAsync(context, jsonRpcRequestData.SingleItem).ConfigureAwait(false);
+                            var jsonRpcResponse = default(JsonRpcResponse);
+
+                            try
+                            {
+                                jsonRpcResponse = await InvokeHandlerAsync(context, jsonRpcRequestData.SingleItem).ConfigureAwait(false);
+                            }
+                            catch (OperationCanceledException)
+                                when (context.RequestAborted.IsCancellationRequested)
+                            {
+                                return;
+                            }
 
                             if (context.RequestAborted.IsCancellationRequested)
                             {
@@ -123,6 +133,11 @@ namespace Community.AspNetCore.JsonRpc
                             if (jsonRpcResponse != null)
                             {
                                 responseString = _serializer.SerializeResponse(jsonRpcResponse);
+
+                                if (context.RequestAborted.IsCancellationRequested)
+                                {
+                                    return;
+                                }
                             }
                             else
                             {
@@ -137,7 +152,17 @@ namespace Community.AspNetCore.JsonRpc
 
                             for (var i = 0; i < jsonRpcRequestData.BatchItems.Count; i++)
                             {
-                                var jsonRpcResponse = await InvokeHandlerAsync(context, jsonRpcRequestData.BatchItems[i]).ConfigureAwait(false);
+                                var jsonRpcResponse = default(JsonRpcResponse);
+
+                                try
+                                {
+                                    jsonRpcResponse = await InvokeHandlerAsync(context, jsonRpcRequestData.BatchItems[i]).ConfigureAwait(false);
+                                }
+                                catch (OperationCanceledException)
+                                    when (context.RequestAborted.IsCancellationRequested)
+                                {
+                                    return;
+                                }
 
                                 if (context.RequestAborted.IsCancellationRequested)
                                 {

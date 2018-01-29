@@ -151,7 +151,7 @@
     <value>The declared JSON-RPC method is system extension</value>
   </data>
   <data name="handler.scheme.method.undefined_name" xml:space="preserve">
-    <value>The declared JSON-RPC method name is not defined</value>
+    <value>The scheme contains JSON-RPC method name that equals null</value>
   </data>
   <data name="rpc.error.internal" xml:space="preserve">
     <value>An error occurred during processing the request</value>
@@ -172,7 +172,7 @@
     <value>The service {0} contains multiple definitions for the JSON-RPC method "{1}"</value>
   </data>
   <data name="service.method.invalid_type" xml:space="preserve">
-    <value>The method {0} of the service {1} has invalid return type</value>
+    <value>The method {0} of the service {1} has return type that differs from System.Threading.Task or System.Threading.Task&lt;TResult&gt;</value>
   </data>
   <data name="service.method.parameter.invalid_name" xml:space="preserve">
     <value>The method {0} of the service {1} contains multiple definitions for the JSON-RPC parameter "{2}"</value>
