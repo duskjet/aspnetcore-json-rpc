@@ -17,6 +17,7 @@ namespace Community.AspNetCore.JsonRpc
         private static readonly IReadOnlyDictionary<string, JsonRpcRequestContract> _scheme;
 
         private readonly T _service;
+        private readonly bool _disposeService;
 
         static JsonRpcServiceHandler()
         {
@@ -44,7 +45,13 @@ namespace Community.AspNetCore.JsonRpc
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            _service = ActivatorUtilities.CreateInstance<T>(serviceProvider);
+            _service = serviceProvider.GetService<T>();
+
+            if (_service == null)
+            {
+                _service = ActivatorUtilities.CreateInstance<T>(serviceProvider);
+                _disposeService = true;
+            }
         }
 
         private static void AcquireContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> blueprint, Type type)
@@ -235,7 +242,10 @@ namespace Community.AspNetCore.JsonRpc
 
         void IDisposable.Dispose()
         {
-            (_service as IDisposable)?.Dispose();
+            if (_disposeService)
+            {
+                (_service as IDisposable)?.Dispose();
+            }
         }
     }
 }

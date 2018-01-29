@@ -18,6 +18,7 @@ namespace Community.AspNetCore.JsonRpc
     {
         private readonly JsonRpcSerializer _serializer;
         private readonly T _handler;
+        private readonly bool _disposeHandler;
         private readonly bool _productionEnvironment;
         private readonly ILogger _logger;
 
@@ -28,7 +29,14 @@ namespace Community.AspNetCore.JsonRpc
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            _handler = ActivatorUtilities.CreateInstance<T>(serviceProvider);
+            _handler = serviceProvider.GetService<T>();
+
+            if (_handler == null)
+            {
+                _handler = ActivatorUtilities.CreateInstance<T>(serviceProvider);
+                _disposeHandler = true;
+            }
+
             _productionEnvironment = hostingEnvironment?.EnvironmentName != EnvironmentName.Development;
             _logger = loggerFactory?.CreateLogger<JsonRpcMiddleware<T>>();
 
@@ -299,7 +307,11 @@ namespace Community.AspNetCore.JsonRpc
         void IDisposable.Dispose()
         {
             _serializer.Dispose();
-            (_handler as IDisposable)?.Dispose();
+
+            if (_disposeHandler)
+            {
+                (_handler as IDisposable)?.Dispose();
+            }
         }
     }
 }
