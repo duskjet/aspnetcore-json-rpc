@@ -19,17 +19,17 @@ namespace Community.AspNetCore.JsonRpc
             }
 
             Code = code;
-            RpcData = data;
+            ErrorData = data;
         }
 
-        /// <summary>Gets a number that indicates the error code that occurred.</summary>
+        /// <summary>Gets a number that indicates the error type that occurred.</summary>
         public long Code
         {
             get;
         }
 
         /// <summary>Gets an optional value that contains additional information about the error.</summary>
-        public object RpcData
+        public object ErrorData
         {
             get;
         }

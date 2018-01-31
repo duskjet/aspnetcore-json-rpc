@@ -6,10 +6,26 @@
 
 ### Features
 
-- A handler or a service han be acquired from a service provider or instantiated directly for a request scope.
-- A handler or a service which implements `IDisposable` interface will be automatically disposed on request scope exit.
-- `JsonRpcName` attribute can be used on an interface as well.
+- Middleware transparently handles single and batch JSON-RPC requests.
+- Middleware automatically handles and sends the corresponding JSON-RPC responses for common issues (e.g. invalid JSON, invalid JSON-RPC message structure, invalid JSON-RPC contract, etc.).
+- A handler / service can be acquired from a service provider or instantiated directly for a request scope.
+- A handler / service which implements `IDisposable` interface will be automatically disposed on request scope exit.
+- The `JsonRpcName` attribute can be used on an interface for a service handler as well.
 - Parameters provided by name can utilize default parameter value if the particular parameter is not provided by the client.
+
+If a logger factory is available in the service provider, the following entries can appear in a journal with the all related details (method names and request identifiers):
+
+ID | Category | Purpose
+--- | --- | ---
+1000 | Error | An error occured during deserialization of a JSON-RPC request
+1010 | Error | A request is not considered as a valid JSON-RPC request
+2000 | Warning | A JSON-RPC request processed as notification due to server configuration
+2010 | Warning | A JSON-RPC request processed as notification due to client configuration
+3000 | Information | A JSON-RPC request processed successfully
+3010 | Information | A JSON-RPC request processed with error
+3020 | Information | A JSON-RPC request processed as notification
+4010 | Trace | A JSON-RPC request with a single item accepted for processing
+4020 | Trace | A JSON-RPC request with multiple items acceptedfor processing
 
 ```cs
 public class MyJsonRpcService

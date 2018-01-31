@@ -18,8 +18,8 @@ namespace Community.AspNetCore.JsonRpc
     {
         private readonly JsonRpcSerializer _serializer;
         private readonly T _handler;
-        private readonly bool _disposeHandler;
-        private readonly bool _productionEnvironment;
+        private readonly bool _dispose;
+        private readonly bool _production;
         private readonly ILogger _logger;
 
         public JsonRpcMiddleware(IServiceProvider serviceProvider, IHostingEnvironment hostingEnvironment, ILoggerFactory loggerFactory)
@@ -34,10 +34,10 @@ namespace Community.AspNetCore.JsonRpc
             if (_handler == null)
             {
                 _handler = ActivatorUtilities.CreateInstance<T>(serviceProvider);
-                _disposeHandler = true;
+                _dispose = _handler is IDisposable;
             }
 
-            _productionEnvironment = hostingEnvironment?.EnvironmentName != EnvironmentName.Development;
+            _production = hostingEnvironment?.EnvironmentName != EnvironmentName.Development;
             _logger = loggerFactory?.CreateLogger<JsonRpcMiddleware<T>>();
 
             var scheme = _handler.CreateScheme();
@@ -119,7 +119,7 @@ namespace Community.AspNetCore.JsonRpc
                     {
                         if (jsonRpcRequestData.IsSingle)
                         {
-                            _logger?.LogTrace(4010, Strings.GetString("handler.request_data.accepted_single"), context.TraceIdentifier, context.Request.PathBase);
+                            _logger?.LogTrace(4000, Strings.GetString("handler.request_data.accepted_single"), context.TraceIdentifier, context.Request.PathBase);
 
                             var jsonRpcResponse = default(JsonRpcResponse);
 
@@ -154,7 +154,7 @@ namespace Community.AspNetCore.JsonRpc
                         }
                         else
                         {
-                            _logger?.LogTrace(4020, Strings.GetString("handler.request_data.accepted_batch"), context.TraceIdentifier, jsonRpcRequestData.BatchItems.Count, context.Request.PathBase);
+                            _logger?.LogTrace(4010, Strings.GetString("handler.request_data.accepted_batch"), context.TraceIdentifier, jsonRpcRequestData.BatchItems.Count, context.Request.PathBase);
 
                             var jsonRpcResponses = new List<JsonRpcResponse>();
 
@@ -256,7 +256,7 @@ namespace Community.AspNetCore.JsonRpc
 
                 response = new JsonRpcResponse(ConvertExceptionToError(exception), exception.MessageId);
 
-                _logger?.LogError(1100, exception, Strings.GetString("handler.request.invalid_message"), context.TraceIdentifier, exception.MessageId);
+                _logger?.LogError(1010, exception, Strings.GetString("handler.request.invalid_message"), context.TraceIdentifier, exception.MessageId);
             }
 
             return response;
@@ -272,31 +272,31 @@ namespace Community.AspNetCore.JsonRpc
                 case JsonRpcExceptionType.Parsing:
                     {
                         code = (long)JsonRpcErrorType.Parsing;
-                        message = !_productionEnvironment ? exception.Message : Strings.GetString("rpc.error.parsing");
+                        message = !_production ? exception.Message : Strings.GetString("rpc.error.parsing");
                     }
                     break;
                 case JsonRpcExceptionType.InvalidParams:
                     {
                         code = (long)JsonRpcErrorType.InvalidParams;
-                        message = !_productionEnvironment ? exception.Message : Strings.GetString("rpc.error.invalid_params");
+                        message = !_production ? exception.Message : Strings.GetString("rpc.error.invalid_params");
                     }
                     break;
                 case JsonRpcExceptionType.InvalidMethod:
                     {
                         code = (long)JsonRpcErrorType.InvalidMethod;
-                        message = !_productionEnvironment ? exception.Message : Strings.GetString("rpc.error.invalid_method");
+                        message = !_production ? exception.Message : Strings.GetString("rpc.error.invalid_method");
                     }
                     break;
                 case JsonRpcExceptionType.InvalidMessage:
                     {
                         code = (long)JsonRpcErrorType.InvalidRequest;
-                        message = !_productionEnvironment ? exception.Message : Strings.GetString("rpc.error.invalid_request");
+                        message = !_production ? exception.Message : Strings.GetString("rpc.error.invalid_request");
                     }
                     break;
                 default:
                     {
                         code = (long)JsonRpcErrorType.Internal;
-                        message = !_productionEnvironment ? exception.Message : Strings.GetString("rpc.error.internal");
+                        message = !_production ? exception.Message : Strings.GetString("rpc.error.internal");
                     }
                     break;
             }
@@ -308,9 +308,9 @@ namespace Community.AspNetCore.JsonRpc
         {
             _serializer.Dispose();
 
-            if (_disposeHandler)
+            if (_dispose)
             {
-                (_handler as IDisposable)?.Dispose();
+                ((IDisposable)_handler).Dispose();
             }
         }
     }

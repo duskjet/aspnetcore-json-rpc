@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore
                 throw new ArgumentNullException(nameof(applicationBuilder));
             }
 
-            return applicationBuilder.Map(path, mab => mab.UseMiddleware<JsonRpcMiddleware<T>>());
+            return applicationBuilder.Map(path, ab => ab.UseMiddleware<JsonRpcMiddleware<T>>());
         }
 
         /// <summary>Adds the specified JSON-RPC 2.0 service for the specified path to the <see cref="IApplicationBuilder" /> instance.</summary>
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore
                 throw new ArgumentNullException(nameof(applicationBuilder));
             }
 
-            return applicationBuilder.Map(path, mab => mab.UseMiddleware<JsonRpcMiddleware<JsonRpcServiceHandler<T>>>());
+            return applicationBuilder.Map(path, ab => ab.UseMiddleware<JsonRpcMiddleware<JsonRpcServiceHandler<T>>>());
         }
     }
 }

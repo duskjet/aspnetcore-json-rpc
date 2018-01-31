@@ -17,7 +17,7 @@ namespace Community.AspNetCore.JsonRpc
         private static readonly IReadOnlyDictionary<string, JsonRpcRequestContract> _scheme;
 
         private readonly T _service;
-        private readonly bool _disposeService;
+        private readonly bool _dispose;
 
         static JsonRpcServiceHandler()
         {
@@ -50,7 +50,7 @@ namespace Community.AspNetCore.JsonRpc
             if (_service == null)
             {
                 _service = ActivatorUtilities.CreateInstance<T>(serviceProvider);
-                _disposeService = true;
+                _dispose = _service is IDisposable;
             }
         }
 
@@ -235,16 +235,16 @@ namespace Community.AspNetCore.JsonRpc
                 catch (TargetInvocationException ex)
                     when (ex.InnerException is JsonRpcServiceException iex)
                 {
-                    return new JsonRpcResponse(new JsonRpcError(iex.Code, iex.Message, iex.RpcData), request.Id);
+                    return new JsonRpcResponse(new JsonRpcError(iex.Code, iex.Message, iex.ErrorData), request.Id);
                 }
             }
         }
 
         void IDisposable.Dispose()
         {
-            if (_disposeService)
+            if (_dispose)
             {
-                (_service as IDisposable)?.Dispose();
+                ((IDisposable)_service).Dispose();
             }
         }
     }
