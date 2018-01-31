@@ -17,7 +17,7 @@ If a logger factory is available in the service provider, the following entries 
 
 ID | Category | Purpose
 --- | --- | ---
-1000 | Error | An error occured during deserialization of a JSON-RPC request
+1000 | Error | An error occurred during deserialization of a JSON-RPC request
 1010 | Error | A request is not considered as a valid JSON-RPC request
 2000 | Warning | A JSON-RPC request processed as notification due to server configuration
 2010 | Warning | A JSON-RPC request processed as notification due to client configuration
@@ -25,7 +25,7 @@ ID | Category | Purpose
 3010 | Information | A JSON-RPC request processed with error
 3020 | Information | A JSON-RPC request processed as notification
 4010 | Trace | A JSON-RPC request with a single item accepted for processing
-4020 | Trace | A JSON-RPC request with multiple items acceptedfor processing
+4020 | Trace | A JSON-RPC request with multiple items accepted for processing
 
 ```cs
 public class MyJsonRpcService
