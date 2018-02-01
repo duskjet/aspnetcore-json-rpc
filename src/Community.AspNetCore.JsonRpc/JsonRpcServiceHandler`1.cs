@@ -30,8 +30,10 @@ namespace Community.AspNetCore.JsonRpc
 
             foreach (var kvp in blueprint)
             {
-                metadata[kvp.Key] = (kvp.Value.Item2, kvp.Value.Item3, kvp.Value.Item4);
-                scheme[kvp.Key] = kvp.Value.Item1;
+                var (contract, method, parameters, parametersBindings) = kvp.Value;
+
+                metadata[kvp.Key] = (method, parameters, parametersBindings);
+                scheme[kvp.Key] = contract;
             }
 
             _metadata = metadata;
@@ -201,43 +203,29 @@ namespace Community.AspNetCore.JsonRpc
                     break;
             }
 
-            if (request.IsNotification || !method.ReturnType.IsGenericType)
+            try
             {
-                try
+                if (request.IsNotification || !method.ReturnType.IsGenericType)
                 {
                     await ((dynamic)method.Invoke(_service, parametersValues)).ConfigureAwait(false);
                 }
-                catch (TargetInvocationException ex)
-                    when (ex.InnerException is OperationCanceledException oce)
-                {
-                    ExceptionDispatchInfo.Capture(oce).Throw();
-                }
-                catch (TargetInvocationException ex)
-                    when (ex.InnerException is JsonRpcServiceException)
-                {
-                }
-
-                return null;
-            }
-            else
-            {
-                try
+                else
                 {
                     return new JsonRpcResponse(await ((dynamic)method.Invoke(_service, parametersValues)).ConfigureAwait(false) as object, request.Id);
                 }
-                catch (TargetInvocationException ex)
-                    when (ex.InnerException is OperationCanceledException oce)
-                {
-                    ExceptionDispatchInfo.Capture(oce).Throw();
-
-                    return null;
-                }
-                catch (TargetInvocationException ex)
-                    when (ex.InnerException is JsonRpcServiceException iex)
-                {
-                    return new JsonRpcResponse(new JsonRpcError(iex.Code, iex.Message, iex.ErrorData), request.Id);
-                }
             }
+            catch (TargetInvocationException ex)
+                when (ex.InnerException is OperationCanceledException iex)
+            {
+                ExceptionDispatchInfo.Capture(iex).Throw();
+            }
+            catch (TargetInvocationException ex)
+                when (ex.InnerException is JsonRpcServiceException iex)
+            {
+                return new JsonRpcResponse(new JsonRpcError(iex.Code, iex.Message, iex.ErrorData), request.Id);
+            }
+
+            return null;
         }
 
         void IDisposable.Dispose()

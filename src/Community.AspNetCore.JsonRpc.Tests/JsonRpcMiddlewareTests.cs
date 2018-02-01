@@ -27,9 +27,9 @@ namespace Community.AspNetCore.JsonRpc.Tests
 
         private async Task InvokeMiddlewareTestAsync(Action<IWebHostBuilder> configurator, string test)
         {
-            void ConfigureLogging(ILoggingBuilder lb)
+            void ConfigureLogging(ILoggingBuilder loggingBuilder)
             {
-                lb
+                loggingBuilder
                     .SetMinimumLevel(LogLevel.Trace)
                     .AddXunit(_output);
             }
@@ -91,11 +91,11 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("ipt")]
         public async Task UseJsonRpcHandler(string test)
         {
-            void ConfigureMiddleware(IWebHostBuilder whb)
+            void ConfigureMiddleware(IWebHostBuilder webHostBuilder)
             {
-                whb
-                    .ConfigureServices(_ => _.AddJsonRpcHandler<JsonRpcTestHandler>())
-                    .Configure(_ => _.UseJsonRpcHandler<JsonRpcTestHandler>("/api/v1"));
+                webHostBuilder
+                    .ConfigureServices(sc => sc.AddJsonRpcHandler<JsonRpcTestHandler>())
+                    .Configure(ab => ab.UseJsonRpcHandler<JsonRpcTestHandler>("/api/v1"));
             }
 
             await InvokeMiddlewareTestAsync(ConfigureMiddleware, test);
@@ -112,11 +112,11 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("ipt")]
         public async Task UseJsonRpcService(string test)
         {
-            void ConfigureMiddleware(IWebHostBuilder whb)
+            void ConfigureMiddleware(IWebHostBuilder webHostBuilder)
             {
-                whb
-                    .ConfigureServices(_ => _.AddJsonRpcService<JsonRpcTestService>())
-                    .Configure(_ => _.UseJsonRpcService<JsonRpcTestService>("/api/v1"));
+                webHostBuilder
+                    .ConfigureServices(sc => sc.AddJsonRpcService<JsonRpcTestService>())
+                    .Configure(ab => ab.UseJsonRpcService<JsonRpcTestService>("/api/v1"));
             }
 
             await InvokeMiddlewareTestAsync(ConfigureMiddleware, test);

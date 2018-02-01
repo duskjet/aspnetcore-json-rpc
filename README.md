@@ -27,12 +27,13 @@ ID | Level | Reason
 `1000` | Error | An error occurred during deserialization of a JSON-RPC request
 `1010` | Error | A request is not considered as a valid JSON-RPC request
 `2000` | Warning | A JSON-RPC request processed as notification due to server configuration
-`2010` | Warning | A JSON-RPC request processed as notification due to client configuration
-`3000` | Information | A JSON-RPC request processed successfully
-`3010` | Information | A JSON-RPC request processed with error
-`3020` | Information | A JSON-RPC request processed as notification
-`4010` | Trace | A JSON-RPC request with a single item accepted for processing
-`4020` | Trace | A JSON-RPC request with multiple items accepted for processing
+`2010` | Warning | A JSON-RPC request processed with result as notification due to client configuration
+`2020` | Warning | A JSON-RPC request processed with error as notification due to client configuration
+`3000` | Information | A JSON-RPC request processed as notification
+`3010` | Information | A JSON-RPC request processed with result
+`3020` | Information | A JSON-RPC request processed with error
+`4000` | Trace | A JSON-RPC request accepted for processing as a single item
+`4010` | Trace | A JSON-RPC request accepted for processing as a batch
 
 ### Samples
 

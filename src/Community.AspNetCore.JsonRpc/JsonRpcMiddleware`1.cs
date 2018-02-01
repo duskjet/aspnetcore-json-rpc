@@ -23,7 +23,7 @@ namespace Community.AspNetCore.JsonRpc
         private readonly bool _production;
         private readonly ILogger _logger;
 
-        public JsonRpcMiddleware(IServiceProvider serviceProvider, IHostingEnvironment hostingEnvironment, ILoggerFactory loggerFactory)
+        public JsonRpcMiddleware(IServiceProvider serviceProvider)
         {
             if (serviceProvider == null)
             {
@@ -61,8 +61,8 @@ namespace Community.AspNetCore.JsonRpc
                 new Dictionary<JsonRpcId, string>(0),
                 new Dictionary<JsonRpcId, JsonRpcResponseContract>(0));
 
-            _production = hostingEnvironment?.EnvironmentName != EnvironmentName.Development;
-            _logger = loggerFactory?.CreateLogger<JsonRpcMiddleware<T>>();
+            _production = serviceProvider.GetService<IHostingEnvironment>()?.EnvironmentName != EnvironmentName.Development;
+            _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<JsonRpcMiddleware<T>>();
         }
 
         async Task IMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)
@@ -230,25 +230,32 @@ namespace Community.AspNetCore.JsonRpc
                     {
                         if (response.Success)
                         {
-                            _logger?.LogInformation(3000, Strings.GetString("handler.response.handled_with_result"), context.TraceIdentifier, request.Id, request.Method);
+                            _logger?.LogInformation(3010, Strings.GetString("handler.response.handled_with_result"), context.TraceIdentifier, request.Id, request.Method);
                         }
                         else
                         {
-                            _logger?.LogInformation(3010, Strings.GetString("handler.response.handled_with_error"), context.TraceIdentifier, request.Id, request.Method, response.Error.Code);
+                            _logger?.LogInformation(3020, Strings.GetString("handler.response.handled_with_error"), context.TraceIdentifier, request.Id, request.Method, response.Error.Code, response.Error.Message);
                         }
                     }
                     else
                     {
                         response = null;
 
-                        _logger?.LogWarning(2010, Strings.GetString("handler.response.handled_response_as_notification"), context.TraceIdentifier, request.Method);
+                        if (response.Success)
+                        {
+                            _logger?.LogWarning(2010, Strings.GetString("handler.response.handled_with_result_as_notification"), context.TraceIdentifier, request.Id, request.Method);
+                        }
+                        else
+                        {
+                            _logger?.LogWarning(2020, Strings.GetString("handler.response.handled_with_error_as_notification"), context.TraceIdentifier, request.Id, request.Method, response.Error.Code, response.Error.Message);
+                        }
                     }
                 }
                 else
                 {
                     if (request.IsNotification)
                     {
-                        _logger?.LogInformation(3020, Strings.GetString("handler.response.handled_notification"), context.TraceIdentifier, request.Method);
+                        _logger?.LogInformation(3000, Strings.GetString("handler.response.handled_notification"), context.TraceIdentifier, request.Method);
                     }
                     else
                     {
