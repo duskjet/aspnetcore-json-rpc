@@ -13,6 +13,13 @@
 - The `JsonRpcName` attribute can be used on an interface for a service handler as well.
 - Parameters provided by name can utilize default parameter value if the particular parameter is not provided by the client.
 
+### Specifics
+
+In addition to "JSON-RPC 2.0 Transport: HTTP" specification the middleware returns HTTP 400 status code for the following cases:
+
+- The `Content-Length` header contains invalid value
+- The `Content-Encoding` header is specified by a client
+
 If a logger factory is available in the service provider, the following entries can appear in a journal with the all related details (method names and request identifiers):
 
 ID | Category | Purpose
@@ -26,6 +33,8 @@ ID | Category | Purpose
 3020 | Information | A JSON-RPC request processed as notification
 4010 | Trace | A JSON-RPC request with a single item accepted for processing
 4020 | Trace | A JSON-RPC request with multiple items accepted for processing
+
+### Samples
 
 ```cs
 public class MyJsonRpcService

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 
 namespace Community.AspNetCore.JsonRpc
 {
@@ -37,16 +38,8 @@ namespace Community.AspNetCore.JsonRpc
                 _dispose = _handler is IDisposable;
             }
 
-            _production = hostingEnvironment?.EnvironmentName != EnvironmentName.Development;
-            _logger = loggerFactory?.CreateLogger<JsonRpcMiddleware<T>>();
-
             var scheme = _handler.CreateScheme();
-
-            _serializer = new JsonRpcSerializer(
-                new Dictionary<string, JsonRpcRequestContract>(scheme.Count, StringComparer.Ordinal),
-                new Dictionary<string, JsonRpcResponseContract>(0),
-                new Dictionary<JsonRpcId, string>(0),
-                new Dictionary<JsonRpcId, JsonRpcResponseContract>(0));
+            var contracts = new Dictionary<string, JsonRpcRequestContract>(scheme.Count, StringComparer.Ordinal);
 
             foreach (var kvp in scheme)
             {
@@ -59,8 +52,17 @@ namespace Community.AspNetCore.JsonRpc
                     throw new InvalidOperationException(Strings.GetString("handler.scheme.method.system_name"));
                 }
 
-                _serializer.RequestContracts[kvp.Key] = kvp.Value;
+                contracts[kvp.Key] = kvp.Value;
             }
+
+            _serializer = new JsonRpcSerializer(
+                contracts,
+                new Dictionary<string, JsonRpcResponseContract>(0),
+                new Dictionary<JsonRpcId, string>(0),
+                new Dictionary<JsonRpcId, JsonRpcResponseContract>(0));
+
+            _production = hostingEnvironment?.EnvironmentName != EnvironmentName.Development;
+            _logger = loggerFactory?.CreateLogger<JsonRpcMiddleware<T>>();
         }
 
         async Task IMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)
@@ -72,6 +74,10 @@ namespace Community.AspNetCore.JsonRpc
             else if (string.Compare(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase) != 0)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
+            }
+            else if (context.Request.Headers["Content-Encoding"] != default(StringValues))
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             }
             else if (string.Compare(context.Request.Headers["Accept"], "application/json", StringComparison.OrdinalIgnoreCase) != 0)
             {
