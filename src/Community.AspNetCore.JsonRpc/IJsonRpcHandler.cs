@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Community.AspNetCore.JsonRpc
 {
-    /// <summary>Represents a JSON-RPC 2.0 handler.</summary>
+    /// <summary>Defines a JSON-RPC 2.0 handler.</summary>
     public interface IJsonRpcHandler
     {
         /// <summary>Creates a scheme for deserializing JSON-RPC requests.</summary>

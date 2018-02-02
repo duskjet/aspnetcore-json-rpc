@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore
     public static class JsonRpcApplicationBuilderExtensions
     {
         /// <summary>Adds the specified JSON-RPC 2.0 handler for the specified path to the <see cref="IApplicationBuilder" /> instance.</summary>
-        /// <param name="applicationBuilder">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="applicationBuilder">The <see cref="IApplicationBuilder" /> to add the middleware to.</param>
         /// <param name="path">The request path for JSON-RPC methods.</param>
         /// <typeparam name="T">The type of the handler.</typeparam>
         /// <returns>A reference to this instance after the operation has completed.</returns>
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore
         }
 
         /// <summary>Adds the specified JSON-RPC 2.0 service for the specified path to the <see cref="IApplicationBuilder" /> instance.</summary>
-        /// <param name="applicationBuilder">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="applicationBuilder">The <see cref="IApplicationBuilder" /> to add the middleware to.</param>
         /// <param name="path">The request path for JSON-RPC methods.</param>
         /// <typeparam name="T">The type of the service.</typeparam>
         /// <returns>A reference to this instance after the operation has completed.</returns>

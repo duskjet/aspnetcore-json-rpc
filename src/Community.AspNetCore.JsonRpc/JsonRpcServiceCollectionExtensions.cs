@@ -9,7 +9,7 @@ namespace Community.AspNetCore
     {
         /// <summary>Registers the specified JSON-RPC 2.0 handler in the <see cref="IServiceCollection" /> instance.</summary>
         /// <typeparam name="T">The type of the handler.</typeparam>
-        /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to register the middleware in.</param>
+        /// <param name="serviceCollection">The <see cref="IServiceCollection" /> to register the middleware in.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="serviceCollection" /> is <see langword="null" />.</exception>
         public static IServiceCollection AddJsonRpcHandler<T>(this IServiceCollection serviceCollection)
@@ -24,8 +24,8 @@ namespace Community.AspNetCore
         }
 
         /// <summary>Registers the specified JSON-RPC 2.0 service in the <see cref="IServiceCollection" /> instance.</summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to register the middleware in.</param>
+        /// <typeparam name="T">The type of the service.</typeparam>
+        /// <param name="serviceCollection">The <see cref="IServiceCollection" /> to register the middleware in.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="serviceCollection" /> is <see langword="null" />.</exception>
         public static IServiceCollection AddJsonRpcService<T>(this IServiceCollection serviceCollection)
