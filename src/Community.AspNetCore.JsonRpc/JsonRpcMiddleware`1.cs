@@ -17,6 +17,8 @@ namespace Community.AspNetCore.JsonRpc
     internal sealed class JsonRpcMiddleware<T> : IMiddleware, IDisposable
         where T : IJsonRpcHandler
     {
+        private const string _MEDIA_TYPE = "application/json";
+
         private readonly JsonRpcSerializer _serializer;
         private readonly T _handler;
         private readonly bool _dispose;
@@ -75,7 +77,7 @@ namespace Community.AspNetCore.JsonRpc
             {
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             }
-            else if (string.Compare(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase) != 0)
+            else if (string.Compare(context.Request.ContentType, _MEDIA_TYPE, StringComparison.OrdinalIgnoreCase) != 0)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
             }
@@ -83,13 +85,13 @@ namespace Community.AspNetCore.JsonRpc
             {
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             }
-            else if (string.Compare(context.Request.Headers["Accept"], "application/json", StringComparison.OrdinalIgnoreCase) != 0)
-            {
-                context.Response.StatusCode = (int)HttpStatusCode.NotAcceptable;
-            }
             else if (context.Request.ContentLength == null)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.LengthRequired;
+            }
+            else if (string.Compare(context.Request.Headers["Accept"], _MEDIA_TYPE, StringComparison.OrdinalIgnoreCase) != 0)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotAcceptable;
             }
             else
             {
@@ -205,7 +207,7 @@ namespace Community.AspNetCore.JsonRpc
                     {
                         var responseBytes = Encoding.UTF8.GetBytes(responseString);
 
-                        context.Response.ContentType = "application/json";
+                        context.Response.ContentType = _MEDIA_TYPE;
                         context.Response.ContentLength = responseBytes.Length;
                         context.Response.Body.Write(responseBytes, 0, responseBytes.Length);
                     }
