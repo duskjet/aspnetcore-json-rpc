@@ -71,6 +71,10 @@ namespace Community.AspNetCore.JsonRpc
             {
                 context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
             }
+            else if (context.Request.QueryString.HasValue)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            }
             else if (string.Compare(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase) != 0)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;

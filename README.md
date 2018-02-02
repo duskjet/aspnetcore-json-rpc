@@ -17,8 +17,9 @@
 
 In addition to "JSON-RPC 2.0 Transport: HTTP" specification the middleware returns HTTP 400 status code for the following cases:
 
+- The query string is not empty
 - The `Content-Length` header contains invalid value
-- The `Content-Encoding` header is specified by a client
+- The `Content-Encoding` header is specified
 
 If a logger factory is available in the service provider, the following events will appear in a journal with the all related details (method names and request identifiers):
 

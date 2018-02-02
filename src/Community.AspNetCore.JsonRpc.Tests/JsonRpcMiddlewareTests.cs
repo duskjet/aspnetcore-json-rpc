@@ -47,12 +47,12 @@ namespace Community.AspNetCore.JsonRpc.Tests
                 {
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                    var requestContent = new StringContent(requestContentSample);
+                    var requestContent1 = new StringContent(requestContentSample);
 
-                    requestContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                    requestContent.Headers.ContentLength = requestContentSample.Length;
+                    requestContent1.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                    requestContent1.Headers.ContentLength = requestContentSample.Length;
 
-                    var response1 = await client.PostAsync("/api/v1", requestContent).ConfigureAwait(false);
+                    var response1 = await client.PostAsync("/api/v1", requestContent1).ConfigureAwait(false);
 
                     if (responseContentSample != string.Empty)
                     {
@@ -73,9 +73,22 @@ namespace Community.AspNetCore.JsonRpc.Tests
                         Assert.Equal(HttpStatusCode.NoContent, response1.StatusCode);
                     }
 
-                    var response2 = await client.PostAsync("/api/v2", requestContent).ConfigureAwait(false);
+                    var requestContent2 = new StringContent(requestContentSample);
+
+                    requestContent2.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                    requestContent2.Headers.ContentEncoding.Add("gzip");
+
+                    var response4 = await client.PostAsync("/api/v1", requestContent2).ConfigureAwait(false);
+
+                    Assert.Equal(HttpStatusCode.BadRequest, response4.StatusCode);
+
+                    var response2 = await client.PostAsync("/api/v2", requestContent1).ConfigureAwait(false);
 
                     Assert.Equal(HttpStatusCode.NotFound, response2.StatusCode);
+
+                    var response3 = await client.PostAsync("/api/v1?p=v", requestContent1).ConfigureAwait(false);
+
+                    Assert.Equal(HttpStatusCode.BadRequest, response3.StatusCode);
                 }
             }
         }
