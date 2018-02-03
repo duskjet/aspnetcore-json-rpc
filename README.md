@@ -24,12 +24,12 @@ In addition to "JSON-RPC 2.0 Transport: HTTP" specification the middleware retur
 If a logger factory is available in the service provider, the following events will appear in a journal with the all related details (method names and request identifiers):
 
 ID | Level | Reason
---- | --- | ---
+--- | :---: | ---
 `1000` | Error | An error occurred during deserialization of a JSON-RPC request
-`1010` | Error | A request is not considered as a valid JSON-RPC request
+`1010` | Error | A JSON-RPC request is not considered as a valid JSON-RPC message
 `2000` | Warning | A JSON-RPC request processed as notification due to server configuration
-`2010` | Warning | A JSON-RPC request processed with result as notification due to client configuration
-`2020` | Warning | A JSON-RPC request processed with error as notification due to client configuration
+`2010` | Warning | A JSON-RPC request processed with result as notification due to client demand
+`2020` | Warning | A JSON-RPC request processed with error as notification due to client demand
 `3000` | Information | A JSON-RPC request processed as notification
 `3010` | Information | A JSON-RPC request processed with result
 `3020` | Information | A JSON-RPC request processed with error
@@ -70,6 +70,7 @@ public class MyJsonRpcService
     }
 }
 ```
+\+
 ```cs
 builder
     .ConfigureServices(sc => sc.AddJsonRpcService<MyJsonRpcService>())
@@ -139,6 +140,7 @@ public class MyJsonRpcHandler : IJsonRpcHandler
     }
 }
 ```
+\+
 ```cs
 builder
     .ConfigureServices(sc => sc.AddJsonRpcHandler<MyJsonRpcHandler>())
