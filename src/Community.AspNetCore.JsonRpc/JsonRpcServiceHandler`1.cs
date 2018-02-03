@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Community.AspNetCore.JsonRpc
 {
     internal sealed class JsonRpcServiceHandler<T> : IJsonRpcHandler, IDisposable
-        where T : class
+        where T : class, IJsonRpcService
     {
         private static readonly IReadOnlyDictionary<string, (MethodInfo, ParameterInfo[], string[])> _metadata;
         private static readonly IReadOnlyDictionary<string, JsonRpcRequestContract> _scheme;

@@ -2,7 +2,7 @@
 
 namespace Community.AspNetCore.JsonRpc.Benchmarks.Middleware
 {
-    internal sealed class JsonRpcTestService
+    internal sealed class JsonRpcTestService : IJsonRpcService
     {
         [JsonRpcName("nam")]
         public Task<long> MethodWithParamsByName([JsonRpcName("pr1")]long parameter1, [JsonRpcName("pr2")]long parameter2)

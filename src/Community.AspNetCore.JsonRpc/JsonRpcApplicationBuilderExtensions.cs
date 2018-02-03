@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="applicationBuilder" /> is <see langword="null" />.</exception>
         public static IApplicationBuilder UseJsonRpcService<T>(this IApplicationBuilder applicationBuilder, PathString path = default)
-            where T : class
+            where T : class, IJsonRpcService
         {
             if (applicationBuilder == null)
             {

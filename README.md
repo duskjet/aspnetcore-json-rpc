@@ -39,7 +39,7 @@ ID | Level | Reason
 ### Samples
 
 ```cs
-public class MyJsonRpcService
+public class MyJsonRpcService : IJsonRpcService
 {
     [JsonRpcName("nam")]
     public Task<long> MethodWithParamsByName(

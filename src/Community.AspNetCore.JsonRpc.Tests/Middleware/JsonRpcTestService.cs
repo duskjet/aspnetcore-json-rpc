@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Community.AspNetCore.JsonRpc.Tests.Middleware
 {
-    internal sealed class JsonRpcTestService
+    internal sealed class JsonRpcTestService : IJsonRpcService
     {
         private readonly ILogger _logger;
 

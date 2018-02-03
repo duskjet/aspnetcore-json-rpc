@@ -15,7 +15,7 @@ using Microsoft.Extensions.Primitives;
 namespace Community.AspNetCore.JsonRpc
 {
     internal sealed class JsonRpcMiddleware<T> : IMiddleware, IDisposable
-        where T : IJsonRpcHandler
+        where T : class, IJsonRpcHandler
     {
         private const string _MEDIA_TYPE = "application/json";
 

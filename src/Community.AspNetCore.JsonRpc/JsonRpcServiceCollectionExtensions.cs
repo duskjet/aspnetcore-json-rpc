@@ -29,7 +29,7 @@ namespace Community.AspNetCore
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="serviceCollection" /> is <see langword="null" />.</exception>
         public static IServiceCollection AddJsonRpcService<T>(this IServiceCollection serviceCollection)
-            where T : class
+            where T : class, IJsonRpcService
         {
             if (serviceCollection == null)
             {
