@@ -170,28 +170,26 @@ namespace Community.AspNetCore.JsonRpc
 
                             var jsonRpcResponses = new List<JsonRpcResponse>();
 
-                            for (var i = 0; i < jsonRpcRequestData.BatchItems.Count; i++)
+                            try
                             {
-                                var jsonRpcResponse = default(JsonRpcResponse);
+                                for (var i = 0; i < jsonRpcRequestData.BatchItems.Count; i++)
+                                {
+                                    var jsonRpcResponse = await InvokeHandlerAsync(context, jsonRpcRequestData.BatchItems[i]).ConfigureAwait(false);
 
-                                try
-                                {
-                                    jsonRpcResponse = await InvokeHandlerAsync(context, jsonRpcRequestData.BatchItems[i]).ConfigureAwait(false);
+                                    if (context.RequestAborted.IsCancellationRequested)
+                                    {
+                                        return;
+                                    }
+                                    if (jsonRpcResponse != null)
+                                    {
+                                        jsonRpcResponses.Add(jsonRpcResponse);
+                                    }
                                 }
-                                catch (OperationCanceledException)
-                                    when (context.RequestAborted.IsCancellationRequested)
-                                {
-                                    return;
-                                }
-
-                                if (context.RequestAborted.IsCancellationRequested)
-                                {
-                                    return;
-                                }
-                                if (jsonRpcResponse != null)
-                                {
-                                    jsonRpcResponses.Add(jsonRpcResponse);
-                                }
+                            }
+                            catch (OperationCanceledException)
+                                when (context.RequestAborted.IsCancellationRequested)
+                            {
+                                return;
                             }
 
                             responseString = _serializer.SerializeResponses(jsonRpcResponses);
