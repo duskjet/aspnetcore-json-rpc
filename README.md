@@ -41,32 +41,25 @@ ID | Level | Reason
 ```cs
 public class MyJsonRpcService : IJsonRpcService
 {
-    [JsonRpcName("nam")]
-    public Task<long> MethodWithParamsByName(
-        [JsonRpcName("pr1")] long parameter1,
-        [JsonRpcName("pr2")] long parameter2)
+    [JsonRpcName("m1")]
+    public Task<long> Method1(
+        [JsonRpcName("p1")] long parameter1,
+        [JsonRpcName("p2")] long parameter2)
     {
-        return Task.FromResult(parameter1 - parameter2);
+        if (parameter2 == 0L)
+        {
+            throw new JsonRpcServiceException(100L);
+        }
+
+        return Task.FromResult(parameter1 / parameter2);
     }
 
-    [JsonRpcName("pos")]
-    public Task<long> MethodWithParamsByPosition(
+    [JsonRpcName("m2")]
+    public Task<long> Method2(
         long parameter1,
         long parameter2)
     {
         return Task.FromResult(parameter1 + parameter2);
-    }
-
-    [JsonRpcName("err")]
-    public Task<long> MethodWithErrorResponse()
-    {
-        throw new JsonRpcServiceException(100L, "94cccbe7-d613-4aca-8940-9298892b8ee6");
-    }
-
-    [JsonRpcName("not")]
-    public Task MethodWithNotification()
-    {
-        return Task.CompletedTask;
     }
 }
 ```
@@ -84,20 +77,18 @@ public class MyJsonRpcHandler : IJsonRpcHandler
     {
         return new Dictionary<string, JsonRpcRequestContract>
         {
-            ["nam"] = new JsonRpcRequestContract(
+            ["m1"] = new JsonRpcRequestContract(
                 new Dictionary<string, Type>
                 {
-                    ["pr1"] = typeof(long),
-                    ["pr2"] = typeof(long)
+                    ["p1"] = typeof(long),
+                    ["p2"] = typeof(long)
                 }),
-            ["pos"] = new JsonRpcRequestContract(
+            ["m2"] = new JsonRpcRequestContract(
                 new[]
                 {
                     typeof(long),
                     typeof(long)
-                }),
-            ["err"] = JsonRpcRequestContract.Default,
-            ["not"] = JsonRpcRequestContract.Default
+                })
         };
     }
 
@@ -107,32 +98,23 @@ public class MyJsonRpcHandler : IJsonRpcHandler
 
         switch (request.Method)
         {
-            case "nam":
+            case "m1":
                 {
-                    var parameter1 = (long)request.ParamsByName["pr1"];
-                    var parameter2 = (long)request.ParamsByName["pr2"];
+                    var parameter1 = (long)request.ParamsByName["p1"];
+                    var parameter2 = (long)request.ParamsByName["p2"];
 
-                    response = new JsonRpcResponse(parameter1 - parameter2, request.Id);
+                    response = parameter2 != 0L ?
+                        new JsonRpcResponse(parameter1 / parameter2, request.Id) :
+                        new JsonRpcResponse(new JsonRpcError(100L), request.Id);
                 }
                 break;
-            case "pos":
+            case "m2":
                 {
                     var parameter1 = (long)request.ParamsByPosition[0];
                     var parameter2 = (long)request.ParamsByPosition[1];
 
                     response = new JsonRpcResponse(parameter1 + parameter2, request.Id);
-                }
-                break;
-            case "err":
-                {
-                    var error = new JsonRpcError(100L, "94cccbe7-d613-4aca-8940-9298892b8ee6");
-
-                    response = new JsonRpcResponse(error, request.Id);
-                }
-                break;
-            case "not":
-                {
-                }
+               }
                 break;
         }
 
