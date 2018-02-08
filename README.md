@@ -15,22 +15,24 @@
 
 ### Specifics
 
-In addition to the standard JSON-RPC error codes the middleware returns the following JSON-RPC errors:
+In addition to the standard JSON-RPC error codes the middleware may return the following JSON-RPC errors:
 
 Code | Reason
 :---: | ---
 `-32000` | The provided batch contains requests with duplicate identifiers
 
-In addition to the "JSON-RPC 2.0 Transport: HTTP" specification the middleware returns HTTP 400 status code for the following cases:
+In addition to the JSON-RPC HTTP transport specification the middleware may return the following HTTP status codes:
 
-- The query string is not empty
-- The `Content-Length` header contains invalid value
-- The `Content-Encoding` header is specified
+Code | Reason
+:---: | ---
+`400` | The query string is not empty
+`400` | The `Content-Encoding` header is specified
+`400` | The `Content-Length` header contains invalid value
 
 If a logger factory is available in the service provider, the following events will appear in a journal with the all related details (method names and request identifiers):
 
 ID | Level | Reason
-:---: | :---: | ---
+:---: | --- | ---
 `1000` | Error | An error occurred during deserialization of a JSON-RPC request
 `1010` | Error | A JSON-RPC request is not considered as a valid JSON-RPC message
 `2000` | Warning | A JSON-RPC request processed as notification due to server configuration
