@@ -124,7 +124,7 @@ namespace Community.AspNetCore.JsonRpc
                     {
                         _logger?.LogError(1000, ex, Strings.GetString("handler.request_data.declined"), context.TraceIdentifier, context.Request.PathBase);
 
-                        responseString = _serializer.SerializeResponse(new JsonRpcResponse(ConvertExceptionToError(ex), default));
+                        responseString = _serializer.SerializeResponse(new JsonRpcResponse(ConvertExceptionToError(ex)));
                     }
 
                     if (jsonRpcRequestData != null)
@@ -168,35 +168,64 @@ namespace Community.AspNetCore.JsonRpc
                         {
                             _logger?.LogTrace(4010, Strings.GetString("handler.request_data.accepted_batch"), context.TraceIdentifier, jsonRpcRequestData.BatchItems.Count, context.Request.PathBase);
 
-                            var jsonRpcResponses = new List<JsonRpcResponse>();
+                            var identifiersSet = new HashSet<JsonRpcId>();
+                            var identifiersSetIsValid = true;
 
-                            try
+                            for (var i = 0; i < jsonRpcRequestData.BatchItems.Count; i++)
                             {
-                                for (var i = 0; i < jsonRpcRequestData.BatchItems.Count; i++)
-                                {
-                                    var jsonRpcResponse = await InvokeHandlerAsync(context, jsonRpcRequestData.BatchItems[i]).ConfigureAwait(false);
+                                var jsonRpcItem = jsonRpcRequestData.BatchItems[i];
 
-                                    if (context.RequestAborted.IsCancellationRequested)
+                                if (jsonRpcItem.IsValid && !jsonRpcItem.Message.IsNotification)
+                                {
+                                    if (!identifiersSet.Add(jsonRpcItem.Message.Id))
                                     {
-                                        return;
-                                    }
-                                    if (jsonRpcResponse != null)
-                                    {
-                                        jsonRpcResponses.Add(jsonRpcResponse);
+                                        identifiersSetIsValid = false;
+
+                                        break;
                                     }
                                 }
                             }
-                            catch (OperationCanceledException)
-                                when (context.RequestAborted.IsCancellationRequested)
+
+                            if (identifiersSetIsValid)
                             {
-                                return;
+                                var jsonRpcResponses = new List<JsonRpcResponse>();
+
+                                try
+                                {
+                                    for (var i = 0; i < jsonRpcRequestData.BatchItems.Count; i++)
+                                    {
+                                        var jsonRpcResponse = await InvokeHandlerAsync(context, jsonRpcRequestData.BatchItems[i]).ConfigureAwait(false);
+
+                                        if (context.RequestAborted.IsCancellationRequested)
+                                        {
+                                            return;
+                                        }
+                                        if (jsonRpcResponse != null)
+                                        {
+                                            jsonRpcResponses.Add(jsonRpcResponse);
+                                        }
+                                    }
+                                }
+                                catch (OperationCanceledException)
+                                    when (context.RequestAborted.IsCancellationRequested)
+                                {
+                                    return;
+                                }
+
+                                responseString = _serializer.SerializeResponses(jsonRpcResponses);
+
+                                if (context.RequestAborted.IsCancellationRequested)
+                                {
+                                    return;
+                                }
                             }
-
-                            responseString = _serializer.SerializeResponses(jsonRpcResponses);
-
-                            if (context.RequestAborted.IsCancellationRequested)
+                            else
                             {
-                                return;
+                                _logger?.LogError(1020, Strings.GetString("handler.request_data.duplicate_identifiers"), context.TraceIdentifier);
+
+                                var jsonRpcResponse = new JsonRpcResponse(new JsonRpcError(-32000, Strings.GetString("rpc.error.duplicate_identifiers")));
+
+                                responseString = _serializer.SerializeResponse(jsonRpcResponse);
                             }
                         }
                     }

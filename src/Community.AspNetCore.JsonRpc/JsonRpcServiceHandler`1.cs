@@ -93,7 +93,7 @@ namespace Community.AspNetCore.JsonRpc
                         string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.invalid_name"), typeof(T), methodNameAttribute.Value));
                 }
 
-                var methodContract = JsonRpcRequestContract.Default;
+                var methodContract = default(JsonRpcRequestContract);
                 var parameters = method.GetParameters();
                 var parametersBindings = default(string[]);
 
@@ -144,6 +144,10 @@ namespace Community.AspNetCore.JsonRpc
 
                         methodContract = new JsonRpcRequestContract(parametersContract);
                     }
+                }
+                else
+                {
+                    methodContract = new JsonRpcRequestContract();
                 }
 
                 blueprint[methodNameAttribute.Value] = (methodContract, method, parameters, parametersBindings);

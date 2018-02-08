@@ -126,6 +126,9 @@
   <data name="handler.request_data.declined" xml:space="preserve">
     <value>{0} JSON-RPC request to the path "{1}" is not accepted for processing</value>
   </data>
+  <data name="handler.request_data.duplicate_identifiers" xml:space="preserve">
+    <value>{0} JSON-RPC batch contains requests with duplicate identifiers</value>
+  </data>
   <data name="handler.response.handled_notification" xml:space="preserve">
     <value>{0} JSON-RPC request to the method "{1}" processed as notification</value>
   </data>
@@ -155,6 +158,9 @@
   </data>
   <data name="handler.scheme.method.undefined_name" xml:space="preserve">
     <value>The scheme contains JSON-RPC method name that equals null</value>
+  </data>
+  <data name="rpc.error.duplicate_identifiers" xml:space="preserve">
+    <value>The provided batch contains requests with duplicate identifiers</value>
   </data>
   <data name="rpc.error.internal" xml:space="preserve">
     <value>An error occurred during processing the request</value>

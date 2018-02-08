@@ -36,8 +36,8 @@ namespace Community.AspNetCore.JsonRpc.Tests.Middleware
                         typeof(long),
                         typeof(long)
                     }),
-                ["err"] = JsonRpcRequestContract.Default,
-                ["not"] = JsonRpcRequestContract.Default
+                ["err"] = new JsonRpcRequestContract(),
+                ["not"] = new JsonRpcRequestContract()
             };
         }
 
