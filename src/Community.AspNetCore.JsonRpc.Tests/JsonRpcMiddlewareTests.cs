@@ -8,6 +8,7 @@ using Community.AspNetCore.JsonRpc.Tests.Resources;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -27,6 +28,17 @@ namespace Community.AspNetCore.JsonRpc.Tests
 
         private async Task InvokeMiddlewareTestAsync(Action<IWebHostBuilder> configurator, string test)
         {
+            void ConfigureOptions(JsonRpcOptions options)
+            {
+                options.MaxBatchSize = 2;
+                options.MaxIdLength = 36;
+            }
+            void ConfigureServices(IServiceCollection serviceCollection)
+            {
+                serviceCollection
+                    .AddOptions()
+                    .Configure<JsonRpcOptions>(ConfigureOptions);
+            }
             void ConfigureLogging(ILoggingBuilder loggingBuilder)
             {
                 loggingBuilder
@@ -37,7 +49,9 @@ namespace Community.AspNetCore.JsonRpc.Tests
             var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");
             var responseContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_res.json");
 
-            var builder = new WebHostBuilder().ConfigureLogging(ConfigureLogging);
+            var builder = new WebHostBuilder()
+                .ConfigureServices(ConfigureServices)
+                .ConfigureLogging(ConfigureLogging);
 
             configurator.Invoke(builder);
 
@@ -100,8 +114,10 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("not")]
         [InlineData("unk")]
         [InlineData("sys")]
+        [InlineData("ili")]
         [InlineData("bat")]
         [InlineData("bdi")]
+        [InlineData("bsi")]
         [InlineData("ipt")]
         public async Task UseJsonRpcHandler(string test)
         {
@@ -122,8 +138,10 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("not")]
         [InlineData("unk")]
         [InlineData("sys")]
+        [InlineData("ili")]
         [InlineData("bat")]
         [InlineData("bdi")]
+        [InlineData("bsi")]
         [InlineData("ipt")]
         public async Task UseJsonRpcService(string test)
         {

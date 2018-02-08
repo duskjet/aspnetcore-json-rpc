@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Community.AspNetCore.JsonRpc
@@ -19,10 +20,11 @@ namespace Community.AspNetCore.JsonRpc
     {
         private const string _MEDIA_TYPE = "application/json";
 
-        private readonly JsonRpcSerializer _serializer;
         private readonly T _handler;
         private readonly bool _dispose;
+        private readonly JsonRpcSerializer _serializer;
         private readonly bool _production;
+        private readonly JsonRpcOptions _options;
         private readonly ILogger _logger;
 
         public JsonRpcMiddleware(IServiceProvider serviceProvider)
@@ -64,6 +66,7 @@ namespace Community.AspNetCore.JsonRpc
                 new Dictionary<JsonRpcId, JsonRpcResponseContract>(0));
 
             _production = serviceProvider.GetService<IHostingEnvironment>()?.EnvironmentName != EnvironmentName.Development;
+            _options = serviceProvider.GetService<IOptions<JsonRpcOptions>>()?.Value;
             _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<JsonRpcMiddleware<T>>();
         }
 
@@ -72,240 +75,239 @@ namespace Community.AspNetCore.JsonRpc
             if (string.Compare(context.Request.Method, HttpMethods.Post, StringComparison.OrdinalIgnoreCase) != 0)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+
+                return;
             }
-            else if (context.Request.QueryString.HasValue)
+            if (context.Request.QueryString.HasValue)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+
+                return;
             }
-            else if (string.Compare(context.Request.ContentType, _MEDIA_TYPE, StringComparison.OrdinalIgnoreCase) != 0)
+            if (string.Compare(context.Request.ContentType, _MEDIA_TYPE, StringComparison.OrdinalIgnoreCase) != 0)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
+
+                return;
             }
-            else if (context.Request.Headers["Content-Encoding"] != default(StringValues))
+            if (context.Request.Headers["Content-Encoding"] != default(StringValues))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+
+                return;
             }
-            else if (context.Request.ContentLength == null)
+            if (context.Request.ContentLength == null)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.LengthRequired;
+
+                return;
             }
-            else if (string.Compare(context.Request.Headers["Accept"], _MEDIA_TYPE, StringComparison.OrdinalIgnoreCase) != 0)
+            if (string.Compare(context.Request.Headers["Accept"], _MEDIA_TYPE, StringComparison.OrdinalIgnoreCase) != 0)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotAcceptable;
+
+                return;
+            }
+
+            var requestString = default(string);
+
+            using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
+            {
+                requestString = reader.ReadToEnd();
+            }
+
+            if (requestString.Length != context.Request.ContentLength.Value)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+
+                return;
+            }
+
+            var responseString = default(string);
+
+            try
+            {
+                responseString = await HandleJsonRpcStringAsync(context, requestString).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+                when (context.RequestAborted.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (responseString != null)
+            {
+                var responseBytes = Encoding.UTF8.GetBytes(responseString);
+
+                context.Response.ContentType = _MEDIA_TYPE;
+                context.Response.ContentLength = responseBytes.Length;
+                context.Response.Body.Write(responseBytes, 0, responseBytes.Length);
             }
             else
             {
-                var requestString = default(string);
-
-                using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
-                {
-                    requestString = reader.ReadToEnd();
-                }
-
-                if (requestString.Length != context.Request.ContentLength.Value)
-                {
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                }
-                else
-                {
-                    var jsonRpcRequestData = default(JsonRpcData<JsonRpcRequest>);
-                    var responseString = default(string);
-
-                    try
-                    {
-                        jsonRpcRequestData = _serializer.DeserializeRequestData(requestString);
-
-                        if (context.RequestAborted.IsCancellationRequested)
-                        {
-                            return;
-                        }
-                    }
-                    catch (JsonRpcException ex)
-                    {
-                        _logger?.LogError(1000, ex, Strings.GetString("handler.request_data.declined"), context.TraceIdentifier, context.Request.PathBase);
-
-                        responseString = _serializer.SerializeResponse(new JsonRpcResponse(ConvertExceptionToError(ex)));
-                    }
-
-                    if (jsonRpcRequestData != null)
-                    {
-                        if (jsonRpcRequestData.IsSingle)
-                        {
-                            _logger?.LogTrace(4000, Strings.GetString("handler.request_data.accepted_single"), context.TraceIdentifier, context.Request.PathBase);
-
-                            var jsonRpcResponse = default(JsonRpcResponse);
-
-                            try
-                            {
-                                jsonRpcResponse = await InvokeHandlerAsync(context, jsonRpcRequestData.SingleItem).ConfigureAwait(false);
-                            }
-                            catch (OperationCanceledException)
-                                when (context.RequestAborted.IsCancellationRequested)
-                            {
-                                return;
-                            }
-
-                            if (context.RequestAborted.IsCancellationRequested)
-                            {
-                                return;
-                            }
-
-                            if (jsonRpcResponse != null)
-                            {
-                                responseString = _serializer.SerializeResponse(jsonRpcResponse);
-
-                                if (context.RequestAborted.IsCancellationRequested)
-                                {
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                context.Response.StatusCode = (int)HttpStatusCode.NoContent;
-                            }
-                        }
-                        else
-                        {
-                            _logger?.LogTrace(4010, Strings.GetString("handler.request_data.accepted_batch"), context.TraceIdentifier, jsonRpcRequestData.BatchItems.Count, context.Request.PathBase);
-
-                            var identifiersSet = new HashSet<JsonRpcId>();
-                            var identifiersSetIsValid = true;
-
-                            for (var i = 0; i < jsonRpcRequestData.BatchItems.Count; i++)
-                            {
-                                var jsonRpcItem = jsonRpcRequestData.BatchItems[i];
-
-                                if (jsonRpcItem.IsValid && !jsonRpcItem.Message.IsNotification)
-                                {
-                                    if (!identifiersSet.Add(jsonRpcItem.Message.Id))
-                                    {
-                                        identifiersSetIsValid = false;
-
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (identifiersSetIsValid)
-                            {
-                                var jsonRpcResponses = new List<JsonRpcResponse>();
-
-                                try
-                                {
-                                    for (var i = 0; i < jsonRpcRequestData.BatchItems.Count; i++)
-                                    {
-                                        var jsonRpcResponse = await InvokeHandlerAsync(context, jsonRpcRequestData.BatchItems[i]).ConfigureAwait(false);
-
-                                        if (context.RequestAborted.IsCancellationRequested)
-                                        {
-                                            return;
-                                        }
-                                        if (jsonRpcResponse != null)
-                                        {
-                                            jsonRpcResponses.Add(jsonRpcResponse);
-                                        }
-                                    }
-                                }
-                                catch (OperationCanceledException)
-                                    when (context.RequestAborted.IsCancellationRequested)
-                                {
-                                    return;
-                                }
-
-                                responseString = _serializer.SerializeResponses(jsonRpcResponses);
-
-                                if (context.RequestAborted.IsCancellationRequested)
-                                {
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                _logger?.LogError(1020, Strings.GetString("handler.request_data.duplicate_identifiers"), context.TraceIdentifier);
-
-                                var jsonRpcResponse = new JsonRpcResponse(new JsonRpcError(-32000, Strings.GetString("rpc.error.duplicate_identifiers")));
-
-                                responseString = _serializer.SerializeResponse(jsonRpcResponse);
-                            }
-                        }
-                    }
-
-                    if (context.Response.StatusCode != (int)HttpStatusCode.NoContent)
-                    {
-                        var responseBytes = Encoding.UTF8.GetBytes(responseString);
-
-                        context.Response.ContentType = _MEDIA_TYPE;
-                        context.Response.ContentLength = responseBytes.Length;
-                        context.Response.Body.Write(responseBytes, 0, responseBytes.Length);
-                    }
-                }
+                context.Response.StatusCode = (int)HttpStatusCode.NoContent;
             }
         }
 
-        private async Task<JsonRpcResponse> InvokeHandlerAsync(HttpContext context, JsonRpcItem<JsonRpcRequest> item)
+        private async Task<string> HandleJsonRpcStringAsync(HttpContext context, string content)
         {
-            var response = default(JsonRpcResponse);
+            var requestData = default(JsonRpcData<JsonRpcRequest>);
 
-            if (item.IsValid)
+            try
             {
-                var request = item.Message;
+                requestData = _serializer.DeserializeRequestData(content);
+            }
+            catch (JsonRpcException ex)
+            {
+                _logger?.LogError(1000, ex, Strings.GetString("handler.request_data.declined"), context.TraceIdentifier, context.Request.PathBase);
 
-                response = await _handler.HandleAsync(request).ConfigureAwait(false);
+                return _serializer.SerializeResponse(new JsonRpcResponse(ConvertExceptionToError(ex)));
+            }
+
+            if (requestData.IsSingle)
+            {
+                _logger?.LogTrace(4000, Strings.GetString("handler.request_data.accepted_single"), context.TraceIdentifier, context.Request.PathBase);
+
+                context.RequestAborted.ThrowIfCancellationRequested();
+
+                var response = await HandleJsonRpcItemAsync(context, requestData.SingleItem).ConfigureAwait(false);
 
                 if (response != null)
                 {
-                    if (request.Id != response.Id)
-                    {
-                        throw new InvalidOperationException(Strings.GetString("handler.response.id.invalid_value"));
-                    }
+                    context.RequestAborted.ThrowIfCancellationRequested();
 
-                    if (!request.IsNotification)
-                    {
-                        if (response.Success)
-                        {
-                            _logger?.LogInformation(3010, Strings.GetString("handler.response.handled_with_result"), context.TraceIdentifier, request.Id, request.Method);
-                        }
-                        else
-                        {
-                            _logger?.LogInformation(3020, Strings.GetString("handler.response.handled_with_error"), context.TraceIdentifier, request.Id, request.Method, response.Error.Code, response.Error.Message);
-                        }
-                    }
-                    else
-                    {
-                        response = null;
-
-                        if (response.Success)
-                        {
-                            _logger?.LogWarning(2010, Strings.GetString("handler.response.handled_with_result_as_notification"), context.TraceIdentifier, request.Id, request.Method);
-                        }
-                        else
-                        {
-                            _logger?.LogWarning(2020, Strings.GetString("handler.response.handled_with_error_as_notification"), context.TraceIdentifier, request.Id, request.Method, response.Error.Code, response.Error.Message);
-                        }
-                    }
+                    return _serializer.SerializeResponse(response);
                 }
                 else
                 {
-                    if (request.IsNotification)
-                    {
-                        _logger?.LogInformation(3000, Strings.GetString("handler.response.handled_notification"), context.TraceIdentifier, request.Method);
-                    }
-                    else
-                    {
-                        _logger?.LogWarning(2000, Strings.GetString("handler.response.handled_notification_as_response"), context.TraceIdentifier, request.Id, request.Method);
-                    }
+                    return null;
                 }
             }
             else
             {
-                var exception = item.Exception;
+                _logger?.LogTrace(4010, Strings.GetString("handler.request_data.accepted_batch"), context.TraceIdentifier, requestData.BatchItems.Count, context.Request.PathBase);
 
-                response = new JsonRpcResponse(ConvertExceptionToError(exception), exception.MessageId);
+                var maximumBatchSize = _options?.MaxBatchSize ?? 1024;
+
+                if (requestData.BatchItems.Count > maximumBatchSize)
+                {
+                    _logger?.LogError(1040, Strings.GetString("handler.request_data.invalid_batch_size"), context.TraceIdentifier, requestData.BatchItems.Count, maximumBatchSize);
+
+                    return _serializer.SerializeResponse(new JsonRpcResponse(new JsonRpcError(-32020, Strings.GetString("rpc.error.invalid_batch_size"))));
+                }
+
+                var identifiers = new HashSet<JsonRpcId>();
+
+                for (var i = 0; i < requestData.BatchItems.Count; i++)
+                {
+                    var requestItem = requestData.BatchItems[i];
+
+                    if (requestItem.IsValid && !requestItem.Message.IsNotification)
+                    {
+                        if (!identifiers.Add(requestItem.Message.Id))
+                        {
+                            _logger?.LogError(1020, Strings.GetString("handler.request_data.duplicate_ids"), context.TraceIdentifier);
+
+                            return _serializer.SerializeResponse(new JsonRpcResponse(new JsonRpcError(-32000, Strings.GetString("rpc.error.duplicate_ids"))));
+                        }
+                    }
+                }
+
+                var responses = new List<JsonRpcResponse>();
+
+                for (var i = 0; i < requestData.BatchItems.Count; i++)
+                {
+                    context.RequestAborted.ThrowIfCancellationRequested();
+
+                    var response = await HandleJsonRpcItemAsync(context, requestData.BatchItems[i]).ConfigureAwait(false);
+
+                    if (response != null)
+                    {
+                        responses.Add(response);
+                    }
+                }
+
+                context.RequestAborted.ThrowIfCancellationRequested();
+
+                return _serializer.SerializeResponses(responses);
+            }
+        }
+
+        private async Task<JsonRpcResponse> HandleJsonRpcItemAsync(HttpContext context, JsonRpcItem<JsonRpcRequest> requestItem)
+        {
+            if (!requestItem.IsValid)
+            {
+                var exception = requestItem.Exception;
 
                 _logger?.LogError(1010, exception, Strings.GetString("handler.request.invalid_message"), context.TraceIdentifier, exception.MessageId);
+
+                return new JsonRpcResponse(ConvertExceptionToError(exception), exception.MessageId);
             }
 
-            return response;
+            var request = requestItem.Message;
+
+            if (request.Id.Type == JsonRpcIdType.String)
+            {
+                var maximumIdLength = _options?.MaxIdLength ?? 1024;
+                var currentIdLength = ((string)request.Id).Length;
+
+                if (currentIdLength > maximumIdLength)
+                {
+                    _logger?.LogError(1030, Strings.GetString("handler.request.invalid_id_length"), context.TraceIdentifier, currentIdLength, maximumIdLength);
+
+                    return new JsonRpcResponse(new JsonRpcError(-32010, Strings.GetString("rpc.error.invalid_id_length")));
+                }
+            }
+
+            var response = await _handler.HandleAsync(request).ConfigureAwait(false);
+
+            if (response != null)
+            {
+                if (request.Id != response.Id)
+                {
+                    throw new InvalidOperationException(Strings.GetString("handler.response.invalid_id"));
+                }
+
+                if (!request.IsNotification)
+                {
+                    if (response.Success)
+                    {
+                        _logger?.LogInformation(3010, Strings.GetString("handler.response.handled_with_result"), context.TraceIdentifier, request.Id, request.Method);
+                    }
+                    else
+                    {
+                        _logger?.LogInformation(3020, Strings.GetString("handler.response.handled_with_error"), context.TraceIdentifier, request.Id, request.Method, response.Error.Code, response.Error.Message);
+                    }
+
+                    return response;
+                }
+                else
+                {
+                    if (response.Success)
+                    {
+                        _logger?.LogWarning(2010, Strings.GetString("handler.response.handled_with_result_as_notification"), context.TraceIdentifier, request.Id, request.Method);
+                    }
+                    else
+                    {
+                        _logger?.LogWarning(2020, Strings.GetString("handler.response.handled_with_error_as_notification"), context.TraceIdentifier, request.Id, request.Method, response.Error.Code, response.Error.Message);
+                    }
+
+                    return null;
+                }
+            }
+            else
+            {
+                if (request.IsNotification)
+                {
+                    _logger?.LogInformation(3000, Strings.GetString("handler.response.handled_notification"), context.TraceIdentifier, request.Method);
+                }
+                else
+                {
+                    _logger?.LogWarning(2000, Strings.GetString("handler.response.handled_notification_as_response"), context.TraceIdentifier, request.Id, request.Method);
+                }
+
+                return null;
+            }
         }
 
         private JsonRpcError ConvertExceptionToError(JsonRpcException exception)

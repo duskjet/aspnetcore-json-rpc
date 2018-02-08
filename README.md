@@ -10,8 +10,9 @@
 - Middleware automatically handles and sends the corresponding JSON-RPC responses for common issues (e.g. invalid JSON, invalid JSON-RPC message structure, invalid JSON-RPC contract, etc.).
 - A handler / service can be acquired from a service provider or instantiated directly for a request scope.
 - A handler / service which implements `IDisposable` interface will be automatically disposed on request scope exit.
-- The `JsonRpcName` attribute can be used on an interface for a service handler as well.
 - Parameters provided by name can utilize default parameter value if the particular parameter is not provided by the client.
+- Maximum string identifier length (1024 is used if not specified) and maximum batch size (1024 is used if not specified) can be configured with options via `IOptions<T>` interface.
+- The `JsonRpcName` attribute can be used on classes and interfaces.
 
 ### Specifics
 
@@ -35,6 +36,9 @@ ID | Level | Reason
 :---: | --- | ---
 `1000` | Error | An error occurred during deserialization of a JSON-RPC request
 `1010` | Error | A JSON-RPC request is not considered as a valid JSON-RPC message
+`1020` | Error | A JSON-RPC batch contains requests with duplicate identifiers
+`1030` | Error | A JSON-RPC message identifier exceeds length limit
+`1040` | Error | A JSON-RPC batch exceeds size limit
 `2000` | Warning | A JSON-RPC request processed as notification due to server configuration
 `2010` | Warning | A JSON-RPC request processed with result as notification due to client demand
 `2020` | Warning | A JSON-RPC request processed with error as notification due to client demand
