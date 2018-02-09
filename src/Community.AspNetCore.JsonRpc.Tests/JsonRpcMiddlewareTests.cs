@@ -118,6 +118,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("bat")]
         [InlineData("bdi")]
         [InlineData("bsi")]
+        [InlineData("bon")]
         [InlineData("ipt")]
         public async Task UseJsonRpcHandler(string test)
         {
@@ -142,6 +143,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("bat")]
         [InlineData("bdi")]
         [InlineData("bsi")]
+        [InlineData("bon")]
         [InlineData("ipt")]
         public async Task UseJsonRpcService(string test)
         {

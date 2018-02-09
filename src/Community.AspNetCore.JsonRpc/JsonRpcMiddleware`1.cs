@@ -227,9 +227,18 @@ namespace Community.AspNetCore.JsonRpc
                     }
                 }
 
-                context.RequestAborted.ThrowIfCancellationRequested();
+                if (responses.Count != 0)
+                {
+                    context.RequestAborted.ThrowIfCancellationRequested();
 
-                return _serializer.SerializeResponses(responses);
+                    return _serializer.SerializeResponses(responses);
+                }
+                else
+                {
+                    // Server must return empty content for empty response batch according to the JSON-RPC 2.0 specification
+
+                    return null;
+                }
             }
         }
 

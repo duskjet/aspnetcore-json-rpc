@@ -1,0 +1,10 @@
+[
+    {
+        "jsonrpc": "2.0",
+        "method": "not"
+    },
+    {
+        "jsonrpc": "2.0",
+        "method": "not"
+    }
+]
