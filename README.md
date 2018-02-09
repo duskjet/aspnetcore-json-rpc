@@ -13,7 +13,7 @@
 - A handler / service can be acquired from a service provider or instantiated directly for a request scope.
 - A handler / service which implements the `IDisposable` interface will be automatically disposed on request scope exit.
 - A service searches for the `JsonRpcNameAttribute` attributes on class and interface members.
-- A service uses a default parameter value for named parameters if it is defined in the type and is not provided in a request.
+- A service uses a default parameter value for named parameters if it is defined in the type and a value is not provided in a request.
 
 ### Specifics
 
@@ -22,6 +22,8 @@ In addition to the standard JSON-RPC error codes the middleware may return the f
 Code | Reason
 :---: | ---
 `-32000` | The provided batch contains requests with duplicate identifiers
+`-32010` | The provided message identifier exceeds length limit
+`-32020` | The provided batch exceeds size limit
 
 In addition to the JSON-RPC HTTP transport specification the middleware may return the following HTTP status codes:
 
