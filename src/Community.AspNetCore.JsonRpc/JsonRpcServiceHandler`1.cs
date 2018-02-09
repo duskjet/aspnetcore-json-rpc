@@ -190,16 +190,14 @@ namespace Community.AspNetCore.JsonRpc
                                 }
                                 else
                                 {
-                                    if (!request.IsNotification)
-                                    {
-                                        var message = string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.request.parameter.undefined_value"), request.Method, parametersBindings[i]);
-
-                                        return new JsonRpcResponse(new JsonRpcError((long)JsonRpcErrorType.InvalidParams, message), request.Id);
-                                    }
-                                    else
+                                    if (request.IsNotification)
                                     {
                                         return null;
                                     }
+
+                                    var message = string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.request.parameter.undefined_value"), request.Method, parametersBindings[i]);
+
+                                    return new JsonRpcResponse(new JsonRpcError((long)JsonRpcErrorType.InvalidParams, message), request.Id);
                                 }
                             }
                         }

@@ -28,16 +28,17 @@ namespace Community.AspNetCore.JsonRpc.Tests
 
         private async Task InvokeMiddlewareTestAsync(Action<IWebHostBuilder> configurator, string test)
         {
-            void ConfigureOptions(JsonRpcOptions options)
+            var options = new JsonRpcOptions
             {
-                options.MaxBatchSize = 2;
-                options.MaxIdLength = 36;
-            }
+                MaxBatchSize = 2,
+                MaxIdLength = 36
+            };
+
             void ConfigureServices(IServiceCollection serviceCollection)
             {
                 serviceCollection
                     .AddOptions()
-                    .Configure<JsonRpcOptions>(ConfigureOptions);
+                    .AddJsonRpcOptions(options);
             }
             void ConfigureLogging(ILoggingBuilder loggingBuilder)
             {

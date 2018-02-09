@@ -1,18 +1,19 @@
 ## Community.AspNetCore.JsonRpc
 
-[JSON-RPC 2.0](http://www.jsonrpc.org/specification) middleware for ASP.NET Core 2.0 based on [JSON-RPC 2.0 Transport: HTTP](https://www.simple-is-better.org/json-rpc/transport_http.html) specification.
+[JSON-RPC 2.0](http://www.jsonrpc.org/specification) middleware for ASP.NET Core 2.0 based on the [JSON-RPC 2.0 Transport: HTTP](https://www.simple-is-better.org/json-rpc/transport_http.html) specification.
 
 [![NuGet package](https://img.shields.io/nuget/v/Community.AspNetCore.JsonRpc.svg?style=flat-square)](https://www.nuget.org/packages/Community.AspNetCore.JsonRpc)
 
 ### Features
 
-- Middleware transparently handles single and batch JSON-RPC requests.
-- Middleware automatically handles and sends the corresponding JSON-RPC responses for common issues (e.g. invalid JSON, invalid JSON-RPC message structure, invalid JSON-RPC contract, etc.).
+- The middleware transparently handles single and batch JSON-RPC requests.
+- The middleware automatically handles and sends the corresponding JSON-RPC responses for common issues (e.g. invalid JSON, invalid JSON-RPC message structure, invalid JSON-RPC contract, etc.).
+- The middleware can set limits for maximum string identifier length (`1024` if not specified) and maximum batch size (`1024` if not specified). Limits can be specified by the `JsonRpcOptions` instance via the `IOptions<T>` interface registered in a service collection.
+- The middleware stores a collection of JSON-RPC error codes in the `HttpContext.Items` property in case of one or more JSON-RPC errors were created during HTTP request processing. A collection is of `IReadOnlyList<long>` type and can be accessed with the `JsonRpcOptions.HttpContextErrorIdentifier` identifier. The collection contains error codes created for notifications as well.
 - A handler / service can be acquired from a service provider or instantiated directly for a request scope.
-- A handler / service which implements `IDisposable` interface will be automatically disposed on request scope exit.
-- Parameters provided by name can utilize default parameter value if the particular parameter is not provided by the client.
-- Maximum string identifier length (1024 is used if not specified) and maximum batch size (1024 is used if not specified) can be configured with options via `IOptions<T>` interface.
-- The `JsonRpcName` attribute can be used on classes and interfaces.
+- A handler / service which implements the `IDisposable` interface will be automatically disposed on request scope exit.
+- A service searches for the `JsonRpcNameAttribute` attributes on class and interface members.
+- A service uses a default parameter value for named parameters if it is defined in the type and is not provided in a request.
 
 ### Specifics
 
@@ -26,11 +27,11 @@ In addition to the JSON-RPC HTTP transport specification the middleware may retu
 
 Code | Reason
 :---: | ---
-`400` | The query string is not empty
+`400` | The request query string is specified
 `400` | The `Content-Encoding` header is specified
-`400` | The `Content-Length` header contains invalid value
+`400` | The `Content-Length` header has a value that differs from the actual content length
 
-If a logger factory is available in the service provider, the following events will appear in a journal with the all related details (method names and request identifiers):
+With logger factory availability, the following events may appear in a journal with the related details (e.g. method name, request identifier):
 
 ID | Level | Reason
 :---: | --- | ---
@@ -45,8 +46,8 @@ ID | Level | Reason
 `3000` | Information | A JSON-RPC request processed as notification
 `3010` | Information | A JSON-RPC request processed with result
 `3020` | Information | A JSON-RPC request processed with error
-`4000` | Trace | A JSON-RPC request accepted for processing as a single item
-`4010` | Trace | A JSON-RPC request accepted for processing as a batch
+`4000` | Debug | A JSON-RPC request accepted for processing as a single item
+`4010` | Debug | A JSON-RPC request accepted for processing as a batch
 
 ### Samples
 

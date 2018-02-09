@@ -130,10 +130,10 @@
     <value>{0} JSON-RPC batch contains requests with duplicate identifiers</value>
   </data>
   <data name="handler.request_data.invalid_batch_size" xml:space="preserve">
-    <value>{0} JSON-RPC batch exceeds size limit: {1} / {2}</value>
+    <value>{0} JSON-RPC batch exceeds size limit: {1} when {2} is allowed</value>
   </data>
   <data name="handler.request.invalid_id_length" xml:space="preserve">
-    <value>{0} JSON-RPC message identifier exceeds length limit: {1} / {2}</value>
+    <value>{0} JSON-RPC message identifier exceeds length limit: {1} when {2} is allowed</value>
   </data>
   <data name="handler.response.handled_notification" xml:space="preserve">
     <value>{0} JSON-RPC request to the method "{1}" processed as notification</value>
@@ -157,10 +157,10 @@
     <value>{0} JSON-RPC request "{1}" is not considered as a valid request</value>
   </data>
   <data name="handler.response.invalid_id" xml:space="preserve">
-    <value>Request and response identifiers are different</value>
+    <value>The request and response identifiers are different</value>
   </data>
   <data name="handler.scheme.method.system_name" xml:space="preserve">
-    <value>The declared JSON-RPC method is system extension</value>
+    <value>The JSON-RPC method name "{0}" has the system extension prefix</value>
   </data>
   <data name="handler.scheme.method.undefined_name" xml:space="preserve">
     <value>The scheme contains JSON-RPC method name that equals null</value>
