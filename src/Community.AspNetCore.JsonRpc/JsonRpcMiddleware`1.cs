@@ -189,7 +189,7 @@ namespace Community.AspNetCore.JsonRpc
 
                 var jsonRpcError = ConvertExceptionToError(ex);
 
-                context.Items[JsonRpcOptions.HttpContextErrorIdentifier] = new[] { jsonRpcError.Code };
+                context.Items[JsonRpcOptions.ScopeErrorsIdentifier] = new[] { jsonRpcError.Code };
 
                 return _serializer.SerializeResponse(new JsonRpcResponse(jsonRpcError));
             }
@@ -210,7 +210,7 @@ namespace Community.AspNetCore.JsonRpc
                 }
                 if (!response.Success)
                 {
-                    context.Items[JsonRpcOptions.HttpContextErrorIdentifier] = new[] { response.Error.Code };
+                    context.Items[JsonRpcOptions.ScopeErrorsIdentifier] = new[] { response.Error.Code };
                 }
                 if (requestItem.IsValid && requestItem.Message.IsNotification)
                 {
@@ -235,7 +235,7 @@ namespace Community.AspNetCore.JsonRpc
 
                     var jsonRpcError = new JsonRpcError(-32020, Strings.GetString("rpc.error.invalid_batch_size"));
 
-                    context.Items[JsonRpcOptions.HttpContextErrorIdentifier] = new[] { jsonRpcError.Code };
+                    context.Items[JsonRpcOptions.ScopeErrorsIdentifier] = new[] { jsonRpcError.Code };
 
                     return _serializer.SerializeResponse(new JsonRpcResponse(jsonRpcError));
                 }
@@ -254,7 +254,7 @@ namespace Community.AspNetCore.JsonRpc
 
                             var jsonRpcError = new JsonRpcError(-32000, Strings.GetString("rpc.error.duplicate_ids"));
 
-                            context.Items[JsonRpcOptions.HttpContextErrorIdentifier] = new[] { jsonRpcError.Code };
+                            context.Items[JsonRpcOptions.ScopeErrorsIdentifier] = new[] { jsonRpcError.Code };
 
                             return _serializer.SerializeResponse(new JsonRpcResponse(jsonRpcError));
                         }
@@ -288,7 +288,7 @@ namespace Community.AspNetCore.JsonRpc
 
                 if (errorCodes.Count > 0)
                 {
-                    context.Items[JsonRpcOptions.HttpContextErrorIdentifier] = errorCodes;
+                    context.Items[JsonRpcOptions.ScopeErrorsIdentifier] = errorCodes;
                 }
                 if (responses.Count == 0)
                 {
@@ -318,7 +318,7 @@ namespace Community.AspNetCore.JsonRpc
 
             if (request.Id.Type == JsonRpcIdType.String)
             {
-                var maximumIdLength = _options?.MaxIdLength ?? 1024;
+                var maximumIdLength = _options?.MaxIdLength ?? 128;
                 var currentIdLength = ((string)request.Id).Length;
 
                 if (currentIdLength > maximumIdLength)
