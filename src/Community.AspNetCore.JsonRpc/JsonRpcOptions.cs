@@ -3,14 +3,19 @@
     /// <summary>Provides JSON-RPC transport options.</summary>
     public sealed class JsonRpcOptions
     {
-        /// <summary>Gets or sets maximum size of batch size (1024 is used if not specified).</summary>
+        /// <summary>Initializes a new instance of the <see cref="JsonRpcOptions" /> class.</summary>
+        public JsonRpcOptions()
+        {
+        }
+
+        /// <summary>Gets or sets the maximum size of batch size (1024 is used if not specified).</summary>
         public ushort? MaxBatchSize
         {
             get;
             set;
         }
 
-        /// <summary>Gets or sets maximum length of string message identifier (1024 is used if not specified).</summary>
+        /// <summary>Gets or sets the maximum length of string message identifier (1024 is used if not specified).</summary>
         public ushort? MaxIdLength
         {
             get;
