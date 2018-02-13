@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.TestHost;
 namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
 {
     [BenchmarkSuite("JsonRpcMiddleware")]
-    public abstract class JsonRpcHandlerBenchmarks
+    public abstract class JsonRpcMiddlewareBenchmarks
     {
         private readonly IDictionary<string, string> _resources = new Dictionary<string, string>(StringComparer.Ordinal);
 
@@ -24,7 +24,7 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
         private readonly HttpClient _clientHandler;
         private readonly HttpClient _clientService;
 
-        protected JsonRpcHandlerBenchmarks()
+        protected JsonRpcMiddlewareBenchmarks()
         {
             _serverHandler = new TestServer(ConfigureHandler(new WebHostBuilder()));
             _serverService = new TestServer(ConfigureService(new WebHostBuilder()));
@@ -33,29 +33,29 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
             _clientHandler.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             _clientService.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            foreach (var asset in new[] { "nam", "pos", "err", "not" })
+            foreach (var name in new[] { "nam", "pos", "err", "not" })
             {
-                _resources[asset] = EmbeddedResourceManager.GetString($"Assets.{asset}.json");
+                _resources[name] = EmbeddedResourceManager.GetString($"Assets.{name}.json");
             }
         }
 
         private static IWebHostBuilder ConfigureHandler(IWebHostBuilder builder)
         {
             return builder
-                .ConfigureServices(_ => _.AddJsonRpcService<JsonRpcTestService>())
-                .Configure(_ => _.UseJsonRpcService<JsonRpcTestService>());
+                .ConfigureServices(sc => sc.AddJsonRpcService<JsonRpcTestService>())
+                .Configure(ab => ab.UseJsonRpcService<JsonRpcTestService>());
         }
 
         private static IWebHostBuilder ConfigureService(IWebHostBuilder builder)
         {
             return builder
-                .ConfigureServices(_ => _.AddJsonRpcService<JsonRpcTestService>())
-                .Configure(_ => _.UseJsonRpcService<JsonRpcTestService>());
+                .ConfigureServices(sc => sc.AddJsonRpcService<JsonRpcTestService>())
+                .Configure(ab => ab.UseJsonRpcService<JsonRpcTestService>());
         }
 
-        private HttpContent CreateHttpContent(string asset)
+        private HttpContent CreateHttpContent(string name)
         {
-            var content = _resources[asset];
+            var content = _resources[name];
             var result = new StringContent(content, Encoding.UTF8, "application/json");
 
             result.Headers.ContentLength = content.Length;
@@ -63,49 +63,49 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
             return result;
         }
 
-        [Benchmark(Description = "HAN NAM")]
+        [Benchmark(Description = "handler / nam")]
         public async Task HandlerWithParamsByName()
         {
             await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam")).ConfigureAwait(false);
         }
 
-        [Benchmark(Description = "HAN POS")]
+        [Benchmark(Description = "handler / pos")]
         public async Task HandlerWithParamsByPosition()
         {
             await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos")).ConfigureAwait(false);
         }
 
-        [Benchmark(Description = "HAN ERR")]
+        [Benchmark(Description = "handler / err")]
         public async Task HandlerWithErrorResponse()
         {
             await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err")).ConfigureAwait(false);
         }
 
-        [Benchmark(Description = "HAN NOT")]
+        [Benchmark(Description = "handler / not")]
         public async Task HandlerWithNotification()
         {
             await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not")).ConfigureAwait(false);
         }
 
-        [Benchmark(Description = "SER NAM")]
+        [Benchmark(Description = "service / nam")]
         public async Task ServiceWithParamsByName()
         {
             await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam")).ConfigureAwait(false);
         }
 
-        [Benchmark(Description = "SER POS")]
+        [Benchmark(Description = "service / pos")]
         public async Task ServiceWithParamsByPosition()
         {
             await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos")).ConfigureAwait(false);
         }
 
-        [Benchmark(Description = "SER ERR")]
+        [Benchmark(Description = "service / err")]
         public async Task ServiceWithErrorResponse()
         {
             await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err")).ConfigureAwait(false);
         }
 
-        [Benchmark(Description = "SER NOT")]
+        [Benchmark(Description = "service / not")]
         public async Task ServiceWithNotification()
         {
             await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not")).ConfigureAwait(false);
