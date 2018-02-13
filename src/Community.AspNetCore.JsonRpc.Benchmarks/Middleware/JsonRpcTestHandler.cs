@@ -11,20 +11,20 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Middleware
         {
             return new Dictionary<string, JsonRpcRequestContract>(StringComparer.Ordinal)
             {
-                ["nam"] = new JsonRpcRequestContract(
+                ["mn"] = new JsonRpcRequestContract(
                     new Dictionary<string, Type>
                     {
-                        ["pr1"] = typeof(long),
-                        ["pr2"] = typeof(long)
+                        ["p1"] = typeof(long),
+                        ["p2"] = typeof(long)
                     }),
-                ["pos"] = new JsonRpcRequestContract(
+                ["mp"] = new JsonRpcRequestContract(
                     new[]
                     {
                         typeof(long),
                         typeof(long)
                     }),
-                ["err"] = new JsonRpcRequestContract(),
-                ["not"] = new JsonRpcRequestContract()
+                ["me"] = new JsonRpcRequestContract(),
+                ["mt"] = new JsonRpcRequestContract()
             };
         }
 
@@ -34,30 +34,22 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Middleware
 
             switch (request.Method)
             {
-                case "nam":
+                case "mn":
                     {
-                        var parameter1 = (long)request.ParamsByName["pr1"];
-                        var parameter2 = (long)request.ParamsByName["pr2"];
-
-                        response = new JsonRpcResponse(parameter1 - parameter2, request.Id);
+                        response = new JsonRpcResponse(3L, request.Id);
                     }
                     break;
-                case "pos":
+                case "mp":
                     {
-                        var parameter1 = (long)request.ParamsByPosition[0];
-                        var parameter2 = (long)request.ParamsByPosition[1];
-
-                        response = new JsonRpcResponse(parameter1 + parameter2, request.Id);
+                        response = new JsonRpcResponse(3L, request.Id);
                     }
                     break;
-                case "err":
+                case "me":
                     {
-                        var error = new JsonRpcError(100L, "94cccbe7-d613-4aca-8940-9298892b8ee6");
-
-                        response = new JsonRpcResponse(error, request.Id);
+                        response = new JsonRpcResponse(new JsonRpcError(0L, "m"), request.Id);
                     }
                     break;
-                case "not":
+                case "mt":
                     {
                     }
                     break;

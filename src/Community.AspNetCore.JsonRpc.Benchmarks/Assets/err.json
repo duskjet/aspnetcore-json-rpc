@@ -1,20 +1,12 @@
 [
     {
         "jsonrpc": "2.0",
-        "method": "mn",
-        "params": {
-            "p1": 1,
-            "p2": 2
-        },
-        "id": "1"
+        "method": "me",
+        "id": 1
     },
     {
         "jsonrpc": "2.0",
-        "method": "mn",
-        "params": {
-            "p1": 1,
-            "p2": 2
-        },
-        "id": "2"
+        "method": "me",
+        "id": 2
     }
 ]
