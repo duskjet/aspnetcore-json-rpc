@@ -119,7 +119,7 @@ namespace Community.AspNetCore.JsonRpc
 
             using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
             {
-                requestString = reader.ReadToEnd();
+                requestString = await reader.ReadToEndAsync().ConfigureAwait(false);
             }
 
             if (requestString.Length != context.Request.ContentLength.Value)
@@ -153,7 +153,7 @@ namespace Community.AspNetCore.JsonRpc
             }
         }
 
-        private static Task FinishInvocationAsync(HttpContext context, RequestDelegate next, HttpStatusCode? statusCode = null, byte[] body = null)
+        private static async Task FinishInvocationAsync(HttpContext context, RequestDelegate next, HttpStatusCode? statusCode = null, byte[] body = null)
         {
             if (statusCode.HasValue)
             {
@@ -163,7 +163,8 @@ namespace Community.AspNetCore.JsonRpc
                 {
                     context.Response.ContentType = JsonRpcTransportConstants.MimeType;
                     context.Response.ContentLength = body.Length;
-                    context.Response.Body.Write(body, 0, body.Length);
+
+                    await context.Response.Body.WriteAsync(body, 0, body.Length).ConfigureAwait(false);
                 }
                 else
                 {
@@ -171,7 +172,7 @@ namespace Community.AspNetCore.JsonRpc
                 }
             }
 
-            return next.Invoke(context);
+            await next.Invoke(context).ConfigureAwait(false);
         }
 
         private async Task<string> HandleJsonRpcContentAsync(HttpContext context, string content)
