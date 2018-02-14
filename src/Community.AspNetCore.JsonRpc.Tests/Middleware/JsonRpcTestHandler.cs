@@ -46,6 +46,7 @@ namespace Community.AspNetCore.JsonRpc.Tests.Middleware
             {
                 case "nam":
                     {
+                        Assert.Equal(JsonRpcParamsType.ByName, request.ParamsType);
                         Assert.Equal(2, request.ParamsByName.Count);
                         Assert.True(request.ParamsByName.ContainsKey("p1"));
                         Assert.True(request.ParamsByName.ContainsKey("p2"));
@@ -59,6 +60,7 @@ namespace Community.AspNetCore.JsonRpc.Tests.Middleware
                     break;
                 case "pos":
                     {
+                        Assert.Equal(JsonRpcParamsType.ByPosition, request.ParamsType);
                         Assert.Equal(2, request.ParamsByPosition.Count);
                         Assert.IsType<long>(request.ParamsByPosition[0]);
                         Assert.IsType<long>(request.ParamsByPosition[1]);
