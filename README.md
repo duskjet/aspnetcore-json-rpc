@@ -37,19 +37,19 @@ With logger factory availability, the following events may appear in a journal w
 
 ID | Level | Reason
 :---: | --- | ---
-`1000` | Error | An error occurred during deserialization of a JSON-RPC request
-`1010` | Error | A JSON-RPC request is not considered as a valid JSON-RPC message
-`1020` | Error | A JSON-RPC batch contains requests with duplicate identifiers
-`1030` | Error | A JSON-RPC message identifier exceeds length limit
-`1040` | Error | A JSON-RPC batch exceeds size limit
-`2000` | Warning | A JSON-RPC request processed as notification due to server configuration
-`3000` | Information | A JSON-RPC request processed as notification
-`3010` | Information | A JSON-RPC request processed with result
-`3020` | Information | A JSON-RPC request processed with error
-`3030` | Information | A JSON-RPC request processed with result as notification due to client demand
-`3040` | Information | A JSON-RPC request processed with error as notification due to client demand
-`4000` | Debug | A JSON-RPC request accepted for processing as a single item
-`4010` | Debug | A JSON-RPC request accepted for processing as a batch
+`1000` | Debug | A JSON-RPC request accepted for processing as a single item
+`1010` | Debug | A JSON-RPC request accepted for processing as a batch
+`2000` | Information | A JSON-RPC request processed as notification
+`2010` | Information | A JSON-RPC request processed with result
+`2020` | Information | A JSON-RPC request processed with error
+`2030` | Information | A JSON-RPC request processed with result as notification due to client demand
+`2040` | Information | A JSON-RPC request processed with error as notification due to client demand
+`3000` | Warning | A JSON-RPC request processed as notification due to server configuration
+`4000` | Error | An error occurred during deserialization of a JSON-RPC request
+`4010` | Error | A JSON-RPC request is not considered as a valid JSON-RPC message
+`4020` | Error | A JSON-RPC batch contains requests with duplicate identifiers
+`4030` | Error | A JSON-RPC message identifier exceeds length limit
+`4040` | Error | A JSON-RPC batch exceeds size limit
 
 ### Samples
 
