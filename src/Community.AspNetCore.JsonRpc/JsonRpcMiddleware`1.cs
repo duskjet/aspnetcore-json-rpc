@@ -353,11 +353,11 @@ namespace Community.AspNetCore.JsonRpc
                 {
                     if (response.Success)
                     {
-                        _logger?.LogWarning(2010, Strings.GetString("handler.response.handled_with_result_as_notification"), context.TraceIdentifier, request.Id, request.Method);
+                        _logger?.LogInformation(3030, Strings.GetString("handler.response.handled_with_result_as_notification"), context.TraceIdentifier, request.Method);
                     }
                     else
                     {
-                        _logger?.LogWarning(2020, Strings.GetString("handler.response.handled_with_error_as_notification"), context.TraceIdentifier, request.Id, request.Method, response.Error.Code, response.Error.Message);
+                        _logger?.LogInformation(3040, Strings.GetString("handler.response.handled_with_error_as_notification"), context.TraceIdentifier, request.Method, response.Error.Code, response.Error.Message);
                     }
                 }
             }

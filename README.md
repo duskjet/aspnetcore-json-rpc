@@ -43,11 +43,11 @@ ID | Level | Reason
 `1030` | Error | A JSON-RPC message identifier exceeds length limit
 `1040` | Error | A JSON-RPC batch exceeds size limit
 `2000` | Warning | A JSON-RPC request processed as notification due to server configuration
-`2010` | Warning | A JSON-RPC request processed with result as notification due to client demand
-`2020` | Warning | A JSON-RPC request processed with error as notification due to client demand
 `3000` | Information | A JSON-RPC request processed as notification
 `3010` | Information | A JSON-RPC request processed with result
 `3020` | Information | A JSON-RPC request processed with error
+`3030` | Information | A JSON-RPC request processed with result as notification due to client demand
+`3040` | Information | A JSON-RPC request processed with error as notification due to client demand
 `4000` | Debug | A JSON-RPC request accepted for processing as a single item
 `4010` | Debug | A JSON-RPC request accepted for processing as a batch
 

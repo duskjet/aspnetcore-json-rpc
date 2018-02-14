@@ -145,13 +145,13 @@
     <value>{0} JSON-RPC request "{1}" to the method "{2}" processed with error {3} ("{4}")</value>
   </data>
   <data name="handler.response.handled_with_error_as_notification" xml:space="preserve">
-    <value>{0} JSON-RPC request "{1}" to the method "{2}" processed with error {3} ("{4}") as notification</value>
+    <value>{0} JSON-RPC request to the method "{1}" processed with error {2} ("{3}") as notification</value>
   </data>
   <data name="handler.response.handled_with_result" xml:space="preserve">
     <value>{0} JSON-RPC request "{1}" to the method "{2}" processed with result</value>
   </data>
   <data name="handler.response.handled_with_result_as_notification" xml:space="preserve">
-    <value>{0} JSON-RPC request "{1}" to the method "{2}" processed with result as notification</value>
+    <value>{0} JSON-RPC request to the method "{1}" processed with result as notification</value>
   </data>
   <data name="handler.request.invalid_message" xml:space="preserve">
     <value>{0} JSON-RPC request "{1}" is not considered as a valid request</value>
