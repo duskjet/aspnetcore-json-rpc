@@ -1,7 +1,6 @@
 ﻿using System;
 using Community.AspNetCore.JsonRpc;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Community.AspNetCore
 {
@@ -10,53 +9,50 @@ namespace Community.AspNetCore
     {
         /// <summary>Registers the specified JSON-RPC 2.0 handler in the <see cref="IServiceCollection" /> instance.</summary>
         /// <typeparam name="T">The type of the handler.</typeparam>
-        /// <param name="serviceCollection">The <see cref="IServiceCollection" /> to register the middleware in.</param>
+        /// <param name="services">The <see cref="IServiceCollection" /> to register the middleware in.</param>
+        /// <param name="options">The JSON-RPC transport options.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="serviceCollection" /> is <see langword="null" />.</exception>
-        public static IServiceCollection AddJsonRpcHandler<T>(this IServiceCollection serviceCollection)
+        /// <exception cref="ArgumentNullException"><paramref name="services" /> is <see langword="null" />.</exception>
+        public static IServiceCollection AddJsonRpcHandler<T>(this IServiceCollection services, JsonRpcOptions options = null)
             where T : class, IJsonRpcHandler
         {
-            if (serviceCollection == null)
+            if (services == null)
             {
-                throw new ArgumentNullException(nameof(serviceCollection));
+                throw new ArgumentNullException(nameof(services));
             }
 
-            return serviceCollection.AddScoped<JsonRpcMiddleware<T>, JsonRpcMiddleware<T>>();
+            if (options != null)
+            {
+                services.Configure<JsonRpcOptions>(o => ApplyOptions(options, o));
+            }
+
+            services.AddScoped<JsonRpcMiddleware<T>, JsonRpcMiddleware<T>>();
+
+            return services;
         }
 
         /// <summary>Registers the specified JSON-RPC 2.0 service in the <see cref="IServiceCollection" /> instance.</summary>
         /// <typeparam name="T">The type of the service.</typeparam>
-        /// <param name="serviceCollection">The <see cref="IServiceCollection" /> to register the middleware in.</param>
+        /// <param name="services">The <see cref="IServiceCollection" /> to register the middleware in.</param>
+        /// <param name="options">The JSON-RPC transport options.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="serviceCollection" /> is <see langword="null" />.</exception>
-        public static IServiceCollection AddJsonRpcService<T>(this IServiceCollection serviceCollection)
+        /// <exception cref="ArgumentNullException"><paramref name="services" /> is <see langword="null" />.</exception>
+        public static IServiceCollection AddJsonRpcService<T>(this IServiceCollection services, JsonRpcOptions options = null)
             where T : class, IJsonRpcService
         {
-            if (serviceCollection == null)
+            if (services == null)
             {
-                throw new ArgumentNullException(nameof(serviceCollection));
+                throw new ArgumentNullException(nameof(services));
             }
 
-            return serviceCollection.AddScoped<JsonRpcMiddleware<JsonRpcServiceHandler<T>>, JsonRpcMiddleware<JsonRpcServiceHandler<T>>>();
-        }
-
-        /// <summary>Registers the specified JSON-RPC transport options via <see cref="IOptions{T}"/> in the <see cref="IServiceCollection" /> instance.</summary>
-        /// <param name="serviceCollection">The <see cref="IServiceCollection" /> to register the options in.</param>
-        /// <param name="options">The JSON-RPC transport options to use by JSON-RPC middleware.</param>
-        /// <returns>A reference to this instance after the operation has completed.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="serviceCollection" /> or <paramref name="options" /> is <see langword="null" />.</exception>
-        public static IServiceCollection AddJsonRpcOptions(this IServiceCollection serviceCollection, JsonRpcOptions options)
-        {
-            if (serviceCollection == null)
+            if (options != null)
             {
-                throw new ArgumentNullException(nameof(serviceCollection));
-            }
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
+                services.Configure<JsonRpcOptions>(o => ApplyOptions(options, o));
             }
 
-            return serviceCollection.Configure<JsonRpcOptions>(o => ApplyOptions(options, o));
+            services.AddScoped<JsonRpcMiddleware<JsonRpcServiceHandler<T>>, JsonRpcMiddleware<JsonRpcServiceHandler<T>>>();
+
+            return services;
         }
 
         private static void ApplyOptions(JsonRpcOptions source, JsonRpcOptions target)

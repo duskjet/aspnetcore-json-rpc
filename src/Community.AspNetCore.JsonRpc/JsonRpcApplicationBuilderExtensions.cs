@@ -9,37 +9,37 @@ namespace Microsoft.AspNetCore
     public static class JsonRpcApplicationBuilderExtensions
     {
         /// <summary>Adds the specified JSON-RPC 2.0 handler for the specified path to the <see cref="IApplicationBuilder" /> instance.</summary>
-        /// <param name="applicationBuilder">The <see cref="IApplicationBuilder" /> to add the middleware to.</param>
+        /// <param name="builder">The <see cref="IApplicationBuilder" /> to add the middleware to.</param>
         /// <param name="path">The request path for JSON-RPC methods.</param>
         /// <typeparam name="T">The type of the handler.</typeparam>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="applicationBuilder" /> is <see langword="null" />.</exception>
-        public static IApplicationBuilder UseJsonRpcHandler<T>(this IApplicationBuilder applicationBuilder, PathString path = default)
+        /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
+        public static IApplicationBuilder UseJsonRpcHandler<T>(this IApplicationBuilder builder, PathString path = default)
             where T : class, IJsonRpcHandler
         {
-            if (applicationBuilder == null)
+            if (builder == null)
             {
-                throw new ArgumentNullException(nameof(applicationBuilder));
+                throw new ArgumentNullException(nameof(builder));
             }
 
-            return applicationBuilder.Map(path, ab => ab.UseMiddleware<JsonRpcMiddleware<T>>());
+            return builder.Map(path, b => b.UseMiddleware<JsonRpcMiddleware<T>>());
         }
 
         /// <summary>Adds the specified JSON-RPC 2.0 service for the specified path to the <see cref="IApplicationBuilder" /> instance.</summary>
-        /// <param name="applicationBuilder">The <see cref="IApplicationBuilder" /> to add the middleware to.</param>
+        /// <param name="builder">The <see cref="IApplicationBuilder" /> to add the middleware to.</param>
         /// <param name="path">The request path for JSON-RPC methods.</param>
         /// <typeparam name="T">The type of the service.</typeparam>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="applicationBuilder" /> is <see langword="null" />.</exception>
-        public static IApplicationBuilder UseJsonRpcService<T>(this IApplicationBuilder applicationBuilder, PathString path = default)
+        /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
+        public static IApplicationBuilder UseJsonRpcService<T>(this IApplicationBuilder builder, PathString path = default)
             where T : class, IJsonRpcService
         {
-            if (applicationBuilder == null)
+            if (builder == null)
             {
-                throw new ArgumentNullException(nameof(applicationBuilder));
+                throw new ArgumentNullException(nameof(builder));
             }
 
-            return applicationBuilder.Map(path, ab => ab.UseMiddleware<JsonRpcMiddleware<JsonRpcServiceHandler<T>>>());
+            return builder.Map(path, b => b.UseMiddleware<JsonRpcMiddleware<JsonRpcServiceHandler<T>>>());
         }
     }
 }

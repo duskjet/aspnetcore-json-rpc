@@ -28,31 +28,11 @@ namespace Community.AspNetCore.JsonRpc.Tests
 
         private async Task InvokeMiddlewareTestAsync(Action<IWebHostBuilder> configurator, string test)
         {
-            var options = new JsonRpcOptions
-            {
-                MaxBatchSize = 2,
-                MaxIdLength = 36
-            };
-
-            void ConfigureServices(IServiceCollection serviceCollection)
-            {
-                serviceCollection
-                    .AddOptions()
-                    .AddJsonRpcOptions(options);
-            }
-            void ConfigureLogging(ILoggingBuilder loggingBuilder)
-            {
-                loggingBuilder
-                    .SetMinimumLevel(LogLevel.Trace)
-                    .AddXunit(_output);
-            }
-
             var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");
             var responseContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_res.json");
 
             var builder = new WebHostBuilder()
-                .ConfigureServices(ConfigureServices)
-                .ConfigureLogging(ConfigureLogging);
+                .ConfigureLogging(lb => lb.SetMinimumLevel(LogLevel.Trace).AddXunit(_output));
 
             configurator.Invoke(builder);
 
@@ -123,10 +103,16 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("ipt")]
         public async Task UseJsonRpcHandler(string test)
         {
-            void ConfigureMiddleware(IWebHostBuilder webHostBuilder)
+            var options = new JsonRpcOptions
             {
-                webHostBuilder
-                    .ConfigureServices(sc => sc.AddJsonRpcHandler<JsonRpcTestHandler>())
+                MaxBatchSize = 2,
+                MaxIdLength = 36
+            };
+
+            void ConfigureMiddleware(IWebHostBuilder builder)
+            {
+                builder
+                    .ConfigureServices(sc => sc.AddOptions().AddJsonRpcHandler<JsonRpcTestHandler>(options))
                     .Configure(ab => ab.UseJsonRpcHandler<JsonRpcTestHandler>("/api/v1"));
             }
 
@@ -148,10 +134,16 @@ namespace Community.AspNetCore.JsonRpc.Tests
         [InlineData("ipt")]
         public async Task UseJsonRpcService(string test)
         {
-            void ConfigureMiddleware(IWebHostBuilder webHostBuilder)
+            var options = new JsonRpcOptions
             {
-                webHostBuilder
-                    .ConfigureServices(sc => sc.AddJsonRpcService<JsonRpcTestService>())
+                MaxBatchSize = 2,
+                MaxIdLength = 36
+            };
+
+            void ConfigureMiddleware(IWebHostBuilder builder)
+            {
+                builder
+                    .ConfigureServices(sc => sc.AddOptions().AddJsonRpcService<JsonRpcTestService>(options))
                     .Configure(ab => ab.UseJsonRpcService<JsonRpcTestService>("/api/v1"));
             }
 
