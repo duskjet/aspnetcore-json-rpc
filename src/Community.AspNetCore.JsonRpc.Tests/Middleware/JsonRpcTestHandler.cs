@@ -3,21 +3,15 @@ using System.Collections.Generic;
 using System.Data.JsonRpc;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Xunit;
 
 namespace Community.AspNetCore.JsonRpc.Tests.Middleware
 {
     internal sealed class JsonRpcTestHandler : IJsonRpcHandler
     {
-        private readonly ILogger _logger;
-
         public JsonRpcTestHandler(ILoggerFactory loggerFactory)
         {
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            _logger = loggerFactory.CreateLogger<JsonRpcTestHandler>();
+            Assert.NotNull(loggerFactory);
         }
 
         public IReadOnlyDictionary<string, JsonRpcRequestContract> CreateScheme()
@@ -27,8 +21,8 @@ namespace Community.AspNetCore.JsonRpc.Tests.Middleware
                 ["nam"] = new JsonRpcRequestContract(
                     new Dictionary<string, Type>
                     {
-                        ["pr1"] = typeof(long),
-                        ["pr2"] = typeof(long)
+                        ["p1"] = typeof(long),
+                        ["p2"] = typeof(long)
                     }),
                 ["pos"] = new JsonRpcRequestContract(
                     new[]
@@ -43,36 +37,44 @@ namespace Community.AspNetCore.JsonRpc.Tests.Middleware
 
         public Task<JsonRpcResponse> HandleAsync(JsonRpcRequest request)
         {
+            Assert.NotNull(request);
+            Assert.False(request.IsSystem);
+
             var response = default(JsonRpcResponse);
 
             switch (request.Method)
             {
                 case "nam":
                     {
-                        var parameter1 = (long)request.ParamsByName["pr1"];
-                        var parameter2 = (long)request.ParamsByName["pr2"];
+                        Assert.Equal(2, request.ParamsByName.Count);
+                        Assert.True(request.ParamsByName.ContainsKey("p1"));
+                        Assert.True(request.ParamsByName.ContainsKey("p2"));
+                        Assert.IsType<long>(request.ParamsByName["p1"]);
+                        Assert.IsType<long>(request.ParamsByName["p2"]);
+                        Assert.Equal(1L, (long)request.ParamsByName["p1"]);
+                        Assert.Equal(2L, (long)request.ParamsByName["p2"]);
 
-                        response = new JsonRpcResponse(parameter1 - parameter2, request.Id);
+                        response = new JsonRpcResponse(-1L, request.Id);
                     }
                     break;
                 case "pos":
                     {
-                        var parameter1 = (long)request.ParamsByPosition[0];
-                        var parameter2 = (long)request.ParamsByPosition[1];
+                        Assert.Equal(2, request.ParamsByPosition.Count);
+                        Assert.IsType<long>(request.ParamsByPosition[0]);
+                        Assert.IsType<long>(request.ParamsByPosition[1]);
+                        Assert.Equal(1L, (long)request.ParamsByPosition[0]);
+                        Assert.Equal(2L, (long)request.ParamsByPosition[1]);
 
-                        response = new JsonRpcResponse(parameter1 + parameter2, request.Id);
+                        response = new JsonRpcResponse(3L, request.Id);
                     }
                     break;
                 case "err":
                     {
-                        var error = new JsonRpcError(100L, "94cccbe7-d613-4aca-8940-9298892b8ee6");
-
-                        response = new JsonRpcResponse(error, request.Id);
+                        response = new JsonRpcResponse(new JsonRpcError(0L, "m"), request.Id);
                     }
                     break;
                 case "not":
                     {
-                        _logger.LogInformation("Notification received");
                     }
                     break;
             }

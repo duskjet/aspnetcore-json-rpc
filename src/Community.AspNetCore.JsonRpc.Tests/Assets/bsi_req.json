@@ -1,17 +1,17 @@
 [
     {
         "jsonrpc": "2.0",
-        "id": "1cd2c27e-6c61-40d5-b30e-ca8e89456d2b",
+        "id": 1,
         "method": "bat"
     },
     {
         "jsonrpc": "2.0",
-        "id": "1cd2c27e-6c61-40d5-b30e-ca8e89456d2c",
+        "id": 2,
         "method": "bat"
     },
     {
         "jsonrpc": "2.0",
-        "id": "1cd2c27e-6c61-40d5-b30e-ca8e89456d2â",
+        "id": 3,
         "method": "bat"
     }
 ]

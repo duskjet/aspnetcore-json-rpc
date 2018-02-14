@@ -1,46 +1,47 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Xunit;
 
 namespace Community.AspNetCore.JsonRpc.Tests.Middleware
 {
     internal sealed class JsonRpcTestService : IJsonRpcService
     {
-        private readonly ILogger _logger;
-
         public JsonRpcTestService(ILoggerFactory loggerFactory)
         {
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            _logger = loggerFactory.CreateLogger<JsonRpcTestService>();
+            Assert.NotNull(loggerFactory);
         }
 
         [JsonRpcName("nam")]
-        public Task<long> MethodWithParamsByName([JsonRpcName("pr1")] long parameter1, [JsonRpcName("pr2")] long parameter2)
+        public Task<long> MethodWithParamsByName(
+            [JsonRpcName("p1")] long parameter1,
+            [JsonRpcName("p2")] long parameter2)
         {
-            return Task.FromResult(parameter1 - parameter2);
+            Assert.Equal(1L, parameter1);
+            Assert.Equal(2L, parameter2);
+
+            return Task.FromResult(-1L);
         }
 
         [JsonRpcName("pos")]
-        public Task<long> MethodWithParamsByPosition(long parameter1, long parameter2)
+        public Task<long> MethodWithParamsByPosition(
+            long parameter1,
+            long parameter2)
         {
-            return Task.FromResult(parameter1 + parameter2);
+            Assert.Equal(1L, parameter1);
+            Assert.Equal(2L, parameter2);
+
+            return Task.FromResult(3L);
         }
 
         [JsonRpcName("err")]
         public Task<long> MethodWithErrorResponse()
         {
-            throw new JsonRpcServiceException(100L, "94cccbe7-d613-4aca-8940-9298892b8ee6");
+            throw new JsonRpcServiceException(0L, "m");
         }
 
         [JsonRpcName("not")]
         public Task MethodWithNotification()
         {
-            _logger.LogInformation("Notification received");
-
             return Task.CompletedTask;
         }
     }
