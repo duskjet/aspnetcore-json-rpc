@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore
 {
     /// <summary>The JSON-RPC 2.0 middleware extensions for the <see cref="IApplicationBuilder" />.</summary>
-    public static class JsonRpcApplicationBuilderExtensions
+    public static class JsonRpcBuilderExtensions
     {
         /// <summary>Adds the specified JSON-RPC 2.0 handler for the specified path to the <see cref="IApplicationBuilder" /> instance.</summary>
         /// <param name="builder">The <see cref="IApplicationBuilder" /> to add the middleware to.</param>

@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Community.AspNetCore
 {
     /// <summary>The JSON-RPC 2.0 middleware extensions for the <see cref="IServiceCollection" />.</summary>
-    public static class JsonRpcServiceCollectionExtensions
+    public static class JsonRpcServicesExtensions
     {
         /// <summary>Registers the specified JSON-RPC 2.0 handler in the <see cref="IServiceCollection" /> instance.</summary>
         /// <typeparam name="T">The type of the handler.</typeparam>
