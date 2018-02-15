@@ -98,7 +98,7 @@ namespace Community.AspNetCore.JsonRpc
             }
             if (context.Request.Headers[HeaderNames.ContentEncoding] != default(StringValues))
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.BadRequest).ConfigureAwait(false);
+                await FinishInvocationAsync(context, next, HttpStatusCode.UnsupportedMediaType).ConfigureAwait(false);
 
                 return;
             }

@@ -77,7 +77,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
 
                     var response4 = await client.PostAsync("/api/v1", requestContent2).ConfigureAwait(false);
 
-                    Assert.Equal(HttpStatusCode.BadRequest, response4.StatusCode);
+                    Assert.Equal(HttpStatusCode.UnsupportedMediaType, response4.StatusCode);
 
                     var response2 = await client.PostAsync("/api/v2", requestContent1).ConfigureAwait(false);
 

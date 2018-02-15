@@ -30,8 +30,8 @@ In addition to the JSON-RPC HTTP transport specification the middleware may retu
 Code | Reason
 :---: | ---
 `400` | The request query string is specified
-`400` | The `Content-Encoding` header is specified
 `400` | The `Content-Length` header has a value that differs from the actual content length
+`415` | The `Content-Encoding` header is specified
 
 With logger factory availability, the following events may appear in a journal with the related details (e.g. method name, request identifier):
 
