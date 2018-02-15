@@ -31,7 +31,7 @@ Code | Reason
 :---: | ---
 `400` | The request query string is specified
 `400` | The `Content-Length` header has a value that differs from the actual content length
-`415` | The `Content-Encoding` header is specified
+`415` | The `Content-Encoding` header is specified and does not equal `identity` value (case insensitive)
 
 With logger factory availability, the following events may appear in a journal with the related details (e.g. method name, request identifier):
 

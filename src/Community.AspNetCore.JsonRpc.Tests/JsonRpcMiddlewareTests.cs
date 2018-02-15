@@ -26,7 +26,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
             _output = output;
         }
 
-        private async Task InvokeMiddlewareTestAsync(Action<IWebHostBuilder> configurator, string test)
+        private async Task ExecuteMiddlewareTestAsync(Action<IWebHostBuilder> configurator, string test)
         {
             var requestContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_req.json");
             var responseContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_res.json");
@@ -44,18 +44,18 @@ namespace Community.AspNetCore.JsonRpc.Tests
                 {
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                    var requestContent1 = new StringContent(requestContentSample);
+                    var requestContent = new StringContent(requestContentSample);
 
-                    requestContent1.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                    requestContent1.Headers.ContentLength = requestContentSample.Length;
+                    requestContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                    requestContent.Headers.ContentLength = requestContentSample.Length;
 
-                    var response1 = await client.PostAsync("/api/v1", requestContent1).ConfigureAwait(false);
+                    var response = await client.PostAsync("/api/v1", requestContent).ConfigureAwait(false);
 
                     if (responseContentSample != string.Empty)
                     {
-                        Assert.Equal(HttpStatusCode.OK, response1.StatusCode);
+                        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-                        var responseContent = await response1.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                         Assert.False(string.IsNullOrEmpty(responseContent), "Actual response content is empty");
 
@@ -67,25 +67,64 @@ namespace Community.AspNetCore.JsonRpc.Tests
                     }
                     else
                     {
-                        Assert.Equal(HttpStatusCode.NoContent, response1.StatusCode);
+                        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
                     }
+                }
+            }
+        }
 
-                    var requestContent2 = new StringContent(requestContentSample);
+        private async Task ExecuteMiddlewareTestWithInvalidResponseAsync(Action<IWebHostBuilder> configurator)
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureLogging(lb => lb
+                    .SetMinimumLevel(LogLevel.Trace)
+                    .AddXunit(_output));
+
+            configurator.Invoke(builder);
+
+            using (var server = new TestServer(builder))
+            {
+                using (var client = server.CreateClient())
+                {
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    var requestContent1 = new StringContent("");
+
+                    requestContent1.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                    requestContent1.Headers.ContentLength = 0L;
+
+                    var response1 = await client.PostAsync("/api/v2", requestContent1).ConfigureAwait(false);
+
+                    Assert.Equal(HttpStatusCode.NotFound, response1.StatusCode);
+
+                    var requestContent2 = new StringContent("");
 
                     requestContent2.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                    requestContent2.Headers.ContentEncoding.Add("gzip");
+                    requestContent2.Headers.ContentLength = 0L;
 
-                    var response4 = await client.PostAsync("/api/v1", requestContent2).ConfigureAwait(false);
+                    var response2 = await client.PostAsync("/api/v1?p=v", requestContent2).ConfigureAwait(false);
 
-                    Assert.Equal(HttpStatusCode.UnsupportedMediaType, response4.StatusCode);
+                    Assert.Equal(HttpStatusCode.BadRequest, response2.StatusCode);
 
-                    var response2 = await client.PostAsync("/api/v2", requestContent1).ConfigureAwait(false);
+                    var requestContent3 = new StringContent("");
 
-                    Assert.Equal(HttpStatusCode.NotFound, response2.StatusCode);
+                    requestContent3.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                    requestContent3.Headers.ContentLength = 0L;
+                    requestContent3.Headers.ContentEncoding.Add("deflate");
 
-                    var response3 = await client.PostAsync("/api/v1?p=v", requestContent1).ConfigureAwait(false);
+                    var response3 = await client.PostAsync("/api/v1", requestContent3).ConfigureAwait(false);
 
-                    Assert.Equal(HttpStatusCode.BadRequest, response3.StatusCode);
+                    Assert.Equal(HttpStatusCode.UnsupportedMediaType, response3.StatusCode);
+
+                    var requestContent4 = new StringContent("");
+
+                    requestContent4.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                    requestContent4.Headers.ContentLength = 0L;
+                    requestContent4.Headers.ContentEncoding.Add("identity");
+
+                    var response4 = await client.PostAsync("/api/v1", requestContent4).ConfigureAwait(false);
+
+                    Assert.Equal(HttpStatusCode.OK, response4.StatusCode);
                 }
             }
         }
@@ -111,16 +150,16 @@ namespace Community.AspNetCore.JsonRpc.Tests
                 MaxIdLength = 36
             };
 
-            void ConfigureMiddleware(IWebHostBuilder builder)
+            var configurator = (Action<IWebHostBuilder>)(builder =>
             {
                 builder
                     .ConfigureServices(sc => sc
                         .AddJsonRpcHandler<JsonRpcTestHandler>(options))
                     .Configure(ab => ab
                         .UseJsonRpcHandler<JsonRpcTestHandler>("/api/v1"));
-            }
+            });
 
-            await InvokeMiddlewareTestAsync(ConfigureMiddleware, test);
+            await ExecuteMiddlewareTestAsync(configurator, test);
         }
 
         [Theory]
@@ -144,16 +183,46 @@ namespace Community.AspNetCore.JsonRpc.Tests
                 MaxIdLength = 36
             };
 
-            void ConfigureMiddleware(IWebHostBuilder builder)
+            var configurator = (Action<IWebHostBuilder>)(builder =>
             {
                 builder
                     .ConfigureServices(sc => sc
                         .AddJsonRpcService<JsonRpcTestService>(options))
                     .Configure(ab => ab
                         .UseJsonRpcService<JsonRpcTestService>("/api/v1"));
-            }
+            });
 
-            await InvokeMiddlewareTestAsync(ConfigureMiddleware, test);
+            await ExecuteMiddlewareTestAsync(configurator, test);
+        }
+
+        [Fact]
+        public async Task UseJsonRpcHandlerWithInvalidResponse()
+        {
+            var configurator = (Action<IWebHostBuilder>)(builder =>
+            {
+                builder
+                    .ConfigureServices(sc => sc
+                        .AddJsonRpcHandler<JsonRpcTestHandler>())
+                    .Configure(ab => ab
+                        .UseJsonRpcHandler<JsonRpcTestHandler>("/api/v1"));
+            });
+
+            await ExecuteMiddlewareTestWithInvalidResponseAsync(configurator);
+        }
+
+        [Fact]
+        public async Task UseJsonRpcServiceWithInvalidResponse()
+        {
+            var configurator = (Action<IWebHostBuilder>)(builder =>
+            {
+                builder
+                    .ConfigureServices(sc => sc
+                        .AddJsonRpcService<JsonRpcTestService>())
+                    .Configure(ab => ab
+                        .UseJsonRpcService<JsonRpcTestService>("/api/v1"));
+            });
+
+            await ExecuteMiddlewareTestWithInvalidResponseAsync(configurator);
         }
     }
 }

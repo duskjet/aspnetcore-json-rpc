@@ -96,11 +96,17 @@ namespace Community.AspNetCore.JsonRpc
 
                 return;
             }
-            if (context.Request.Headers[HeaderNames.ContentEncoding] != default(StringValues))
-            {
-                await FinishInvocationAsync(context, next, HttpStatusCode.UnsupportedMediaType).ConfigureAwait(false);
 
-                return;
+            var encodingName = context.Request.Headers[HeaderNames.ContentEncoding];
+
+            if (encodingName != default(StringValues))
+            {
+                if (string.Compare(encodingName, "identity", StringComparison.OrdinalIgnoreCase) != 0)
+                {
+                    await FinishInvocationAsync(context, next, HttpStatusCode.UnsupportedMediaType).ConfigureAwait(false);
+
+                    return;
+                }
             }
             if (context.Request.ContentLength == null)
             {
