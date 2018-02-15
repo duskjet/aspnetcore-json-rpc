@@ -32,7 +32,9 @@ namespace Community.AspNetCore.JsonRpc.Tests
             var responseContentSample = EmbeddedResourceManager.GetString($"Assets.{test}_res.json");
 
             var builder = new WebHostBuilder()
-                .ConfigureLogging(lb => lb.SetMinimumLevel(LogLevel.Trace).AddXunit(_output));
+                .ConfigureLogging(lb => lb
+                    .SetMinimumLevel(LogLevel.Trace)
+                    .AddXunit(_output));
 
             configurator.Invoke(builder);
 
@@ -112,8 +114,10 @@ namespace Community.AspNetCore.JsonRpc.Tests
             void ConfigureMiddleware(IWebHostBuilder builder)
             {
                 builder
-                    .ConfigureServices(sc => sc.AddOptions().AddJsonRpcHandler<JsonRpcTestHandler>(options))
-                    .Configure(ab => ab.UseJsonRpcHandler<JsonRpcTestHandler>("/api/v1"));
+                    .ConfigureServices(sc => sc
+                        .AddJsonRpcHandler<JsonRpcTestHandler>(options))
+                    .Configure(ab => ab
+                        .UseJsonRpcHandler<JsonRpcTestHandler>("/api/v1"));
             }
 
             await InvokeMiddlewareTestAsync(ConfigureMiddleware, test);
@@ -143,8 +147,10 @@ namespace Community.AspNetCore.JsonRpc.Tests
             void ConfigureMiddleware(IWebHostBuilder builder)
             {
                 builder
-                    .ConfigureServices(sc => sc.AddOptions().AddJsonRpcService<JsonRpcTestService>(options))
-                    .Configure(ab => ab.UseJsonRpcService<JsonRpcTestService>("/api/v1"));
+                    .ConfigureServices(sc => sc
+                        .AddJsonRpcService<JsonRpcTestService>(options))
+                    .Configure(ab => ab
+                        .UseJsonRpcService<JsonRpcTestService>("/api/v1"));
             }
 
             await InvokeMiddlewareTestAsync(ConfigureMiddleware, test);
