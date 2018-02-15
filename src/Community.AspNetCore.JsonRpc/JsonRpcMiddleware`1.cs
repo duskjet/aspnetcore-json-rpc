@@ -158,7 +158,7 @@ namespace Community.AspNetCore.JsonRpc
                     context.Response.ContentType = JsonRpcTransportConstants.MimeType;
                     context.Response.ContentLength = body.Length;
 
-                    await context.Response.Body.WriteAsync(body, 0, body.Length).ConfigureAwait(false);
+                    await context.Response.Body.WriteAsync(body, 0, body.Length, context.RequestAborted).ConfigureAwait(false);
                 }
                 else
                 {

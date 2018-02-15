@@ -66,9 +66,11 @@ namespace Community.AspNetCore.JsonRpc
             AcquireContracts(blueprint, type.GetMethods(BindingFlags.Instance | BindingFlags.Public));
             AcquireContracts(blueprint, type.BaseType);
 
-            foreach (var interfaceType in type.GetInterfaces())
+            var interfaceTypes = type.GetInterfaces();
+
+            for (var i = 0; i < interfaceTypes.Length; i++)
             {
-                AcquireContracts(blueprint, interfaceType);
+                AcquireContracts(blueprint, interfaceTypes[i]);
             }
         }
 
