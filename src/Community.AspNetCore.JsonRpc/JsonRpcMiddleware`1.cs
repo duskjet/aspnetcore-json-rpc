@@ -72,7 +72,7 @@ namespace Community.AspNetCore.JsonRpc
 
         async Task IMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            if (context.RequestAborted.IsCancellationRequested || context.Response.HasStarted)
+            if (context.Response.HasStarted)
             {
                 await FinishInvocationAsync(context, next).ConfigureAwait(false);
 
@@ -135,19 +135,7 @@ namespace Community.AspNetCore.JsonRpc
                 return;
             }
 
-            var responseString = default(string);
-
-            try
-            {
-                responseString = await HandleJsonRpcContentAsync(context, requestString).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-                when (context.RequestAborted.IsCancellationRequested)
-            {
-                await FinishInvocationAsync(context, next).ConfigureAwait(false);
-
-                return;
-            }
+            var responseString = await HandleJsonRpcContentAsync(context, requestString).ConfigureAwait(false);
 
             if (responseString != null)
             {
@@ -189,11 +177,11 @@ namespace Community.AspNetCore.JsonRpc
             {
                 requestData = _serializer.DeserializeRequestData(content);
             }
-            catch (JsonRpcException ex)
+            catch (JsonRpcException e)
             {
-                _logger?.LogError(4000, ex, Strings.GetString("handler.request_data.declined"), context.TraceIdentifier, context.Request.PathBase);
+                _logger?.LogError(4000, e, Strings.GetString("handler.request_data.declined"), context.TraceIdentifier, context.Request.PathBase);
 
-                var jsonRpcError = ConvertExceptionToError(ex);
+                var jsonRpcError = ConvertExceptionToError(e);
 
                 context.Items[JsonRpcTransportConstants.ScopeErrorsIdentifier] = new[] { jsonRpcError.Code };
 

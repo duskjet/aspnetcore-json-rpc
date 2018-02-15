@@ -216,15 +216,15 @@ namespace Community.AspNetCore.JsonRpc
                     return new JsonRpcResponse(await ((dynamic)method.Invoke(_service, parametersValues)).ConfigureAwait(false) as object, request.Id);
                 }
             }
-            catch (TargetInvocationException ex)
-                when (ex.InnerException is OperationCanceledException iex)
+            catch (TargetInvocationException e)
+                when (e.InnerException is JsonRpcServiceException jrse)
             {
-                ExceptionDispatchInfo.Capture(iex).Throw();
+                return new JsonRpcResponse(new JsonRpcError(jrse.Code, jrse.Message, jrse.ErrorData), request.Id);
             }
-            catch (TargetInvocationException ex)
-                when (ex.InnerException is JsonRpcServiceException iex)
+            catch (TargetInvocationException e)
+                when (e.InnerException != null)
             {
-                return new JsonRpcResponse(new JsonRpcError(iex.Code, iex.Message, iex.ErrorData), request.Id);
+                ExceptionDispatchInfo.Capture(e.InnerException).Throw();
             }
 
             return null;
