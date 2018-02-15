@@ -1,6 +1,6 @@
 ﻿namespace Community.AspNetCore.JsonRpc
 {
-    /// <summary>Provides JSON-RPC transport options.</summary>
+    /// <summary>Provides options for the JSON-RPC 2.0 middleware.</summary>
     public sealed class JsonRpcOptions
     {
         /// <summary>Initializes a new instance of the <see cref="JsonRpcOptions" /> class.</summary>

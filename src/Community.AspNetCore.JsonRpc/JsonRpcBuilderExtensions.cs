@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore
     /// <summary>The JSON-RPC 2.0 middleware extensions for the <see cref="IApplicationBuilder" />.</summary>
     public static class JsonRpcBuilderExtensions
     {
-        /// <summary>Adds the specified JSON-RPC 2.0 handler for the specified path to the <see cref="IApplicationBuilder" /> instance.</summary>
+        /// <summary>Adds the specified JSON-RPC 2.0 handler to the application's request pipeline for the specified path.</summary>
         /// <param name="builder">The <see cref="IApplicationBuilder" /> to add the middleware to.</param>
         /// <param name="path">The request path for JSON-RPC methods.</param>
         /// <typeparam name="T">The type of the handler.</typeparam>
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore
             return builder.Map(path, b => b.UseMiddleware<JsonRpcMiddleware<T>>());
         }
 
-        /// <summary>Adds the specified JSON-RPC 2.0 service for the specified path to the <see cref="IApplicationBuilder" /> instance.</summary>
+        /// <summary>Adds the specified JSON-RPC 2.0 service to the application's request pipeline for the specified path.</summary>
         /// <param name="builder">The <see cref="IApplicationBuilder" /> to add the middleware to.</param>
         /// <param name="path">The request path for JSON-RPC methods.</param>
         /// <typeparam name="T">The type of the service.</typeparam>

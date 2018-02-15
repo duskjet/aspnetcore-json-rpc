@@ -51,7 +51,7 @@ ID | Level | Reason
 `4030` | Error | A JSON-RPC message identifier exceeds length limit
 `4040` | Error | A JSON-RPC batch exceeds size limit
 
-### Samples
+### Examples
 
 ```cs
 public class MyJsonRpcService : IJsonRpcService

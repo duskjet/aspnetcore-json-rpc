@@ -17,47 +17,53 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
     [BenchmarkSuite("JsonRpcMiddleware")]
     public abstract class JsonRpcMiddlewareBenchmarks
     {
-        private readonly IDictionary<string, string> _resources = new Dictionary<string, string>(StringComparer.Ordinal);
+        private static readonly MediaTypeHeaderValue _mimeType = new MediaTypeHeaderValue("aplication/json");
+        private static readonly IReadOnlyDictionary<string, byte[]> _contents;
 
         private readonly TestServer _serverHandler;
         private readonly TestServer _serverService;
         private readonly HttpClient _clientHandler;
         private readonly HttpClient _clientService;
 
+        static JsonRpcMiddlewareBenchmarks()
+        {
+            var contents = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+
+            foreach (var name in new[] { "nam", "pos", "err", "not" })
+            {
+                contents[name] = Encoding.UTF8.GetBytes(EmbeddedResourceManager.GetString($"Assets.{name}.json"));
+            }
+
+            _contents = contents;
+        }
+
         protected JsonRpcMiddlewareBenchmarks()
         {
-            _serverHandler = new TestServer(ConfigureHandler(new WebHostBuilder()));
-            _serverService = new TestServer(ConfigureService(new WebHostBuilder()));
+            var builderHandler = new WebHostBuilder()
+                .ConfigureServices(sc => sc
+                    .AddJsonRpcService<JsonRpcTestService>())
+                .Configure(ab => ab
+                    .UseJsonRpcService<JsonRpcTestService>());
+            var builderService = new WebHostBuilder()
+                .ConfigureServices(sc => sc
+                    .AddJsonRpcService<JsonRpcTestService>())
+                .Configure(ab => ab
+                    .UseJsonRpcService<JsonRpcTestService>());
+
+            _serverHandler = new TestServer(builderHandler);
+            _serverService = new TestServer(builderService);
             _clientHandler = _serverHandler.CreateClient();
             _clientService = _serverService.CreateClient();
             _clientHandler.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             _clientService.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            foreach (var name in new[] { "nam", "pos", "err", "not" })
-            {
-                _resources[name] = EmbeddedResourceManager.GetString($"Assets.{name}.json");
-            }
-        }
-
-        private static IWebHostBuilder ConfigureHandler(IWebHostBuilder builder)
-        {
-            return builder
-                .ConfigureServices(sc => sc.AddJsonRpcService<JsonRpcTestService>())
-                .Configure(ab => ab.UseJsonRpcService<JsonRpcTestService>());
-        }
-
-        private static IWebHostBuilder ConfigureService(IWebHostBuilder builder)
-        {
-            return builder
-                .ConfigureServices(sc => sc.AddJsonRpcService<JsonRpcTestService>())
-                .Configure(ab => ab.UseJsonRpcService<JsonRpcTestService>());
         }
 
         private HttpContent CreateHttpContent(string name)
         {
-            var content = _resources[name];
-            var result = new StringContent(content, Encoding.UTF8, "application/json");
+            var content = _contents[name];
+            var result = new ByteArrayContent(content);
 
+            result.Headers.ContentType = _mimeType;
             result.Headers.ContentLength = content.Length;
 
             return result;
