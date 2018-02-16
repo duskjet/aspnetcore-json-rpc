@@ -178,10 +178,7 @@ namespace Community.AspNetCore.JsonRpc
 
                 var jsonRpcError = ConvertExceptionToError(e);
 
-                if (_diagnosticProvider != null)
-                {
-                    await _diagnosticProvider.HandleErrorAsync(jsonRpcError.Code);
-                }
+                await HandleErrorAsync(jsonRpcError);
 
                 return _serializer.SerializeResponse(new JsonRpcResponse(jsonRpcError));
             }
@@ -202,10 +199,7 @@ namespace Community.AspNetCore.JsonRpc
                 }
                 if (!response.Success)
                 {
-                    if (_diagnosticProvider != null)
-                    {
-                        await _diagnosticProvider.HandleErrorAsync(response.Error.Code);
-                    }
+                    await HandleErrorAsync(response.Error);
                 }
                 if (requestItem.IsValid && requestItem.Message.IsNotification)
                 {
@@ -230,10 +224,7 @@ namespace Community.AspNetCore.JsonRpc
 
                     var jsonRpcError = new JsonRpcError(JsonRpcTransportErrorCodes.InvalidBatchSize, Strings.GetString("rpc.error.invalid_batch_size"));
 
-                    if (_diagnosticProvider != null)
-                    {
-                        await _diagnosticProvider.HandleErrorAsync(jsonRpcError.Code);
-                    }
+                    await HandleErrorAsync(jsonRpcError);
 
                     return _serializer.SerializeResponse(new JsonRpcResponse(jsonRpcError));
                 }
@@ -252,10 +243,7 @@ namespace Community.AspNetCore.JsonRpc
 
                             var jsonRpcError = new JsonRpcError(JsonRpcTransportErrorCodes.DuplicateIdentifiers, Strings.GetString("rpc.error.duplicate_ids"));
 
-                            if (_diagnosticProvider != null)
-                            {
-                                await _diagnosticProvider.HandleErrorAsync(jsonRpcError.Code);
-                            }
+                            await HandleErrorAsync(jsonRpcError);
 
                             return _serializer.SerializeResponse(new JsonRpcResponse(jsonRpcError));
                         }
@@ -275,10 +263,7 @@ namespace Community.AspNetCore.JsonRpc
                     {
                         if (!response.Success)
                         {
-                            if (_diagnosticProvider != null)
-                            {
-                                await _diagnosticProvider.HandleErrorAsync(response.Error.Code);
-                            }
+                            await HandleErrorAsync(response.Error);
                         }
                         if (requestItem.IsValid && requestItem.Message.IsNotification)
                         {
@@ -300,6 +285,16 @@ namespace Community.AspNetCore.JsonRpc
 
                 return _serializer.SerializeResponses(responses);
             }
+        }
+
+        private Task HandleErrorAsync(JsonRpcError error)
+        {
+            if (_diagnosticProvider == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            return _diagnosticProvider.HandleErrorAsync(error.Code);
         }
 
         private async Task<JsonRpcResponse> HandleJsonRpcItemAsync(HttpContext context, JsonRpcItem<JsonRpcRequest> requestItem)
