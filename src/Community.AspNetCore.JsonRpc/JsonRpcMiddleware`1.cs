@@ -178,7 +178,7 @@ namespace Community.AspNetCore.JsonRpc
 
                 var jsonRpcError = ConvertExceptionToError(e);
 
-                await HandleErrorAsync(jsonRpcError);
+                await RegisterJsonRpcErrorAsync(jsonRpcError);
 
                 return _serializer.SerializeResponse(new JsonRpcResponse(jsonRpcError));
             }
@@ -199,7 +199,7 @@ namespace Community.AspNetCore.JsonRpc
                 }
                 if (!response.Success)
                 {
-                    await HandleErrorAsync(response.Error);
+                    await RegisterJsonRpcErrorAsync(response.Error);
                 }
                 if (requestItem.IsValid && requestItem.Message.IsNotification)
                 {
@@ -224,7 +224,7 @@ namespace Community.AspNetCore.JsonRpc
 
                     var jsonRpcError = new JsonRpcError(JsonRpcTransportErrorCodes.InvalidBatchSize, Strings.GetString("rpc.error.invalid_batch_size"));
 
-                    await HandleErrorAsync(jsonRpcError);
+                    await RegisterJsonRpcErrorAsync(jsonRpcError);
 
                     return _serializer.SerializeResponse(new JsonRpcResponse(jsonRpcError));
                 }
@@ -243,7 +243,7 @@ namespace Community.AspNetCore.JsonRpc
 
                             var jsonRpcError = new JsonRpcError(JsonRpcTransportErrorCodes.DuplicateIdentifiers, Strings.GetString("rpc.error.duplicate_ids"));
 
-                            await HandleErrorAsync(jsonRpcError);
+                            await RegisterJsonRpcErrorAsync(jsonRpcError);
 
                             return _serializer.SerializeResponse(new JsonRpcResponse(jsonRpcError));
                         }
@@ -263,7 +263,7 @@ namespace Community.AspNetCore.JsonRpc
                     {
                         if (!response.Success)
                         {
-                            await HandleErrorAsync(response.Error);
+                            await RegisterJsonRpcErrorAsync(response.Error);
                         }
                         if (requestItem.IsValid && requestItem.Message.IsNotification)
                         {
@@ -287,7 +287,7 @@ namespace Community.AspNetCore.JsonRpc
             }
         }
 
-        private Task HandleErrorAsync(JsonRpcError error)
+        private Task RegisterJsonRpcErrorAsync(JsonRpcError error)
         {
             if (_diagnosticProvider == null)
             {
@@ -319,7 +319,11 @@ namespace Community.AspNetCore.JsonRpc
                 {
                     _logger?.LogError(4030, Strings.GetString("handler.request.invalid_id_length"), context.TraceIdentifier, currentIdLength, maximumIdLength);
 
-                    return new JsonRpcResponse(new JsonRpcError(JsonRpcTransportErrorCodes.InvalidIdLength, Strings.GetString("rpc.error.invalid_id_length")));
+                    var jsonRpcError = new JsonRpcError(JsonRpcTransportErrorCodes.InvalidIdLength, Strings.GetString("rpc.error.invalid_id_length"));
+
+                    await RegisterJsonRpcErrorAsync(jsonRpcError);
+
+                    return new JsonRpcResponse(jsonRpcError);
                 }
             }
 
