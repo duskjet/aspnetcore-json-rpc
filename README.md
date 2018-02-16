@@ -8,8 +8,8 @@
 
 - The middleware transparently handles batch JSON-RPC requests.
 - The middleware automatically handles and sends the corresponding JSON-RPC responses for common issues (e.g. invalid JSON, invalid JSON-RPC message, invalid JSON-RPC contract, etc.).
-- The middleware can set limits for maximum string identifier length (`128` if not specified) and maximum batch size (`1024` if not specified). Limits can be specified by the `JsonRpcOptions` instance via the `IOptions<T>` interface registered in a service collection.
-- The middleware stores a collection of JSON-RPC error codes in the shared request data in case of one or more JSON-RPC errors were created during HTTP request processing. A collection is of `IReadOnlyList<long>` type and can be accessed with the `JsonRpcTransportConstants.ScopeErrorsIdentifier` value. The collection contains error codes created for notifications as well.
+- The middleware can set limits for maximum string identifier length (`128` if not specified) and maximum batch size (`1024` if not specified).
+- The middleware supports analysis of all sent JSON-RPC errors (including automatically created) via an implementation of the `IJsonRpcDiagnosticProvider` interface.
 - A handler / service can be acquired from a service provider or instantiated directly for a request scope.
 - A handler / service which implements the `IDisposable` interface will be automatically disposed on request scope exit.
 - A service searches for the `JsonRpcNameAttribute` attributes on class and interface members.

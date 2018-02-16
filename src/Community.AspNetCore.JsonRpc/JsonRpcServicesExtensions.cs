@@ -7,6 +7,24 @@ namespace Community.AspNetCore
     /// <summary>The JSON-RPC 2.0 middleware extensions for the <see cref="IServiceCollection" />.</summary>
     public static class JsonRpcServicesExtensions
     {
+        /// <summary>Adds the specified JSON-RPC 2.0 diagnostic provider to the current <see cref="IServiceCollection" /> instance.</summary>
+        /// <typeparam name="T">The type of the diagnostic provider.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection" /> instance to add the diagnostic provider to.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="services" /> is <see langword="null" />.</exception>
+        public static IServiceCollection AddJsonRpcDiagnosticProvider<T>(this IServiceCollection services)
+            where T : class, IJsonRpcDiagnosticProvider
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            services.AddScoped<IJsonRpcDiagnosticProvider, T>();
+
+            return services;
+        }
+
         /// <summary>Adds the specified JSON-RPC 2.0 handler to the current <see cref="IServiceCollection" /> instance.</summary>
         /// <typeparam name="T">The type of the handler.</typeparam>
         /// <param name="services">The <see cref="IServiceCollection" /> instance to add the handler to.</param>

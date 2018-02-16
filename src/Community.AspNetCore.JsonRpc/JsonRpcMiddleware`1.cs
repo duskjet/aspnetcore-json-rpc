@@ -26,6 +26,7 @@ namespace Community.AspNetCore.JsonRpc
         private readonly bool _production;
         private readonly JsonRpcOptions _options;
         private readonly ILogger _logger;
+        private readonly IJsonRpcDiagnosticProvider _diagnosticProvider;
 
         public JsonRpcMiddleware(IServiceProvider serviceProvider)
         {
@@ -68,31 +69,30 @@ namespace Community.AspNetCore.JsonRpc
             _production = serviceProvider.GetService<IHostingEnvironment>()?.EnvironmentName != EnvironmentName.Development;
             _options = serviceProvider.GetService<IOptions<JsonRpcOptions>>()?.Value;
             _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<JsonRpcMiddleware<T>>();
+            _diagnosticProvider = serviceProvider.GetService<IJsonRpcDiagnosticProvider>();
         }
 
         async Task IMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)
         {
             if (context.Response.HasStarted)
             {
-                await FinishInvocationAsync(context, next);
-
                 return;
             }
             if (string.Compare(context.Request.Method, HttpMethods.Post, StringComparison.OrdinalIgnoreCase) != 0)
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.MethodNotAllowed);
+                await CreateResponseAsync(context, HttpStatusCode.MethodNotAllowed);
 
                 return;
             }
             if (context.Request.QueryString.HasValue)
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.BadRequest);
+                await CreateResponseAsync(context, HttpStatusCode.BadRequest);
 
                 return;
             }
-            if (string.Compare(context.Request.ContentType, JsonRpcTransportConstants.MimeType, StringComparison.OrdinalIgnoreCase) != 0)
+            if (string.Compare(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase) != 0)
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.UnsupportedMediaType);
+                await CreateResponseAsync(context, HttpStatusCode.UnsupportedMediaType);
 
                 return;
             }
@@ -103,20 +103,20 @@ namespace Community.AspNetCore.JsonRpc
             {
                 if (string.Compare(encodingName, "identity", StringComparison.OrdinalIgnoreCase) != 0)
                 {
-                    await FinishInvocationAsync(context, next, HttpStatusCode.UnsupportedMediaType);
+                    await CreateResponseAsync(context, HttpStatusCode.UnsupportedMediaType);
 
                     return;
                 }
             }
             if (context.Request.ContentLength == null)
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.LengthRequired);
+                await CreateResponseAsync(context, HttpStatusCode.LengthRequired);
 
                 return;
             }
-            if (string.Compare(context.Request.Headers[HeaderNames.Accept], JsonRpcTransportConstants.MimeType, StringComparison.OrdinalIgnoreCase) != 0)
+            if (string.Compare(context.Request.Headers[HeaderNames.Accept], "application/json", StringComparison.OrdinalIgnoreCase) != 0)
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.NotAcceptable);
+                await CreateResponseAsync(context, HttpStatusCode.NotAcceptable);
 
                 return;
             }
@@ -130,7 +130,7 @@ namespace Community.AspNetCore.JsonRpc
 
             if (requestString.Length != context.Request.ContentLength.Value)
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.BadRequest);
+                await CreateResponseAsync(context, HttpStatusCode.BadRequest);
 
                 return;
             }
@@ -139,34 +139,29 @@ namespace Community.AspNetCore.JsonRpc
 
             if (responseString != null)
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.OK, Encoding.UTF8.GetBytes(responseString));
+                await CreateResponseAsync(context, HttpStatusCode.OK, Encoding.UTF8.GetBytes(responseString));
             }
             else
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.NoContent);
+                await CreateResponseAsync(context, HttpStatusCode.NoContent);
             }
         }
 
-        private static async Task FinishInvocationAsync(HttpContext context, RequestDelegate next, HttpStatusCode? statusCode = null, byte[] body = null)
+        private static async Task CreateResponseAsync(HttpContext context, HttpStatusCode statusCode, byte[] body = null)
         {
-            if (statusCode.HasValue)
+            context.Response.StatusCode = (int)statusCode;
+
+            if (body != null)
             {
-                context.Response.StatusCode = (int)statusCode.Value;
+                context.Response.ContentType = "application/json";
+                context.Response.ContentLength = body.Length;
 
-                if (body != null)
-                {
-                    context.Response.ContentType = JsonRpcTransportConstants.MimeType;
-                    context.Response.ContentLength = body.Length;
-
-                    await context.Response.Body.WriteAsync(body, 0, body.Length, context.RequestAborted);
-                }
-                else
-                {
-                    context.Response.Body.Write(Array.Empty<byte>(), 0, 0);
-                }
+                await context.Response.Body.WriteAsync(body, 0, body.Length, context.RequestAborted);
             }
-
-            await next.Invoke(context);
+            else
+            {
+                context.Response.Body.Write(Array.Empty<byte>(), 0, 0);
+            }
         }
 
         private async Task<string> HandleJsonRpcContentAsync(HttpContext context, string content)
@@ -183,7 +178,10 @@ namespace Community.AspNetCore.JsonRpc
 
                 var jsonRpcError = ConvertExceptionToError(e);
 
-                context.Items[JsonRpcTransportConstants.ScopeErrorsIdentifier] = new[] { jsonRpcError.Code };
+                if (_diagnosticProvider != null)
+                {
+                    await _diagnosticProvider.HandleErrorAsync(jsonRpcError.Code);
+                }
 
                 return _serializer.SerializeResponse(new JsonRpcResponse(jsonRpcError));
             }
@@ -204,7 +202,10 @@ namespace Community.AspNetCore.JsonRpc
                 }
                 if (!response.Success)
                 {
-                    context.Items[JsonRpcTransportConstants.ScopeErrorsIdentifier] = new[] { response.Error.Code };
+                    if (_diagnosticProvider != null)
+                    {
+                        await _diagnosticProvider.HandleErrorAsync(response.Error.Code);
+                    }
                 }
                 if (requestItem.IsValid && requestItem.Message.IsNotification)
                 {
@@ -229,7 +230,10 @@ namespace Community.AspNetCore.JsonRpc
 
                     var jsonRpcError = new JsonRpcError(JsonRpcTransportErrorCodes.InvalidBatchSize, Strings.GetString("rpc.error.invalid_batch_size"));
 
-                    context.Items[JsonRpcTransportConstants.ScopeErrorsIdentifier] = new[] { jsonRpcError.Code };
+                    if (_diagnosticProvider != null)
+                    {
+                        await _diagnosticProvider.HandleErrorAsync(jsonRpcError.Code);
+                    }
 
                     return _serializer.SerializeResponse(new JsonRpcResponse(jsonRpcError));
                 }
@@ -248,7 +252,10 @@ namespace Community.AspNetCore.JsonRpc
 
                             var jsonRpcError = new JsonRpcError(JsonRpcTransportErrorCodes.DuplicateIdentifiers, Strings.GetString("rpc.error.duplicate_ids"));
 
-                            context.Items[JsonRpcTransportConstants.ScopeErrorsIdentifier] = new[] { jsonRpcError.Code };
+                            if (_diagnosticProvider != null)
+                            {
+                                await _diagnosticProvider.HandleErrorAsync(jsonRpcError.Code);
+                            }
 
                             return _serializer.SerializeResponse(new JsonRpcResponse(jsonRpcError));
                         }
@@ -256,7 +263,6 @@ namespace Community.AspNetCore.JsonRpc
                 }
 
                 var responses = new List<JsonRpcResponse>();
-                var errorCodes = new List<long>();
 
                 for (var i = 0; i < requestItems.Count; i++)
                 {
@@ -269,7 +275,10 @@ namespace Community.AspNetCore.JsonRpc
                     {
                         if (!response.Success)
                         {
-                            errorCodes.Add(response.Error.Code);
+                            if (_diagnosticProvider != null)
+                            {
+                                await _diagnosticProvider.HandleErrorAsync(response.Error.Code);
+                            }
                         }
                         if (requestItem.IsValid && requestItem.Message.IsNotification)
                         {
@@ -280,10 +289,6 @@ namespace Community.AspNetCore.JsonRpc
                     }
                 }
 
-                if (errorCodes.Count > 0)
-                {
-                    context.Items[JsonRpcTransportConstants.ScopeErrorsIdentifier] = errorCodes;
-                }
                 if (responses.Count == 0)
                 {
                     // Server must return empty content for empty response batch according to the JSON-RPC 2.0 specification
