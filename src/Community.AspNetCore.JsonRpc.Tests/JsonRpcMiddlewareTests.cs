@@ -49,13 +49,13 @@ namespace Community.AspNetCore.JsonRpc.Tests
                     requestContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                     requestContent.Headers.ContentLength = requestContentSample.Length;
 
-                    var response = await client.PostAsync("/api/v1", requestContent).ConfigureAwait(false);
+                    var response = await client.PostAsync("/api/v1", requestContent);
 
                     if (responseContentSample != string.Empty)
                     {
                         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-                        var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        var responseContent = await response.Content.ReadAsStringAsync();
 
                         Assert.False(string.IsNullOrEmpty(responseContent), "Actual response content is empty");
 
@@ -93,7 +93,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
                     requestContent1.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                     requestContent1.Headers.ContentLength = 0L;
 
-                    var response1 = await client.PostAsync("/api/v2", requestContent1).ConfigureAwait(false);
+                    var response1 = await client.PostAsync("/api/v2", requestContent1);
 
                     Assert.Equal(HttpStatusCode.NotFound, response1.StatusCode);
 
@@ -102,7 +102,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
                     requestContent2.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                     requestContent2.Headers.ContentLength = 0L;
 
-                    var response2 = await client.PostAsync("/api/v1?p=v", requestContent2).ConfigureAwait(false);
+                    var response2 = await client.PostAsync("/api/v1?p=v", requestContent2);
 
                     Assert.Equal(HttpStatusCode.BadRequest, response2.StatusCode);
 
@@ -112,7 +112,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
                     requestContent3.Headers.ContentLength = 0L;
                     requestContent3.Headers.ContentEncoding.Add("deflate");
 
-                    var response3 = await client.PostAsync("/api/v1", requestContent3).ConfigureAwait(false);
+                    var response3 = await client.PostAsync("/api/v1", requestContent3);
 
                     Assert.Equal(HttpStatusCode.UnsupportedMediaType, response3.StatusCode);
 
@@ -122,7 +122,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
                     requestContent4.Headers.ContentLength = 0L;
                     requestContent4.Headers.ContentEncoding.Add("identity");
 
-                    var response4 = await client.PostAsync("/api/v1", requestContent4).ConfigureAwait(false);
+                    var response4 = await client.PostAsync("/api/v1", requestContent4);
 
                     Assert.Equal(HttpStatusCode.OK, response4.StatusCode);
                 }

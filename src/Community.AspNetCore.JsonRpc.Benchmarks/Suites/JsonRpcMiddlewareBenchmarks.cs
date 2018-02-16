@@ -72,49 +72,49 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
         [Benchmark(Description = "handler / nam")]
         public async Task HandlerWithParamsByName()
         {
-            await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam")).ConfigureAwait(false);
+            await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam"));
         }
 
         [Benchmark(Description = "handler / pos")]
         public async Task HandlerWithParamsByPosition()
         {
-            await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos")).ConfigureAwait(false);
+            await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos"));
         }
 
         [Benchmark(Description = "handler / err")]
         public async Task HandlerWithErrorResponse()
         {
-            await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err")).ConfigureAwait(false);
+            await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err"));
         }
 
         [Benchmark(Description = "handler / not")]
         public async Task HandlerWithNotification()
         {
-            await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not")).ConfigureAwait(false);
+            await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not"));
         }
 
         [Benchmark(Description = "service / nam")]
         public async Task ServiceWithParamsByName()
         {
-            await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam")).ConfigureAwait(false);
+            await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam"));
         }
 
         [Benchmark(Description = "service / pos")]
         public async Task ServiceWithParamsByPosition()
         {
-            await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos")).ConfigureAwait(false);
+            await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos"));
         }
 
         [Benchmark(Description = "service / err")]
         public async Task ServiceWithErrorResponse()
         {
-            await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err")).ConfigureAwait(false);
+            await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err"));
         }
 
         [Benchmark(Description = "service / not")]
         public async Task ServiceWithNotification()
         {
-            await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not")).ConfigureAwait(false);
+            await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not"));
         }
     }
 }

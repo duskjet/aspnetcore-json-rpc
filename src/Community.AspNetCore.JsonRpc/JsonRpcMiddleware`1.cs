@@ -74,25 +74,25 @@ namespace Community.AspNetCore.JsonRpc
         {
             if (context.Response.HasStarted)
             {
-                await FinishInvocationAsync(context, next).ConfigureAwait(false);
+                await FinishInvocationAsync(context, next);
 
                 return;
             }
             if (string.Compare(context.Request.Method, HttpMethods.Post, StringComparison.OrdinalIgnoreCase) != 0)
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.MethodNotAllowed).ConfigureAwait(false);
+                await FinishInvocationAsync(context, next, HttpStatusCode.MethodNotAllowed);
 
                 return;
             }
             if (context.Request.QueryString.HasValue)
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.BadRequest).ConfigureAwait(false);
+                await FinishInvocationAsync(context, next, HttpStatusCode.BadRequest);
 
                 return;
             }
             if (string.Compare(context.Request.ContentType, JsonRpcTransportConstants.MimeType, StringComparison.OrdinalIgnoreCase) != 0)
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.UnsupportedMediaType).ConfigureAwait(false);
+                await FinishInvocationAsync(context, next, HttpStatusCode.UnsupportedMediaType);
 
                 return;
             }
@@ -103,20 +103,20 @@ namespace Community.AspNetCore.JsonRpc
             {
                 if (string.Compare(encodingName, "identity", StringComparison.OrdinalIgnoreCase) != 0)
                 {
-                    await FinishInvocationAsync(context, next, HttpStatusCode.UnsupportedMediaType).ConfigureAwait(false);
+                    await FinishInvocationAsync(context, next, HttpStatusCode.UnsupportedMediaType);
 
                     return;
                 }
             }
             if (context.Request.ContentLength == null)
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.LengthRequired).ConfigureAwait(false);
+                await FinishInvocationAsync(context, next, HttpStatusCode.LengthRequired);
 
                 return;
             }
             if (string.Compare(context.Request.Headers[HeaderNames.Accept], JsonRpcTransportConstants.MimeType, StringComparison.OrdinalIgnoreCase) != 0)
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.NotAcceptable).ConfigureAwait(false);
+                await FinishInvocationAsync(context, next, HttpStatusCode.NotAcceptable);
 
                 return;
             }
@@ -125,25 +125,25 @@ namespace Community.AspNetCore.JsonRpc
 
             using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
             {
-                requestString = await reader.ReadToEndAsync().ConfigureAwait(false);
+                requestString = await reader.ReadToEndAsync();
             }
 
             if (requestString.Length != context.Request.ContentLength.Value)
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.BadRequest).ConfigureAwait(false);
+                await FinishInvocationAsync(context, next, HttpStatusCode.BadRequest);
 
                 return;
             }
 
-            var responseString = await HandleJsonRpcContentAsync(context, requestString).ConfigureAwait(false);
+            var responseString = await HandleJsonRpcContentAsync(context, requestString);
 
             if (responseString != null)
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.OK, Encoding.UTF8.GetBytes(responseString)).ConfigureAwait(false);
+                await FinishInvocationAsync(context, next, HttpStatusCode.OK, Encoding.UTF8.GetBytes(responseString));
             }
             else
             {
-                await FinishInvocationAsync(context, next, HttpStatusCode.NoContent).ConfigureAwait(false);
+                await FinishInvocationAsync(context, next, HttpStatusCode.NoContent);
             }
         }
 
@@ -158,7 +158,7 @@ namespace Community.AspNetCore.JsonRpc
                     context.Response.ContentType = JsonRpcTransportConstants.MimeType;
                     context.Response.ContentLength = body.Length;
 
-                    await context.Response.Body.WriteAsync(body, 0, body.Length, context.RequestAborted).ConfigureAwait(false);
+                    await context.Response.Body.WriteAsync(body, 0, body.Length, context.RequestAborted);
                 }
                 else
                 {
@@ -166,7 +166,7 @@ namespace Community.AspNetCore.JsonRpc
                 }
             }
 
-            await next.Invoke(context).ConfigureAwait(false);
+            await next.Invoke(context);
         }
 
         private async Task<string> HandleJsonRpcContentAsync(HttpContext context, string content)
@@ -196,7 +196,7 @@ namespace Community.AspNetCore.JsonRpc
 
                 context.RequestAborted.ThrowIfCancellationRequested();
 
-                var response = await HandleJsonRpcItemAsync(context, requestItem).ConfigureAwait(false);
+                var response = await HandleJsonRpcItemAsync(context, requestItem);
 
                 if (response == null)
                 {
@@ -263,7 +263,7 @@ namespace Community.AspNetCore.JsonRpc
                     context.RequestAborted.ThrowIfCancellationRequested();
 
                     var requestItem = requestItems[i];
-                    var response = await HandleJsonRpcItemAsync(context, requestItem).ConfigureAwait(false);
+                    var response = await HandleJsonRpcItemAsync(context, requestItem);
 
                     if (response != null)
                     {
@@ -323,7 +323,7 @@ namespace Community.AspNetCore.JsonRpc
                 }
             }
 
-            var response = await _handler.HandleAsync(request).ConfigureAwait(false);
+            var response = await _handler.HandleAsync(request);
 
             if (response != null)
             {

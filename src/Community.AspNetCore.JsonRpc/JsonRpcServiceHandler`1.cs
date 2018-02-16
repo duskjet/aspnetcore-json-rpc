@@ -211,11 +211,11 @@ namespace Community.AspNetCore.JsonRpc
             {
                 if (request.IsNotification || !method.ReturnType.IsGenericType)
                 {
-                    await ((dynamic)method.Invoke(_service, parametersValues)).ConfigureAwait(false);
+                    await ((dynamic)method.Invoke(_service, parametersValues));
                 }
                 else
                 {
-                    return new JsonRpcResponse(await ((dynamic)method.Invoke(_service, parametersValues)).ConfigureAwait(false) as object, request.Id);
+                    return new JsonRpcResponse(await ((dynamic)method.Invoke(_service, parametersValues)) as object, request.Id);
                 }
             }
             catch (TargetInvocationException e)
