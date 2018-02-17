@@ -183,9 +183,9 @@ namespace Community.AspNetCore.JsonRpc
                 return _serializer.SerializeResponse(new JsonRpcResponse(jsonRpcError));
             }
 
-            if (requestData.IsSingle)
+            if (!requestData.IsBatch)
             {
-                var requestItem = requestData.SingleItem;
+                var requestItem = requestData.Item;
 
                 _logger?.LogDebug(1000, Strings.GetString("handler.request_data.accepted_single"), context.TraceIdentifier, context.Request.PathBase);
 
@@ -212,7 +212,7 @@ namespace Community.AspNetCore.JsonRpc
             }
             else
             {
-                var requestItems = requestData.BatchItems;
+                var requestItems = requestData.Items;
 
                 _logger?.LogDebug(1010, Strings.GetString("handler.request_data.accepted_batch"), context.TraceIdentifier, requestItems.Count, context.Request.PathBase);
 
@@ -376,44 +376,45 @@ namespace Community.AspNetCore.JsonRpc
 
         private JsonRpcError ConvertExceptionToError(JsonRpcException exception)
         {
-            var code = default(long);
             var message = default(string);
 
-            switch (exception.Type)
+            if (_production)
             {
-                case JsonRpcExceptionType.Parsing:
-                    {
-                        code = (long)JsonRpcErrorType.Parsing;
-                        message = !_production ? exception.Message : Strings.GetString("rpc.error.parsing");
-                    }
-                    break;
-                case JsonRpcExceptionType.InvalidParams:
-                    {
-                        code = (long)JsonRpcErrorType.InvalidParams;
-                        message = !_production ? exception.Message : Strings.GetString("rpc.error.invalid_params");
-                    }
-                    break;
-                case JsonRpcExceptionType.InvalidMethod:
-                    {
-                        code = (long)JsonRpcErrorType.InvalidMethod;
-                        message = !_production ? exception.Message : Strings.GetString("rpc.error.invalid_method");
-                    }
-                    break;
-                case JsonRpcExceptionType.InvalidMessage:
-                    {
-                        code = (long)JsonRpcErrorType.InvalidRequest;
-                        message = !_production ? exception.Message : Strings.GetString("rpc.error.invalid_request");
-                    }
-                    break;
-                default:
-                    {
-                        code = (long)JsonRpcErrorType.Internal;
-                        message = !_production ? exception.Message : Strings.GetString("rpc.error.internal");
-                    }
-                    break;
+                switch (exception.ErrorCode)
+                {
+                    case JsonRpcErrorCodes.InvalidJson:
+                        {
+                            message = Strings.GetString("rpc.error.invalid_json");
+                        }
+                        break;
+                    case JsonRpcErrorCodes.InvalidParameters:
+                        {
+                            message = Strings.GetString("rpc.error.invalid_params");
+                        }
+                        break;
+                    case JsonRpcErrorCodes.InvalidMethod:
+                        {
+                            message = Strings.GetString("rpc.error.invalid_method");
+                        }
+                        break;
+                    case JsonRpcErrorCodes.InvalidMessage:
+                        {
+                            message = Strings.GetString("rpc.error.invalid_message");
+                        }
+                        break;
+                    default:
+                        {
+                            message = Strings.GetString("rpc.error.internal");
+                        }
+                        break;
+                }
+            }
+            else
+            {
+                message = exception.Message;
             }
 
-            return new JsonRpcError(code, message);
+            return new JsonRpcError(exception.ErrorCode, message);
         }
 
         void IDisposable.Dispose()

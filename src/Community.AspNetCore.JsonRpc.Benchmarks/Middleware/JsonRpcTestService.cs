@@ -5,7 +5,7 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Middleware
     internal sealed class JsonRpcTestService : IJsonRpcService
     {
         [JsonRpcName("mn")]
-        public Task<long> MethodWithParamsByName(
+        public Task<long> MethodWithParametersByName(
             [JsonRpcName("p1")]long parameter1,
             [JsonRpcName("p2")]long parameter2)
         {
@@ -13,7 +13,7 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Middleware
         }
 
         [JsonRpcName("mp")]
-        public Task<long> MethodWithParamsByPosition(
+        public Task<long> MethodWithParametersByPosition(
             long parameter1,
             long parameter2)
         {

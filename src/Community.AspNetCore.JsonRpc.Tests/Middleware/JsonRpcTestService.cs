@@ -12,7 +12,7 @@ namespace Community.AspNetCore.JsonRpc.Tests.Middleware
         }
 
         [JsonRpcName("nam")]
-        public Task<long> MethodWithParamsByName(
+        public Task<long> MethodWithParametersByName(
             [JsonRpcName("p1")] long parameter1,
             [JsonRpcName("p2")] long parameter2)
         {
@@ -23,7 +23,7 @@ namespace Community.AspNetCore.JsonRpc.Tests.Middleware
         }
 
         [JsonRpcName("pos")]
-        public Task<long> MethodWithParamsByPosition(
+        public Task<long> MethodWithParametersByPosition(
             long parameter1,
             long parameter2)
         {

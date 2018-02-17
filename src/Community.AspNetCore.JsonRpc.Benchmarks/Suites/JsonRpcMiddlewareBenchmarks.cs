@@ -70,13 +70,13 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
         }
 
         [Benchmark(Description = "handler / nam")]
-        public async Task HandlerWithParamsByName()
+        public async Task HandlerWithParametersByName()
         {
             await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam"));
         }
 
         [Benchmark(Description = "handler / pos")]
-        public async Task HandlerWithParamsByPosition()
+        public async Task HandlerWithParametersByPosition()
         {
             await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos"));
         }
@@ -94,13 +94,13 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
         }
 
         [Benchmark(Description = "service / nam")]
-        public async Task ServiceWithParamsByName()
+        public async Task ServiceWithParametersByName()
         {
             await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam"));
         }
 
         [Benchmark(Description = "service / pos")]
-        public async Task ServiceWithParamsByPosition()
+        public async Task ServiceWithParametersByPosition()
         {
             await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos"));
         }

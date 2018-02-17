@@ -166,25 +166,25 @@ namespace Community.AspNetCore.JsonRpc
             var (method, parameters, parametersBindings) = _metadata[request.Method];
             var parametersValues = default(object[]);
 
-            switch (request.ParamsType)
+            switch (request.ParametersType)
             {
-                case JsonRpcParamsType.ByPosition:
+                case JsonRpcParametersType.ByPosition:
                     {
                         parametersValues = new object[parameters.Length];
 
                         for (var i = 0; i < parametersValues.Length; i++)
                         {
-                            parametersValues[i] = request.ParamsByPosition[i];
+                            parametersValues[i] = request.ParametersByPosition[i];
                         }
                     }
                     break;
-                case JsonRpcParamsType.ByName:
+                case JsonRpcParametersType.ByName:
                     {
                         parametersValues = new object[parameters.Length];
 
                         for (var i = 0; i < parametersValues.Length; i++)
                         {
-                            if (!request.ParamsByName.TryGetValue(parametersBindings[i], out parametersValues[i]))
+                            if (!request.ParametersByName.TryGetValue(parametersBindings[i], out parametersValues[i]))
                             {
                                 if (parameters[i].HasDefaultValue)
                                 {
@@ -199,7 +199,7 @@ namespace Community.AspNetCore.JsonRpc
 
                                     var message = string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.request.parameter.undefined_value"), request.Method, parametersBindings[i]);
 
-                                    return new JsonRpcResponse(new JsonRpcError((long)JsonRpcErrorType.InvalidParams, message), request.Id);
+                                    return new JsonRpcResponse(new JsonRpcError(JsonRpcErrorCodes.InvalidParameters, message), request.Id);
                                 }
                             }
                         }

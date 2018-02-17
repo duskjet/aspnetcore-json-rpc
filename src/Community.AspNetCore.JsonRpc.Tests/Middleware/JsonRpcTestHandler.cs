@@ -46,33 +46,33 @@ namespace Community.AspNetCore.JsonRpc.Tests.Middleware
             {
                 case "nam":
                     {
-                        Assert.Equal(JsonRpcParamsType.ByName, request.ParamsType);
-                        Assert.Equal(2, request.ParamsByName.Count);
-                        Assert.True(request.ParamsByName.ContainsKey("p1"));
-                        Assert.True(request.ParamsByName.ContainsKey("p2"));
-                        Assert.IsType<long>(request.ParamsByName["p1"]);
-                        Assert.IsType<long>(request.ParamsByName["p2"]);
-                        Assert.Equal(1L, (long)request.ParamsByName["p1"]);
-                        Assert.Equal(2L, (long)request.ParamsByName["p2"]);
+                        Assert.Equal(JsonRpcParametersType.ByName, request.ParametersType);
+                        Assert.Equal(2, request.ParametersByName.Count);
+                        Assert.True(request.ParametersByName.ContainsKey("p1"));
+                        Assert.True(request.ParametersByName.ContainsKey("p2"));
+                        Assert.IsType<long>(request.ParametersByName["p1"]);
+                        Assert.IsType<long>(request.ParametersByName["p2"]);
+                        Assert.Equal(1L, (long)request.ParametersByName["p1"]);
+                        Assert.Equal(2L, (long)request.ParametersByName["p2"]);
 
                         response = new JsonRpcResponse(-1L, request.Id);
                     }
                     break;
                 case "pos":
                     {
-                        Assert.Equal(JsonRpcParamsType.ByPosition, request.ParamsType);
-                        Assert.Equal(2, request.ParamsByPosition.Count);
-                        Assert.IsType<long>(request.ParamsByPosition[0]);
-                        Assert.IsType<long>(request.ParamsByPosition[1]);
-                        Assert.Equal(1L, (long)request.ParamsByPosition[0]);
-                        Assert.Equal(2L, (long)request.ParamsByPosition[1]);
+                        Assert.Equal(JsonRpcParametersType.ByPosition, request.ParametersType);
+                        Assert.Equal(2, request.ParametersByPosition.Count);
+                        Assert.IsType<long>(request.ParametersByPosition[0]);
+                        Assert.IsType<long>(request.ParametersByPosition[1]);
+                        Assert.Equal(1L, (long)request.ParametersByPosition[0]);
+                        Assert.Equal(2L, (long)request.ParametersByPosition[1]);
 
                         response = new JsonRpcResponse(3L, request.Id);
                     }
                     break;
                 case "err":
                     {
-                        response = new JsonRpcResponse(new JsonRpcError(0L, "m"), request.Id);
+                        response = new JsonRpcResponse(new JsonRpcError(0L, "m", null), request.Id);
                     }
                     break;
                 case "not":
