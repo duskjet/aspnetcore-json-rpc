@@ -7,13 +7,13 @@
 ### Features
 
 - The middleware transparently handles batch JSON-RPC requests.
-- The middleware automatically handles and sends the corresponding JSON-RPC responses for common issues (e.g. invalid JSON, invalid JSON-RPC message, invalid JSON-RPC contract, etc.).
-- The middleware can set limits for maximum string identifier length (`128` if not specified) and maximum batch size (`1024` if not specified).
-- The middleware supports analysis of all sent JSON-RPC errors (including automatically created) via an implementation of the `IJsonRpcDiagnosticProvider` interface.
+- The middleware automatically handles common JSON-RPC issues.
+- The middleware supports for maximum string identifier length (`128` by default) and maximum batch size (`1024` by default).
+- The middleware supports JSON-RPC errors diagnostic via an implementation of the `IJsonRpcDiagnosticProvider` interface.
 - A handler / service can be acquired from a service provider or instantiated directly for a request scope.
 - A handler / service which is disposable will be automatically disposed on request scope exit.
-- A service searches for the `JsonRpcNameAttribute` attributes on class and interface members.
-- A service uses a default parameter value for named parameters if it is defined in the type and a value is not provided in a request.
+- A service supports `JsonRpcNameAttribute` attributes defined on class and interface members.
+- A service supports default method parameter values for named parameters if they are not provided in a request.
 
 ### Specifics
 
@@ -33,7 +33,7 @@ Code | Reason
 `400` | The `Content-Length` header has a value that differs from the actual content length
 `415` | The `Content-Encoding` header is specified and is not the `identity` value
 
-- With logger factory availability, the following events may appear in a journal with the related details (e.g. method name, request identifier):
+- With logger factory availability, the following events may appear in a journal:
 
 ID | Level | Reason
 :---: | --- | ---
@@ -57,24 +57,20 @@ ID | Level | Reason
 public class MyJsonRpcService : IJsonRpcService
 {
     [JsonRpcName("m1")]
-    public Task<long> Method1(
-        [JsonRpcName("p1")] long parameter1,
-        [JsonRpcName("p2")] long parameter2)
+    public Task<long> Method1([JsonRpcName("p1")] long p1, [JsonRpcName("p2")] long p2)
     {
-        if (parameter2 == 0L)
+        if (p2 == 0L)
         {
             throw new JsonRpcServiceException(100L);
         }
 
-        return Task.FromResult(parameter1 / parameter2);
+        return Task.FromResult(p1 / p2);
     }
 
     [JsonRpcName("m2")]
-    public Task<long> Method2(
-        long parameter1,
-        long parameter2)
+    public Task<long> Method2(long p1, long p2)
     {
-        return Task.FromResult(parameter1 + parameter2);
+        return Task.FromResult(p1 + p2);
     }
 }
 ```
@@ -112,20 +108,20 @@ public class MyJsonRpcHandler : IJsonRpcHandler
         {
             case "m1":
                 {
-                    var parameter1 = (long)request.ParamsByName["p1"];
-                    var parameter2 = (long)request.ParamsByName["p2"];
+                    var p1 = (long)request.ParametersByName["p1"];
+                    var p2 = (long)request.ParametersByName["p2"];
 
-                    response = parameter2 != 0L ?
-                        new JsonRpcResponse(parameter1 / parameter2, request.Id) :
+                    response = p2 != 0L ?
+                        new JsonRpcResponse(p1 / p2, request.Id) :
                         new JsonRpcResponse(new JsonRpcError(100L), request.Id);
                 }
                 break;
             case "m2":
                 {
-                    var parameter1 = (long)request.ParamsByPosition[0];
-                    var parameter2 = (long)request.ParamsByPosition[1];
+                    var p1 = (long)request.ParametersByPosition[0];
+                    var p2 = (long)request.ParametersByPosition[1];
 
-                    response = new JsonRpcResponse(parameter1 + parameter2, request.Id);
+                    response = new JsonRpcResponse(p1 + p2, request.Id);
                 }
                 break;
         }
