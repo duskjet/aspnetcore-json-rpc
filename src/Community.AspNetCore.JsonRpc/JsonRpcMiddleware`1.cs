@@ -25,21 +25,21 @@ namespace Community.AspNetCore.JsonRpc
         private readonly JsonRpcSerializer _serializer;
         private readonly bool _production;
         private readonly JsonRpcOptions _options;
+        private readonly IJsonRpcDiagnosticProvider _diagnostic;
         private readonly ILogger _logger;
-        private readonly IJsonRpcDiagnosticProvider _diagnosticProvider;
 
-        public JsonRpcMiddleware(IServiceProvider serviceProvider)
+        public JsonRpcMiddleware(IServiceProvider services)
         {
-            if (serviceProvider == null)
+            if (services == null)
             {
-                throw new ArgumentNullException(nameof(serviceProvider));
+                throw new ArgumentNullException(nameof(services));
             }
 
-            _handler = serviceProvider.GetService<T>();
+            _handler = services.GetService<T>();
 
             if (_handler == null)
             {
-                _handler = ActivatorUtilities.CreateInstance<T>(serviceProvider);
+                _handler = ActivatorUtilities.CreateInstance<T>(services);
                 _dispose = _handler is IDisposable;
             }
 
@@ -66,10 +66,10 @@ namespace Community.AspNetCore.JsonRpc
                 new Dictionary<JsonRpcId, string>(0),
                 new Dictionary<JsonRpcId, JsonRpcResponseContract>(0));
 
-            _production = serviceProvider.GetService<IHostingEnvironment>()?.EnvironmentName != EnvironmentName.Development;
-            _options = serviceProvider.GetService<IOptions<JsonRpcOptions>>()?.Value;
-            _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<JsonRpcMiddleware<T>>();
-            _diagnosticProvider = serviceProvider.GetService<IJsonRpcDiagnosticProvider>();
+            _production = services.GetService<IHostingEnvironment>()?.EnvironmentName != EnvironmentName.Development;
+            _options = services.GetService<IOptions<JsonRpcOptions>>()?.Value;
+            _logger = services.GetService<ILoggerFactory>()?.CreateLogger<JsonRpcMiddleware<T>>();
+            _diagnostic = services.GetService<IJsonRpcDiagnosticProvider>();
         }
 
         async Task IMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)
@@ -289,12 +289,12 @@ namespace Community.AspNetCore.JsonRpc
 
         private Task RegisterJsonRpcErrorAsync(JsonRpcError error)
         {
-            if (_diagnosticProvider == null)
+            if (_diagnostic == null)
             {
                 return Task.CompletedTask;
             }
 
-            return _diagnosticProvider.HandleErrorAsync(error.Code);
+            return _diagnostic.HandleErrorAsync(error.Code);
         }
 
         private async Task<JsonRpcResponse> HandleJsonRpcItemAsync(HttpContext context, JsonRpcItem<JsonRpcRequest> requestItem)
