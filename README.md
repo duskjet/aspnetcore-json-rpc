@@ -11,13 +11,13 @@
 - The middleware can set limits for maximum string identifier length (`128` if not specified) and maximum batch size (`1024` if not specified).
 - The middleware supports analysis of all sent JSON-RPC errors (including automatically created) via an implementation of the `IJsonRpcDiagnosticProvider` interface.
 - A handler / service can be acquired from a service provider or instantiated directly for a request scope.
-- A handler / service which implements the `IDisposable` interface will be automatically disposed on request scope exit.
+- A handler / service which is disposable will be automatically disposed on request scope exit.
 - A service searches for the `JsonRpcNameAttribute` attributes on class and interface members.
 - A service uses a default parameter value for named parameters if it is defined in the type and a value is not provided in a request.
 
 ### Specifics
 
-In addition to the standard JSON-RPC error codes the middleware may return the following JSON-RPC errors (which are also defined in the `JsonRpcTransportErrorCodes` type):
+- In addition to the standard JSON-RPC error codes the middleware may return the following JSON-RPC errors (which are also defined in the `JsonRpcTransportErrorCodes` type):
 
 Code | Reason
 :---: | ---
@@ -25,7 +25,7 @@ Code | Reason
 `-32010` | The provided message identifier exceeds length limit
 `-32020` | The provided batch exceeds size limit
 
-In addition to the JSON-RPC HTTP transport specification the middleware may return the following HTTP status codes:
+- In addition to the JSON-RPC HTTP transport specification the middleware may return the following HTTP status codes:
 
 Code | Reason
 :---: | ---
@@ -33,7 +33,7 @@ Code | Reason
 `400` | The `Content-Length` header has a value that differs from the actual content length
 `415` | The `Content-Encoding` header is specified and is not the `identity` value
 
-With logger factory availability, the following events may appear in a journal with the related details (e.g. method name, request identifier):
+- With logger factory availability, the following events may appear in a journal with the related details (e.g. method name, request identifier):
 
 ID | Level | Reason
 :---: | --- | ---
@@ -78,7 +78,6 @@ public class MyJsonRpcService : IJsonRpcService
     }
 }
 ```
-\+
 ```cs
 builder
     .ConfigureServices(sc => sc.AddJsonRpcService<MyJsonRpcService>())
@@ -92,14 +91,12 @@ public class MyJsonRpcHandler : IJsonRpcHandler
     {
         return new Dictionary<string, JsonRpcRequestContract>
         {
-            ["m1"] = new JsonRpcRequestContract(
-                new Dictionary<string, Type>
+            ["m1"] = new JsonRpcRequestContract(new Dictionary<string, Type>
                 {
                     ["p1"] = typeof(long),
                     ["p2"] = typeof(long)
                 }),
-            ["m2"] = new JsonRpcRequestContract(
-                new[]
+            ["m2"] = new JsonRpcRequestContract(new[]
                 {
                     typeof(long),
                     typeof(long)
@@ -137,7 +134,6 @@ public class MyJsonRpcHandler : IJsonRpcHandler
     }
 }
 ```
-\+
 ```cs
 builder
     .ConfigureServices(sc => sc.AddJsonRpcHandler<MyJsonRpcHandler>())
