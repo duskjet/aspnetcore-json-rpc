@@ -115,16 +115,6 @@ namespace Community.AspNetCore.JsonRpc.Tests
                     var response3 = await client.PostAsync("/api/v1", requestContent3);
 
                     Assert.Equal(HttpStatusCode.UnsupportedMediaType, response3.StatusCode);
-
-                    var requestContent4 = new StringContent("");
-
-                    requestContent4.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                    requestContent4.Headers.ContentLength = 0L;
-                    requestContent4.Headers.ContentEncoding.Add("identity");
-
-                    var response4 = await client.PostAsync("/api/v1", requestContent4);
-
-                    Assert.Equal(HttpStatusCode.OK, response4.StatusCode);
                 }
             }
         }

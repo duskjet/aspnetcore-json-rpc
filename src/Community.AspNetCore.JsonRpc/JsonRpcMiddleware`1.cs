@@ -90,23 +90,11 @@ namespace Community.AspNetCore.JsonRpc
 
                 return;
             }
-            if (string.Compare(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase) != 0)
+            if (!StringSegment.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
             {
                 await CreateResponseAsync(context, HttpStatusCode.UnsupportedMediaType);
 
                 return;
-            }
-
-            var encodingName = context.Request.Headers[HeaderNames.ContentEncoding];
-
-            if (encodingName != default(StringValues))
-            {
-                if (string.Compare(encodingName, "identity", StringComparison.OrdinalIgnoreCase) != 0)
-                {
-                    await CreateResponseAsync(context, HttpStatusCode.UnsupportedMediaType);
-
-                    return;
-                }
             }
             if (context.Request.ContentLength == null)
             {
@@ -114,7 +102,7 @@ namespace Community.AspNetCore.JsonRpc
 
                 return;
             }
-            if (string.Compare(context.Request.Headers[HeaderNames.Accept], "application/json", StringComparison.OrdinalIgnoreCase) != 0)
+            if (!StringSegment.Equals((string)context.Request.Headers[HeaderNames.Accept], "application/json", StringComparison.OrdinalIgnoreCase))
             {
                 await CreateResponseAsync(context, HttpStatusCode.NotAcceptable);
 
