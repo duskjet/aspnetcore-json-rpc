@@ -78,7 +78,7 @@ namespace Community.AspNetCore.JsonRpc
             {
                 return;
             }
-            if (string.Compare(context.Request.Method, HttpMethods.Post, StringComparison.OrdinalIgnoreCase) != 0)
+            if (!StringSegment.Equals(context.Request.Method, HttpMethods.Post, StringComparison.OrdinalIgnoreCase))
             {
                 await CreateResponseAsync(context, HttpStatusCode.MethodNotAllowed);
 
@@ -91,6 +91,12 @@ namespace Community.AspNetCore.JsonRpc
                 return;
             }
             if (!StringSegment.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
+            {
+                await CreateResponseAsync(context, HttpStatusCode.UnsupportedMediaType);
+
+                return;
+            }
+            if (context.Request.Headers.ContainsKey(HeaderNames.ContentEncoding))
             {
                 await CreateResponseAsync(context, HttpStatusCode.UnsupportedMediaType);
 
