@@ -4,7 +4,9 @@ using System.Data.JsonRpc;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Community.AspNetCore.JsonRpc.Internal;
 using Community.AspNetCore.JsonRpc.Resources;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -19,6 +21,8 @@ namespace Community.AspNetCore.JsonRpc
     internal sealed class JsonRpcMiddleware<T> : IMiddleware, IDisposable
         where T : class, IJsonRpcHandler
     {
+        private static IDictionary<string, JsonRpcRequestContract> _contracts;
+
         private readonly T _handler;
         private readonly bool _dispose;
         private readonly JsonRpcSerializer _serializer;
@@ -42,6 +46,22 @@ namespace Community.AspNetCore.JsonRpc
                 _dispose = _handler is IDisposable;
             }
 
+            LazyInitializer.EnsureInitialized(ref _contracts, CreateContracts);
+
+            _serializer = new JsonRpcSerializer(
+                _contracts,
+                EmptyDictionary<string, JsonRpcResponseContract>.Instance,
+                EmptyDictionary<JsonRpcId, string>.Instance,
+                EmptyDictionary<JsonRpcId, JsonRpcResponseContract>.Instance);
+
+            _production = services.GetService<IHostingEnvironment>()?.EnvironmentName != EnvironmentName.Development;
+            _options = services.GetService<IOptions<JsonRpcOptions>>()?.Value;
+            _logger = services.GetService<ILoggerFactory>()?.CreateLogger<JsonRpcMiddleware<T>>();
+            _diagnostic = services.GetService<IJsonRpcDiagnosticProvider>();
+        }
+
+        private IDictionary<string, JsonRpcRequestContract> CreateContracts()
+        {
             var scheme = _handler.CreateScheme();
             var contracts = new Dictionary<string, JsonRpcRequestContract>(scheme.Count, StringComparer.Ordinal);
 
@@ -59,16 +79,7 @@ namespace Community.AspNetCore.JsonRpc
                 contracts[kvp.Key] = kvp.Value;
             }
 
-            _serializer = new JsonRpcSerializer(
-                contracts,
-                new Dictionary<string, JsonRpcResponseContract>(0),
-                new Dictionary<JsonRpcId, string>(0),
-                new Dictionary<JsonRpcId, JsonRpcResponseContract>(0));
-
-            _production = services.GetService<IHostingEnvironment>()?.EnvironmentName != EnvironmentName.Development;
-            _options = services.GetService<IOptions<JsonRpcOptions>>()?.Value;
-            _logger = services.GetService<ILoggerFactory>()?.CreateLogger<JsonRpcMiddleware<T>>();
-            _diagnostic = services.GetService<IJsonRpcDiagnosticProvider>();
+            return contracts;
         }
 
         async Task IMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)
