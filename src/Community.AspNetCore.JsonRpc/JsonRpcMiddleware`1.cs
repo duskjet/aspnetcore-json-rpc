@@ -276,9 +276,7 @@ namespace Community.AspNetCore.JsonRpc
 
                 if (responses.Count == 0)
                 {
-                    // Server must return empty content for empty response batch according to the JSON-RPC 2.0 specification
-
-                    return null;
+                    return null; // Server must return empty content for empty response batch according to the JSON-RPC 2.0 specification
                 }
 
                 context.RequestAborted.ThrowIfCancellationRequested();
