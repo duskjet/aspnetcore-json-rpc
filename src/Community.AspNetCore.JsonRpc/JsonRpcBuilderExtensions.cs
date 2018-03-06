@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore
         /// <typeparam name="T">The type of the handler.</typeparam>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
-        public static IApplicationBuilder UseJsonRpcHandler<T>(this IApplicationBuilder builder, PathString path = default)
+        public static IApplicationBuilder UseJsonRpcHandler<T>(this IApplicationBuilder builder, in PathString path = default)
             where T : class, IJsonRpcHandler
         {
             if (builder == null)
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore
         /// <typeparam name="T">The type of the service.</typeparam>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
-        public static IApplicationBuilder UseJsonRpcService<T>(this IApplicationBuilder builder, PathString path = default)
+        public static IApplicationBuilder UseJsonRpcService<T>(this IApplicationBuilder builder, in PathString path = default)
             where T : class, IJsonRpcService
         {
             if (builder == null)
