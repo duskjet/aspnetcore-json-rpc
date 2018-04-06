@@ -17,7 +17,6 @@ namespace Community.AspNetCore.JsonRpc
         private static readonly IReadOnlyDictionary<string, JsonRpcRequestContract> _scheme;
 
         private readonly T _service;
-        private readonly bool _dispose;
 
         static JsonRpcServiceHandler()
         {
@@ -52,7 +51,6 @@ namespace Community.AspNetCore.JsonRpc
             if (_service == null)
             {
                 _service = ActivatorUtilities.CreateInstance<T>(serviceProvider);
-                _dispose = _service is IDisposable;
             }
         }
 
@@ -234,10 +232,7 @@ namespace Community.AspNetCore.JsonRpc
 
         void IDisposable.Dispose()
         {
-            if (_dispose)
-            {
-                ((IDisposable)_service).Dispose();
-            }
+            (_service as IDisposable)?.Dispose();
         }
     }
 }

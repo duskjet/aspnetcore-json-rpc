@@ -24,7 +24,6 @@ namespace Community.AspNetCore.JsonRpc
         private static IDictionary<string, JsonRpcRequestContract> _contracts;
 
         private readonly T _handler;
-        private readonly bool _dispose;
         private readonly JsonRpcSerializer _serializer;
         private readonly bool _production;
         private readonly JsonRpcOptions _options;
@@ -38,13 +37,7 @@ namespace Community.AspNetCore.JsonRpc
                 throw new ArgumentNullException(nameof(services));
             }
 
-            _handler = services.GetService<T>();
-
-            if (_handler == null)
-            {
-                _handler = ActivatorUtilities.CreateInstance<T>(services);
-                _dispose = _handler is IDisposable;
-            }
+            _handler = services.GetService<T>() ?? ActivatorUtilities.CreateInstance<T>(services);
 
             LazyInitializer.EnsureInitialized(ref _contracts, CreateContracts);
 
@@ -419,10 +412,7 @@ namespace Community.AspNetCore.JsonRpc
         {
             _serializer.Dispose();
 
-            if (_dispose)
-            {
-                ((IDisposable)_handler).Dispose();
-            }
+            (_handler as IDisposable)?.Dispose();
         }
     }
 }
