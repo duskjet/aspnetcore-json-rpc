@@ -46,12 +46,7 @@ namespace Community.AspNetCore.JsonRpc
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            _service = serviceProvider.GetService<T>();
-
-            if (_service == null)
-            {
-                _service = ActivatorUtilities.CreateInstance<T>(serviceProvider);
-            }
+            _service = serviceProvider.GetService<T>() ?? ActivatorUtilities.CreateInstance<T>(serviceProvider);
         }
 
         private static void AcquireContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> blueprint, Type type)
@@ -209,11 +204,11 @@ namespace Community.AspNetCore.JsonRpc
             {
                 if (request.IsNotification || !method.ReturnType.IsGenericType)
                 {
-                    await ((dynamic)method.Invoke(_service, parametersValues));
+                    await (dynamic)method.Invoke(_service, parametersValues);
                 }
                 else
                 {
-                    return new JsonRpcResponse(await ((dynamic)method.Invoke(_service, parametersValues)) as object, request.Id);
+                    return new JsonRpcResponse(await (dynamic)method.Invoke(_service, parametersValues) as object, request.Id);
                 }
             }
             catch (TargetInvocationException e)
