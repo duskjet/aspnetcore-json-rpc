@@ -87,12 +87,6 @@ namespace Community.AspNetCore.JsonRpc
 
                 return;
             }
-            if (context.Request.QueryString.HasValue)
-            {
-                await CreateResponseAsync(context, StatusCodes.Status400BadRequest);
-
-                return;
-            }
             if (!StringSegment.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
             {
                 await CreateResponseAsync(context, StatusCodes.Status415UnsupportedMediaType);
