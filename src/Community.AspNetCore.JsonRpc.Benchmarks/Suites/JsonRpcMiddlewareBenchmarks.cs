@@ -5,7 +5,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using Community.AspNetCore.JsonRpc.Benchmarks.Framework;
 using Community.AspNetCore.JsonRpc.Benchmarks.Middleware;
 using Community.AspNetCore.JsonRpc.Benchmarks.Resources;
 using Microsoft.AspNetCore;
@@ -14,27 +13,31 @@ using Microsoft.AspNetCore.TestHost;
 
 namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
 {
-    [BenchmarkSuite("JsonRpcMiddleware")]
     public abstract class JsonRpcMiddlewareBenchmarks
     {
+        private static readonly IReadOnlyDictionary<string, byte[]> _resources = CreateResourceDictionary();
         private static readonly MediaTypeHeaderValue _mimeType = new MediaTypeHeaderValue("aplication/json");
-        private static readonly IReadOnlyDictionary<string, byte[]> _contents;
 
         private readonly TestServer _serverHandler;
         private readonly TestServer _serverService;
         private readonly HttpClient _clientHandler;
         private readonly HttpClient _clientService;
 
-        static JsonRpcMiddlewareBenchmarks()
+        private static IReadOnlyDictionary<string, byte[]> CreateResourceDictionary()
         {
-            var contents = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+            var resources = new Dictionary<string, byte[]>(StringComparer.Ordinal);
 
-            foreach (var name in new[] { "nam", "pos", "err", "not" })
+            foreach (var code in CreateRequestcodes())
             {
-                contents[name] = Encoding.UTF8.GetBytes(EmbeddedResourceManager.GetString($"Assets.{name}.json"));
+                resources[code] = Encoding.UTF8.GetBytes(EmbeddedResourceManager.GetString($"Assets.{code}.json"));
             }
 
-            _contents = contents;
+            return resources;
+        }
+
+        private static IEnumerable<string> CreateRequestcodes()
+        {
+            return new[] { "nam", "pos", "err", "not" };
         }
 
         protected JsonRpcMiddlewareBenchmarks()
@@ -60,7 +63,7 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
 
         private HttpContent CreateHttpContent(string name)
         {
-            var content = _contents[name];
+            var content = _resources[name];
             var result = new ByteArrayContent(content);
 
             result.Headers.ContentType = _mimeType;
@@ -70,51 +73,51 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
         }
 
         [Benchmark(Description = "handler / nam")]
-        public async Task HandlerWithParametersByName()
+        public async Task<object> HandlerWithParametersByName()
         {
-            await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam"));
+            return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam"));
         }
 
         [Benchmark(Description = "handler / pos")]
-        public async Task HandlerWithParametersByPosition()
+        public async Task<object> HandlerWithParametersByPosition()
         {
-            await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos"));
+            return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos"));
         }
 
         [Benchmark(Description = "handler / err")]
-        public async Task HandlerWithErrorResponse()
+        public async Task<object> HandlerWithErrorResponse()
         {
-            await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err"));
+            return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err"));
         }
 
         [Benchmark(Description = "handler / not")]
-        public async Task HandlerWithNotification()
+        public async Task<object> HandlerWithNotification()
         {
-            await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not"));
+            return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not"));
         }
 
         [Benchmark(Description = "service / nam")]
-        public async Task ServiceWithParametersByName()
+        public async Task<object> ServiceWithParametersByName()
         {
-            await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam"));
+            return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam"));
         }
 
         [Benchmark(Description = "service / pos")]
-        public async Task ServiceWithParametersByPosition()
+        public async Task<object> ServiceWithParametersByPosition()
         {
-            await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos"));
+            return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos"));
         }
 
         [Benchmark(Description = "service / err")]
-        public async Task ServiceWithErrorResponse()
+        public async Task<object> ServiceWithErrorResponse()
         {
-            await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err"));
+            return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err"));
         }
 
         [Benchmark(Description = "service / not")]
-        public async Task ServiceWithNotification()
+        public async Task<object> ServiceWithNotification()
         {
-            await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not"));
+            return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not"));
         }
     }
 }
