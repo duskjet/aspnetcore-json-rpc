@@ -83,31 +83,31 @@ namespace Community.AspNetCore.JsonRpc
             }
             if (!StringSegment.Equals(context.Request.Method, HttpMethods.Post, StringComparison.OrdinalIgnoreCase))
             {
-                await CreateResponseAsync(context, StatusCodes.Status405MethodNotAllowed);
+                context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
 
                 return;
             }
             if (!StringSegment.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
             {
-                await CreateResponseAsync(context, StatusCodes.Status415UnsupportedMediaType);
+                context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
 
                 return;
             }
             if (context.Request.Headers.ContainsKey(HeaderNames.ContentEncoding))
             {
-                await CreateResponseAsync(context, StatusCodes.Status415UnsupportedMediaType);
+                context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
 
                 return;
             }
             if (context.Request.ContentLength == null)
             {
-                await CreateResponseAsync(context, StatusCodes.Status411LengthRequired);
+                context.Response.StatusCode = StatusCodes.Status411LengthRequired;
 
                 return;
             }
             if (!StringSegment.Equals((string)context.Request.Headers[HeaderNames.Accept], "application/json", StringComparison.OrdinalIgnoreCase))
             {
-                await CreateResponseAsync(context, StatusCodes.Status406NotAcceptable);
+                context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
 
                 return;
             }
@@ -121,7 +121,7 @@ namespace Community.AspNetCore.JsonRpc
 
             if (requestString.Length != context.Request.ContentLength.Value)
             {
-                await CreateResponseAsync(context, StatusCodes.Status400BadRequest);
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
                 return;
             }
@@ -130,24 +130,17 @@ namespace Community.AspNetCore.JsonRpc
 
             if (responseString != null)
             {
-                await CreateResponseAsync(context, StatusCodes.Status200OK, Encoding.UTF8.GetBytes(responseString));
+                var responseBody = Encoding.UTF8.GetBytes(responseString);
+
+                context.Response.StatusCode = StatusCodes.Status200OK;
+                context.Response.ContentType = "application/json";
+                context.Response.ContentLength = responseBody.Length;
+
+                await context.Response.Body.WriteAsync(responseBody, 0, responseBody.Length, context.RequestAborted);
             }
             else
             {
-                await CreateResponseAsync(context, StatusCodes.Status204NoContent);
-            }
-        }
-
-        private static async Task CreateResponseAsync(HttpContext context, int statusCode, byte[] body = null)
-        {
-            context.Response.StatusCode = statusCode;
-
-            if (body != null)
-            {
-                context.Response.ContentType = "application/json";
-                context.Response.ContentLength = body.Length;
-
-                await context.Response.Body.WriteAsync(body, 0, body.Length, context.RequestAborted);
+                context.Response.StatusCode = StatusCodes.Status204NoContent;
             }
         }
 
@@ -263,7 +256,9 @@ namespace Community.AspNetCore.JsonRpc
 
                 if (responses.Count == 0)
                 {
-                    return null; // Server must return empty content for empty response batch according to the JSON-RPC 2.0 specification
+                    // Server must return empty content for empty response batch according to the JSON-RPC 2.0 specification
+
+                    return null;
                 }
 
                 context.RequestAborted.ThrowIfCancellationRequested();
