@@ -72,49 +72,49 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
             return result;
         }
 
-        [Benchmark(Description = "handler / nam")]
+        [Benchmark]
         public async Task<object> HandlerWithParametersByName()
         {
             return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam"));
         }
 
-        [Benchmark(Description = "handler / pos")]
+        [Benchmark]
         public async Task<object> HandlerWithParametersByPosition()
         {
             return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos"));
         }
 
-        [Benchmark(Description = "handler / err")]
+        [Benchmark]
         public async Task<object> HandlerWithErrorResponse()
         {
             return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err"));
         }
 
-        [Benchmark(Description = "handler / not")]
+        [Benchmark]
         public async Task<object> HandlerWithNotification()
         {
             return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not"));
         }
 
-        [Benchmark(Description = "service / nam")]
+        [Benchmark]
         public async Task<object> ServiceWithParametersByName()
         {
             return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam"));
         }
 
-        [Benchmark(Description = "service / pos")]
+        [Benchmark]
         public async Task<object> ServiceWithParametersByPosition()
         {
             return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos"));
         }
 
-        [Benchmark(Description = "service / err")]
+        [Benchmark]
         public async Task<object> ServiceWithErrorResponse()
         {
             return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err"));
         }
 
-        [Benchmark(Description = "service / not")]
+        [Benchmark]
         public async Task<object> ServiceWithNotification()
         {
             return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not"));

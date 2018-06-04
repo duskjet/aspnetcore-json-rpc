@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Version>1.9.10</Version>
+    <Version>1.9.11</Version>
     <Description><![CDATA[JSON-RPC 2.0 middleware for ASP.NET Core 2 based on the "JSON-RPC 2.0 Transport: HTTP" specification]]></Description>
     <Authors><![CDATA[Alexander Kozlenko]]></Authors>
     <Copyright><![CDATA[© Alexander Kozlenko. All rights reserved.]]></Copyright>
@@ -10,13 +10,13 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <OutputPath>$(RepositoryPath)/bin/bin/$(AssemblyName)/$(Configuration)/</OutputPath>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)../Open.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>True</SignAssembly>
+    <OutputPath>$(RepositoryPath)\bin\bin\$(AssemblyName)\$(Configuration)\</OutputPath>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)..\Open.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DebugType>none</DebugType>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.1.0" />
@@ -25,6 +25,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="2.1.0" />
     <PackageReference Include="Microsoft.Net.Http.Headers" Version="2.1.0" />
-    <PackageReference Include="System.Data.JsonRpc" Version="1.13.0" />
+    <PackageReference Include="System.Data.JsonRpc" Version="1.14.0" />
   </ItemGroup>
 </Project>

@@ -29,7 +29,6 @@ Code | Reason
 
 Code | Reason
 :---: | ---
-`400` | The `Content-Length` header has a value that differs from the actual content length
 `415` | The `Content-Encoding` header is specified
 
 - With logger factory availability, the following events may appear in a journal:
