@@ -8,8 +8,8 @@
 
 - The middleware transparently handles batch JSON-RPC requests.
 - The middleware automatically handles common JSON-RPC issues.
-- The middleware supports for maximum string identifier length (`128` by default) and maximum batch size (`1024` by default).
-- The middleware supports JSON-RPC errors diagnostic via an implementation of the `IJsonRpcDiagnosticProvider` interface.
+- The middleware supports for maximum identifier length (`128` by default) and maximum batch size (`1024` by default).
+- The middleware supports JSON-RPC errors diagnostic via the `IJsonRpcDiagnosticProvider` interface.
 - A handler / service can be acquired from a service provider or instantiated directly for a request scope.
 - A handler / service which is disposable will be automatically disposed on request scope exit.
 - A service supports `JsonRpcNameAttribute` attributes defined on class and interface members.
@@ -17,7 +17,8 @@
 
 ### Specifics
 
-- In addition to the standard JSON-RPC error codes the middleware may return the following JSON-RPC errors (which are also defined in the `JsonRpcTransportErrorCodes` type):
+- The middleware does not verify the `Content-Length` header.
+- In addition to the standard JSON-RPC error codes the middleware may return the following JSON-RPC errors:
 
 Code | Reason
 :---: | ---
