@@ -72,52 +72,52 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.TestSuites
             return result;
         }
 
-        [Benchmark]
-        public async Task<object> HandlerWithParametersByName()
-        {
-            return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam"));
-        }
-
-        [Benchmark]
-        public async Task<object> HandlerWithParametersByPosition()
-        {
-            return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos"));
-        }
-
-        [Benchmark]
-        public async Task<object> HandlerWithErrorResponse()
-        {
-            return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err"));
-        }
-
-        [Benchmark]
+        [Benchmark(Description = "TYPE=H-ID=N-PARAMS=U-ERROR=N")]
         public async Task<object> HandlerWithNotification()
         {
             return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not"));
         }
 
-        [Benchmark]
+        [Benchmark(Description = "TYPE=H-ID=Y-PARAMS=N-ERROR=N")]
+        public async Task<object> HandlerWithParametersByName()
+        {
+            return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam"));
+        }
+
+        [Benchmark(Description = "TYPE=H-ID=Y-PARAMS=P-ERROR=N")]
+        public async Task<object> HandlerWithParametersByPosition()
+        {
+            return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos"));
+        }
+
+        [Benchmark(Description = "TYPE=H-ID=Y-PARAMS=U-ERROR=Y")]
+        public async Task<object> HandlerWithErrorResponse()
+        {
+            return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err"));
+        }
+
+        [Benchmark(Description = "TYPE=S-ID=N-PARAMS=U-ERROR=N")]
+        public async Task<object> ServiceWithNotification()
+        {
+            return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not"));
+        }
+
+        [Benchmark(Description = "TYPE=S-ID=Y-PARAMS=N-ERROR=N")]
         public async Task<object> ServiceWithParametersByName()
         {
             return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam"));
         }
 
-        [Benchmark]
+        [Benchmark(Description = "TYPE=S-ID=Y-PARAMS=P-ERROR=N")]
         public async Task<object> ServiceWithParametersByPosition()
         {
             return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos"));
         }
 
-        [Benchmark]
+        [Benchmark(Description = "TYPE=S-ID=Y-PARAMS=U-ERROR=Y")]
         public async Task<object> ServiceWithErrorResponse()
         {
             return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err"));
-        }
-
-        [Benchmark]
-        public async Task<object> ServiceWithNotification()
-        {
-            return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not"));
         }
     }
 }
