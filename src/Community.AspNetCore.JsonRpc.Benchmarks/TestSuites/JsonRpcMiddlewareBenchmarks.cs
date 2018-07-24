@@ -11,9 +11,9 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 
-namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
+namespace Community.AspNetCore.JsonRpc.Benchmarks.TestSuites
 {
-    public abstract class JsonRpcMiddlewareBenchmarks
+    public sealed class JsonRpcMiddlewareBenchmarks
     {
         private static readonly IReadOnlyDictionary<string, byte[]> _resources = CreateResourceDictionary();
         private static readonly MediaTypeHeaderValue _mimeType = new MediaTypeHeaderValue("aplication/json");
@@ -40,7 +40,7 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Suites
             return new[] { "nam", "pos", "err", "not" };
         }
 
-        protected JsonRpcMiddlewareBenchmarks()
+        public JsonRpcMiddlewareBenchmarks()
         {
             var builderHandler = new WebHostBuilder()
                 .ConfigureServices(sc => sc

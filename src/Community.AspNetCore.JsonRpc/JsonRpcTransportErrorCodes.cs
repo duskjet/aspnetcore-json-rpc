@@ -1,4 +1,6 @@
-﻿namespace Community.AspNetCore.JsonRpc
+﻿// © Alexander Kozlenko. Licensed under the MIT License.
+
+namespace Community.AspNetCore.JsonRpc
 {
     /// <summary>Defines JSON-RPC transport error codes.</summary>
     public static class JsonRpcTransportErrorCodes

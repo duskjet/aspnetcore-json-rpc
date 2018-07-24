@@ -1,14 +1,14 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Community.AspNetCore.JsonRpc.Tests.Middleware
+namespace Community.AspNetCore.JsonRpc.IntegrationTests.Middleware
 {
     internal sealed class JsonRpcTestService : IJsonRpcService
     {
         public JsonRpcTestService(ILoggerFactory loggerFactory)
         {
-            Assert.NotNull(loggerFactory);
+            Assert.IsNotNull(loggerFactory);
         }
 
         [JsonRpcName("nam")]
@@ -16,8 +16,8 @@ namespace Community.AspNetCore.JsonRpc.Tests.Middleware
             [JsonRpcName("p1")] long parameter1,
             [JsonRpcName("p2")] long parameter2)
         {
-            Assert.Equal(1L, parameter1);
-            Assert.Equal(2L, parameter2);
+            Assert.AreEqual(1L, parameter1);
+            Assert.AreEqual(2L, parameter2);
 
             return Task.FromResult(-1L);
         }
@@ -27,8 +27,8 @@ namespace Community.AspNetCore.JsonRpc.Tests.Middleware
             long parameter1,
             long parameter2)
         {
-            Assert.Equal(1L, parameter1);
-            Assert.Equal(2L, parameter2);
+            Assert.AreEqual(1L, parameter1);
+            Assert.AreEqual(2L, parameter2);
 
             return Task.FromResult(3L);
         }

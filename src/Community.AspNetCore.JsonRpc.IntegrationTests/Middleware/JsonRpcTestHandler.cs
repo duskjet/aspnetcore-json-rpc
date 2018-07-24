@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Data.JsonRpc;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Community.AspNetCore.JsonRpc.Tests.Middleware
+namespace Community.AspNetCore.JsonRpc.IntegrationTests.Middleware
 {
     internal sealed class JsonRpcTestHandler : IJsonRpcHandler
     {
         public JsonRpcTestHandler(ILoggerFactory loggerFactory)
         {
-            Assert.NotNull(loggerFactory);
+            Assert.IsNotNull(loggerFactory);
         }
 
         public IReadOnlyDictionary<string, JsonRpcRequestContract> CreateScheme()
@@ -37,8 +37,8 @@ namespace Community.AspNetCore.JsonRpc.Tests.Middleware
 
         public Task<JsonRpcResponse> HandleAsync(JsonRpcRequest request)
         {
-            Assert.NotNull(request);
-            Assert.False(request.IsSystem);
+            Assert.IsNotNull(request);
+            Assert.IsFalse(request.IsSystem);
 
             var response = default(JsonRpcResponse);
 
@@ -46,26 +46,26 @@ namespace Community.AspNetCore.JsonRpc.Tests.Middleware
             {
                 case "nam":
                     {
-                        Assert.Equal(JsonRpcParametersType.ByName, request.ParametersType);
-                        Assert.Equal(2, request.ParametersByName.Count);
-                        Assert.True(request.ParametersByName.ContainsKey("p1"));
-                        Assert.True(request.ParametersByName.ContainsKey("p2"));
-                        Assert.IsType<long>(request.ParametersByName["p1"]);
-                        Assert.IsType<long>(request.ParametersByName["p2"]);
-                        Assert.Equal(1L, (long)request.ParametersByName["p1"]);
-                        Assert.Equal(2L, (long)request.ParametersByName["p2"]);
+                        Assert.AreEqual(JsonRpcParametersType.ByName, request.ParametersType);
+                        Assert.AreEqual(2, request.ParametersByName.Count);
+                        Assert.IsTrue(request.ParametersByName.ContainsKey("p1"));
+                        Assert.IsTrue(request.ParametersByName.ContainsKey("p2"));
+                        Assert.IsInstanceOfType(request.ParametersByName["p1"], typeof(long));
+                        Assert.IsInstanceOfType(request.ParametersByName["p2"], typeof(long));
+                        Assert.AreEqual(1L, (long)request.ParametersByName["p1"]);
+                        Assert.AreEqual(2L, (long)request.ParametersByName["p2"]);
 
                         response = new JsonRpcResponse(-1L, request.Id);
                     }
                     break;
                 case "pos":
                     {
-                        Assert.Equal(JsonRpcParametersType.ByPosition, request.ParametersType);
-                        Assert.Equal(2, request.ParametersByPosition.Count);
-                        Assert.IsType<long>(request.ParametersByPosition[0]);
-                        Assert.IsType<long>(request.ParametersByPosition[1]);
-                        Assert.Equal(1L, (long)request.ParametersByPosition[0]);
-                        Assert.Equal(2L, (long)request.ParametersByPosition[1]);
+                        Assert.AreEqual(JsonRpcParametersType.ByPosition, request.ParametersType);
+                        Assert.AreEqual(2, request.ParametersByPosition.Count);
+                        Assert.IsInstanceOfType(request.ParametersByPosition[0], typeof(long));
+                        Assert.IsInstanceOfType(request.ParametersByPosition[1], typeof(long));
+                        Assert.AreEqual(1L, (long)request.ParametersByPosition[0]);
+                        Assert.AreEqual(2L, (long)request.ParametersByPosition[1]);
 
                         response = new JsonRpcResponse(3L, request.Id);
                     }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿// © Alexander Kozlenko. Licensed under the MIT License.
+
+using System;
 using Community.AspNetCore.JsonRpc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

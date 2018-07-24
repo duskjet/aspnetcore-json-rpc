@@ -1,4 +1,6 @@
-﻿namespace Community.AspNetCore.JsonRpc
+﻿// © Alexander Kozlenko. Licensed under the MIT License.
+
+namespace Community.AspNetCore.JsonRpc
 {
     /// <summary>Provides options for the JSON-RPC 2.0 middleware.</summary>
     public sealed class JsonRpcOptions

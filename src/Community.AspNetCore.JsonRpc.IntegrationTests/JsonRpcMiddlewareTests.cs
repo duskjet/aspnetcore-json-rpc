@@ -1,29 +1,29 @@
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Community.AspNetCore.JsonRpc.Tests.Middleware;
-using Community.AspNetCore.JsonRpc.Tests.Resources;
+using Community.AspNetCore.JsonRpc.IntegrationTests.Middleware;
+using Community.AspNetCore.JsonRpc.IntegrationTests.Resources;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Xunit;
-using Xunit.Abstractions;
 
-namespace Community.AspNetCore.JsonRpc.Tests
+namespace Community.AspNetCore.JsonRpc.IntegrationTests
 {
+    [TestClass]
     public sealed class JsonRpcMiddlewareTests
     {
-        private readonly ITestOutputHelper _output;
-
-        public JsonRpcMiddlewareTests(ITestOutputHelper output)
+        [Conditional("DEBUG")]
+        private static void TraceJsonToken(JToken token)
         {
-            _output = output;
+            Trace.WriteLine(token.ToString(Formatting.Indented));
         }
 
         private async Task ExecuteMiddlewareTestAsync(Action<IWebHostBuilder> configurator, string test)
@@ -34,7 +34,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
             var builder = new WebHostBuilder()
                 .ConfigureLogging(lb => lb
                     .SetMinimumLevel(LogLevel.Trace)
-                    .AddXunit(_output));
+                    .AddDebug());
 
             configurator.Invoke(builder);
 
@@ -53,21 +53,21 @@ namespace Community.AspNetCore.JsonRpc.Tests
 
                     if (responseContentSample != string.Empty)
                     {
-                        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
                         var responseContent = await response.Content.ReadAsStringAsync();
 
-                        Assert.False(string.IsNullOrEmpty(responseContent), "Actual response content is empty");
+                        Assert.IsFalse(string.IsNullOrEmpty(responseContent), "Actual response content is empty");
 
                         var responseContentToken = JToken.Parse(responseContent);
 
-                        _output.WriteLine(responseContentToken.ToString(Formatting.Indented));
+                        TraceJsonToken(responseContentToken);
 
-                        Assert.True(JToken.DeepEquals(JToken.Parse(responseContentSample), responseContentToken), "Actual JSON string differs from expected");
+                        Assert.IsTrue(JToken.DeepEquals(JToken.Parse(responseContentSample), responseContentToken), "Actual JSON string differs from expected");
                     }
                     else
                     {
-                        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+                        Assert.AreEqual(HttpStatusCode.NoContent, response.StatusCode);
                     }
                 }
             }
@@ -78,7 +78,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
             var builder = new WebHostBuilder()
                 .ConfigureLogging(lb => lb
                     .SetMinimumLevel(LogLevel.Trace)
-                    .AddXunit(_output));
+                    .AddDebug());
 
             configurator.Invoke(builder);
 
@@ -95,7 +95,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
 
                     var response1 = await client.PostAsync("/api/v2", requestContent1);
 
-                    Assert.Equal(HttpStatusCode.NotFound, response1.StatusCode);
+                    Assert.AreEqual(HttpStatusCode.NotFound, response1.StatusCode);
 
                     var requestContent2 = new StringContent("");
 
@@ -105,24 +105,24 @@ namespace Community.AspNetCore.JsonRpc.Tests
 
                     var response2 = await client.PostAsync("/api/v1", requestContent2);
 
-                    Assert.Equal(HttpStatusCode.UnsupportedMediaType, response2.StatusCode);
+                    Assert.AreEqual(HttpStatusCode.UnsupportedMediaType, response2.StatusCode);
                 }
             }
         }
 
-        [Theory]
-        [InlineData("nam")]
-        [InlineData("pos")]
-        [InlineData("err")]
-        [InlineData("not")]
-        [InlineData("unk")]
-        [InlineData("sys")]
-        [InlineData("ili")]
-        [InlineData("bat")]
-        [InlineData("bdi")]
-        [InlineData("bsi")]
-        [InlineData("bon")]
-        [InlineData("ipt")]
+        [DataTestMethod]
+        [DataRow("nam")]
+        [DataRow("pos")]
+        [DataRow("err")]
+        [DataRow("not")]
+        [DataRow("unk")]
+        [DataRow("sys")]
+        [DataRow("ili")]
+        [DataRow("bat")]
+        [DataRow("bdi")]
+        [DataRow("bsi")]
+        [DataRow("bon")]
+        [DataRow("ipt")]
         public async Task UseJsonRpcHandler(string test)
         {
             var options = new JsonRpcOptions
@@ -143,19 +143,19 @@ namespace Community.AspNetCore.JsonRpc.Tests
             await ExecuteMiddlewareTestAsync(configurator, test);
         }
 
-        [Theory]
-        [InlineData("nam")]
-        [InlineData("pos")]
-        [InlineData("err")]
-        [InlineData("not")]
-        [InlineData("unk")]
-        [InlineData("sys")]
-        [InlineData("ili")]
-        [InlineData("bat")]
-        [InlineData("bdi")]
-        [InlineData("bsi")]
-        [InlineData("bon")]
-        [InlineData("ipt")]
+        [DataTestMethod]
+        [DataRow("nam")]
+        [DataRow("pos")]
+        [DataRow("err")]
+        [DataRow("not")]
+        [DataRow("unk")]
+        [DataRow("sys")]
+        [DataRow("ili")]
+        [DataRow("bat")]
+        [DataRow("bdi")]
+        [DataRow("bsi")]
+        [DataRow("bon")]
+        [DataRow("ipt")]
         public async Task UseJsonRpcService(string test)
         {
             var options = new JsonRpcOptions
@@ -176,7 +176,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
             await ExecuteMiddlewareTestAsync(configurator, test);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseJsonRpcHandlerWithInvalidResponse()
         {
             var configurator = (Action<IWebHostBuilder>)(builder =>
@@ -191,7 +191,7 @@ namespace Community.AspNetCore.JsonRpc.Tests
             await ExecuteMiddlewareTestWithInvalidResponseAsync(configurator);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseJsonRpcServiceWithInvalidResponse()
         {
             var configurator = (Action<IWebHostBuilder>)(builder =>

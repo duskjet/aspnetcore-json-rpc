@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿// © Alexander Kozlenko. Licensed under the MIT License.
+
+using System.Threading.Tasks;
 
 namespace Community.AspNetCore.JsonRpc
 {

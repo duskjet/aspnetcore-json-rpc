@@ -4,18 +4,18 @@
 
 [![NuGet package](https://img.shields.io/nuget/v/Community.AspNetCore.JsonRpc.svg?style=flat-square)](https://www.nuget.org/packages/Community.AspNetCore.JsonRpc)
 
-### Features
+### Important Features
 
 - The middleware transparently handles batch JSON-RPC requests.
 - The middleware automatically handles common JSON-RPC issues.
-- The middleware supports for maximum identifier length (`128` by default) and maximum batch size (`1024` by default).
-- The middleware supports JSON-RPC errors diagnostic via the `IJsonRpcDiagnosticProvider` interface.
+- The middleware supports for maximum identifier length and batch size (`128` and `1024` by default).
+- The middleware supports JSON-RPC errors diagnostic by using diagnostic provider.
 - A handler / service can be acquired from a service provider or instantiated directly for a request scope.
 - A handler / service which is disposable will be automatically disposed on request scope exit.
-- A service supports `JsonRpcNameAttribute` attributes defined on class and interface members.
-- A service supports default method parameter values for named parameters if they are not provided in a request.
+- A service supports defining JSON-RPC names on interface members.
+- A service supports default method parameter values for named parameters not provided in a request.
 
-### Specifics
+### Characteristics
 
 - The middleware does not verify the `Content-Length` header.
 - In addition to the standard JSON-RPC error codes the middleware may return the following JSON-RPC errors:
@@ -50,7 +50,7 @@ ID | Level | Reason
 `4030` | Error | A JSON-RPC message identifier exceeds length limit
 `4040` | Error | A JSON-RPC batch exceeds size limit
 
-### Examples
+### Usage Examples
 
 ```cs
 public class MyJsonRpcService : IJsonRpcService

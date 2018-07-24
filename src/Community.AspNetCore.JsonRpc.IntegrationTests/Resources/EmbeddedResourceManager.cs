@@ -1,10 +1,12 @@
-﻿using System;
+﻿// © Alexander Kozlenko. Licensed under the MIT License.
+
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
 
-namespace Community.AspNetCore.JsonRpc.Tests.Resources
+namespace Community.AspNetCore.JsonRpc.IntegrationTests.Resources
 {
     [DebuggerStepThrough]
     internal static class EmbeddedResourceManager
@@ -23,7 +25,7 @@ namespace Community.AspNetCore.JsonRpc.Tests.Resources
             {
                 if (resourceStream == null)
                 {
-                    throw new InvalidOperationException(FormattableString.Invariant($"The specified resource \"{name}\" is not found"));
+                    throw new InvalidOperationException($"The resource \"{name}\" was not found");
                 }
 
                 using (var bufferStream = new MemoryStream((int)resourceStream.Length))
