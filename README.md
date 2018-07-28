@@ -55,8 +55,8 @@ ID | Level | Reason
 ```cs
 public class MyJsonRpcService : IJsonRpcService
 {
-    [JsonRpcName("m1")]
-    public Task<long> Method1([JsonRpcName("p1")] long p1, [JsonRpcName("p2")] long p2)
+    [JsonRpcMethod("m1", "p1", "p2")]
+    public Task<long> Method1(long p1, long p2)
     {
         if (p2 == 0L)
         {
@@ -66,7 +66,7 @@ public class MyJsonRpcService : IJsonRpcService
         return Task.FromResult(p1 / p2);
     }
 
-    [JsonRpcName("m2")]
+    [JsonRpcMethod("m2", 0, 1)]
     public Task<long> Method2(long p1, long p2)
     {
         return Task.FromResult(p1 + p2);

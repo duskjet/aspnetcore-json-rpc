@@ -159,11 +159,11 @@
   <data name="handler.response.invalid_id" xml:space="preserve">
     <value>The request and response identifiers are different</value>
   </data>
-  <data name="handler.scheme.method.system_name" xml:space="preserve">
+  <data name="handler.contract.method.system_name" xml:space="preserve">
     <value>The JSON-RPC method name "{0}" has the system extension prefix</value>
   </data>
-  <data name="handler.scheme.method.undefined_name" xml:space="preserve">
-    <value>The scheme contains JSON-RPC method name that equals null</value>
+  <data name="handler.contract.method.undefined_name" xml:space="preserve">
+    <value>The JSON-RPC method name is null</value>
   </data>
   <data name="rpc.error.duplicate_ids" xml:space="preserve">
     <value>The provided batch contains requests with duplicate identifiers</value>
@@ -193,18 +193,18 @@
     <value>The service {0} contains multiple definitions for the JSON-RPC method "{1}"</value>
   </data>
   <data name="service.method.invalid_type" xml:space="preserve">
-    <value>The method {0} of the service {1} has return type that differs from System.Threading.Task or System.Threading.Task&lt;TResult&gt;</value>
-  </data>
-  <data name="service.method.parameter.invalid_name" xml:space="preserve">
-    <value>The method {0} of the service {1} contains multiple definitions for the JSON-RPC parameter "{2}"</value>
-  </data>
-  <data name="service.method.parameter.undefined_name" xml:space="preserve">
-    <value>The method {0} of the service {1} contains the parameter {2} without a JSON-RPC name</value>
-  </data>
-  <data name="service.method.parameter.unexpected_name" xml:space="preserve">
-    <value>The method {0} of the service {1} contains the parameter {2} with an unexpected JSON-RPC name</value>
+    <value>The method {0} of the service {1} has invalid return type</value>
   </data>
   <data name="service.request.parameter.undefined_value" xml:space="preserve">
     <value>The method "{0}" requires the parameter "{1}"</value>
+  </data>
+  <data name="service.method.invalid_parameters_count" xml:space="preserve">
+    <value>The method {0} of the service {1} has invalid parameters count</value>
+  </data>
+  <data name="service.method.invalid_parameter_names" xml:space="preserve">
+    <value>The method {0} of the service {1} has invalid parameter names</value>
+  </data>
+  <data name="service.method.invalid_parameter_positions" xml:space="preserve">
+    <value>The method {0} of the service {1} has invalid parameter positions</value>
   </data>
 </root>

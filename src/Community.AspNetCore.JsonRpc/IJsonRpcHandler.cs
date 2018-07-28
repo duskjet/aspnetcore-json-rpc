@@ -9,9 +9,9 @@ namespace Community.AspNetCore.JsonRpc
     /// <summary>Defines a JSON-RPC 2.0 handler.</summary>
     public interface IJsonRpcHandler
     {
-        /// <summary>Creates a scheme for deserializing JSON-RPC requests.</summary>
+        /// <summary>Get contracts for JSON-RPC requests deserialization.</summary>
         /// <returns>A dictionary with JSON-RPC request contracts.</returns>
-        IReadOnlyDictionary<string, JsonRpcRequestContract> CreateScheme();
+        IReadOnlyDictionary<string, JsonRpcRequestContract> GetContracts();
 
         /// <summary>Handles a JSON-RPC request and returns a JSON-RPC response or <see langword="null" /> for a notification as an asynchronous operation.</summary>
         /// <param name="request">The JSON-RPC request.</param>

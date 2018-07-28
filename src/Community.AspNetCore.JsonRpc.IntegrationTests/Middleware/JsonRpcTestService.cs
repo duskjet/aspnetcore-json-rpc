@@ -11,10 +11,8 @@ namespace Community.AspNetCore.JsonRpc.IntegrationTests.Middleware
             Assert.IsNotNull(loggerFactory);
         }
 
-        [JsonRpcName("nam")]
-        public Task<long> MethodWithParametersByName(
-            [JsonRpcName("p1")] long parameter1,
-            [JsonRpcName("p2")] long parameter2)
+        [JsonRpcMethod("nam", "p1", "p2")]
+        public Task<long> MethodWithParametersByName(long parameter1, long parameter2)
         {
             Assert.AreEqual(1L, parameter1);
             Assert.AreEqual(2L, parameter2);
@@ -22,10 +20,8 @@ namespace Community.AspNetCore.JsonRpc.IntegrationTests.Middleware
             return Task.FromResult(-1L);
         }
 
-        [JsonRpcName("pos")]
-        public Task<long> MethodWithParametersByPosition(
-            long parameter1,
-            long parameter2)
+        [JsonRpcMethod("pos", 0, 1)]
+        public Task<long> MethodWithParametersByPosition(long parameter1, long parameter2)
         {
             Assert.AreEqual(1L, parameter1);
             Assert.AreEqual(2L, parameter2);
@@ -33,13 +29,13 @@ namespace Community.AspNetCore.JsonRpc.IntegrationTests.Middleware
             return Task.FromResult(3L);
         }
 
-        [JsonRpcName("err")]
+        [JsonRpcMethod("err")]
         public Task<long> MethodWithErrorResponse()
         {
             throw new JsonRpcServiceException(0L, "m");
         }
 
-        [JsonRpcName("not")]
+        [JsonRpcMethod("not")]
         public Task MethodWithNotification()
         {
             return Task.CompletedTask;

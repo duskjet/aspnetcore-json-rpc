@@ -4,29 +4,25 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Middleware
 {
     internal sealed class JsonRpcTestService : IJsonRpcService
     {
-        [JsonRpcName("mn")]
-        public Task<long> MethodWithParametersByName(
-            [JsonRpcName("p1")]long parameter1,
-            [JsonRpcName("p2")]long parameter2)
+        [JsonRpcMethod("mn", "p1", "p2")]
+        public Task<long> MethodWithParametersByName(long parameter1, long parameter2)
         {
             return Task.FromResult(3L);
         }
 
-        [JsonRpcName("mp")]
-        public Task<long> MethodWithParametersByPosition(
-            long parameter1,
-            long parameter2)
+        [JsonRpcMethod("mp", 0, 1)]
+        public Task<long> MethodWithParametersByPosition(long parameter1, long parameter2)
         {
             return Task.FromResult(3L);
         }
 
-        [JsonRpcName("me")]
+        [JsonRpcMethod("me")]
         public Task<long> MethodWithErrorResponse()
         {
             throw new JsonRpcServiceException(0L, "m");
         }
 
-        [JsonRpcName("mt")]
+        [JsonRpcMethod("mt")]
         public Task MethodWithNotification()
         {
             return Task.CompletedTask;

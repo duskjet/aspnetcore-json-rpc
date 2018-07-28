@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.JsonRpc;
-using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
@@ -16,7 +16,7 @@ namespace Community.AspNetCore.JsonRpc
         where T : class, IJsonRpcService
     {
         private static readonly IReadOnlyDictionary<string, (MethodInfo, ParameterInfo[], string[])> _metadata;
-        private static readonly IReadOnlyDictionary<string, JsonRpcRequestContract> _scheme;
+        private static readonly IReadOnlyDictionary<string, JsonRpcRequestContract> _contracts;
 
         private readonly T _service;
 
@@ -24,21 +24,21 @@ namespace Community.AspNetCore.JsonRpc
         {
             var blueprint = new Dictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])>(StringComparer.Ordinal);
 
-            AcquireContracts(blueprint, typeof(T));
+            GetContracts(blueprint, typeof(T));
 
             var metadata = new Dictionary<string, (MethodInfo, ParameterInfo[], string[])>(blueprint.Count, StringComparer.Ordinal);
-            var scheme = new Dictionary<string, JsonRpcRequestContract>(blueprint.Count, StringComparer.Ordinal);
+            var contracts = new Dictionary<string, JsonRpcRequestContract>(blueprint.Count, StringComparer.Ordinal);
 
             foreach (var kvp in blueprint)
             {
                 var (contract, method, parameters, parametersBindings) = kvp.Value;
 
                 metadata[kvp.Key] = (method, parameters, parametersBindings);
-                scheme[kvp.Key] = contract;
+                contracts[kvp.Key] = contract;
             }
 
             _metadata = metadata;
-            _scheme = scheme;
+            _contracts = contracts;
         }
 
         public JsonRpcServiceHandler(IServiceProvider serviceProvider)
@@ -51,109 +51,121 @@ namespace Community.AspNetCore.JsonRpc
             _service = serviceProvider.GetService<T>() ?? ActivatorUtilities.CreateInstance<T>(serviceProvider);
         }
 
-        private static void AcquireContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> blueprint, Type type)
+        private static void GetContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> blueprint, Type type)
         {
             if (type == null)
             {
                 return;
             }
 
-            AcquireContracts(blueprint, type.GetMethods(BindingFlags.Instance | BindingFlags.Public));
-            AcquireContracts(blueprint, type.BaseType);
+            GetContracts(blueprint, type.GetMethods(BindingFlags.Instance | BindingFlags.Public));
+            GetContracts(blueprint, type.BaseType);
 
             var interfaceTypes = type.GetInterfaces();
 
             for (var i = 0; i < interfaceTypes.Length; i++)
             {
-                AcquireContracts(blueprint, interfaceTypes[i]);
+                GetContracts(blueprint, interfaceTypes[i]);
             }
         }
 
-        private static void AcquireContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> blueprint, IEnumerable<MethodInfo> methods)
+        private static void GetContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> contracts, IEnumerable<MethodInfo> methods)
         {
             foreach (var method in methods)
             {
-                var methodNameAttribute = method.GetCustomAttribute<JsonRpcNameAttribute>();
+                var attribute = method.GetCustomAttribute<JsonRpcMethodAttribute>();
 
-                if (methodNameAttribute == null)
+                if (attribute == null)
                 {
                     continue;
                 }
                 if (!(method.ReturnType == typeof(Task)) && !(method.ReturnType.IsGenericType && (method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))))
                 {
-                    throw new InvalidOperationException(
-                        string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.invalid_type"), method.Name, typeof(T)));
+                    throw new InvalidOperationException(string.Format(Strings.GetString("service.method.invalid_type"), method.Name, typeof(T)));
                 }
-                if (blueprint.ContainsKey(methodNameAttribute.Value))
+                if (contracts.ContainsKey(attribute.MethodName))
                 {
-                    throw new InvalidOperationException(
-                        string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.invalid_name"), typeof(T), methodNameAttribute.Value));
+                    throw new InvalidOperationException(string.Format(Strings.GetString("service.method.invalid_name"), typeof(T), attribute.MethodName));
                 }
 
-                var methodContract = default(JsonRpcRequestContract);
+                var contract = default(JsonRpcRequestContract);
                 var parameters = method.GetParameters();
                 var parametersBindings = default(string[]);
 
-                if (parameters.Length > 0)
+                switch (attribute.ParametersType)
                 {
-                    if (parameters[0].GetCustomAttribute<JsonRpcNameAttribute>() == null)
-                    {
-                        var parametersContract = new Type[parameters.Length];
-
-                        for (var i = 0; i < parameters.Length; i++)
+                    case JsonRpcParametersType.ByPosition:
                         {
-                            if (parameters[i].GetCustomAttribute<JsonRpcNameAttribute>() != null)
+                            var parameterPositions = attribute.ParameterPositions;
+
+                            if (parameterPositions.Length != parameters.Length)
                             {
-                                throw new InvalidOperationException(
-                                    string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.parameter.unexpected_name"), method.Name, typeof(T), parameters[i].Name));
+                                throw new InvalidOperationException(string.Format(Strings.GetString("service.method.invalid_parameters_count"), method.Name, typeof(T)));
                             }
 
-                            parametersContract[i] = parameters[i].ParameterType;
+                            for (var i = 0; i < parameterPositions.Length; i++)
+                            {
+                                if (!parameterPositions.Contains(i))
+                                {
+                                    throw new InvalidOperationException(string.Format(Strings.GetString("service.method.invalid_parameter_positions"), method.Name, typeof(T)));
+                                }
+                            }
+
+                            var parametersContract = new Type[parameters.Length];
+
+                            for (var i = 0; i < parameters.Length; i++)
+                            {
+                                parametersContract[i] = parameters[i].ParameterType;
+                            }
+
+                            contract = new JsonRpcRequestContract(parametersContract);
                         }
-
-                        methodContract = new JsonRpcRequestContract(parametersContract);
-                    }
-                    else
-                    {
-                        var parametersContract = new Dictionary<string, Type>(parameters.Length, StringComparer.Ordinal);
-
-                        parametersBindings = new string[parameters.Length];
-
-                        for (var i = 0; i < parameters.Length; i++)
+                        break;
+                    case JsonRpcParametersType.ByName:
                         {
-                            var parameterNameAttribute = parameters[i].GetCustomAttribute<JsonRpcNameAttribute>();
+                            var parameterNames = attribute.ParameterNames;
 
-                            if (parameterNameAttribute == null)
+                            if (parameterNames.Length != parameters.Length)
                             {
-                                throw new InvalidOperationException(
-                                    string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.parameter.undefined_name"), method.Name, typeof(T), parameters[i].Name));
+                                throw new InvalidOperationException(string.Format(Strings.GetString("service.method.invalid_parameters_count"), method.Name, typeof(T)));
                             }
-                            if (parametersContract.ContainsKey(parameterNameAttribute.Value))
+                            if (parameterNames.Length != parameterNames.Distinct(StringComparer.Ordinal).Count())
                             {
-                                throw new InvalidOperationException(
-                                    string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.method.parameter.invalid_name"), method.Name, typeof(T), parameterNameAttribute.Value));
-
+                                throw new InvalidOperationException(string.Format(Strings.GetString("service.method.invalid_parameter_names"), method.Name, typeof(T)));
                             }
 
-                            parametersContract[parameterNameAttribute.Value] = parameters[i].ParameterType;
-                            parametersBindings[i] = parameterNameAttribute.Value;
+                            var parametersContract = new Dictionary<string, Type>(parameters.Length, StringComparer.Ordinal);
+
+                            parametersBindings = new string[parameters.Length];
+
+                            for (var i = 0; i < parameters.Length; i++)
+                            {
+                                parametersContract[parameterNames[i]] = parameters[i].ParameterType;
+                                parametersBindings[i] = parameterNames[i];
+                            }
+
+                            contract = new JsonRpcRequestContract(parametersContract);
                         }
+                        break;
+                    default:
+                        {
+                            if (parameters.Length != 0)
+                            {
+                                throw new InvalidOperationException(string.Format(Strings.GetString("service.method.invalid_parameters_count"), method.Name, typeof(T)));
+                            }
 
-                        methodContract = new JsonRpcRequestContract(parametersContract);
-                    }
-                }
-                else
-                {
-                    methodContract = new JsonRpcRequestContract();
+                            contract = new JsonRpcRequestContract();
+                        }
+                        break;
                 }
 
-                blueprint[methodNameAttribute.Value] = (methodContract, method, parameters, parametersBindings);
+                contracts[attribute.MethodName] = (contract, method, parameters, parametersBindings);
             }
         }
 
-        IReadOnlyDictionary<string, JsonRpcRequestContract> IJsonRpcHandler.CreateScheme()
+        IReadOnlyDictionary<string, JsonRpcRequestContract> IJsonRpcHandler.GetContracts()
         {
-            return _scheme;
+            return _contracts;
         }
 
         async Task<JsonRpcResponse> IJsonRpcHandler.HandleAsync(JsonRpcRequest request)
@@ -192,7 +204,7 @@ namespace Community.AspNetCore.JsonRpc
                                         return null;
                                     }
 
-                                    var message = string.Format(CultureInfo.InvariantCulture, Strings.GetString("service.request.parameter.undefined_value"), request.Method, parametersBindings[i]);
+                                    var message = string.Format(Strings.GetString("service.request.parameter.undefined_value"), request.Method, parametersBindings[i]);
 
                                     return new JsonRpcResponse(new JsonRpcError(JsonRpcErrorCodes.InvalidParameters, message), request.Id);
                                 }

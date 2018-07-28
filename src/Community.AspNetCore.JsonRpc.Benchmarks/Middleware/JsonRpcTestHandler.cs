@@ -7,7 +7,7 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.Middleware
 {
     internal sealed class JsonRpcTestHandler : IJsonRpcHandler
     {
-        public IReadOnlyDictionary<string, JsonRpcRequestContract> CreateScheme()
+        public IReadOnlyDictionary<string, JsonRpcRequestContract> GetContracts()
         {
             return new Dictionary<string, JsonRpcRequestContract>(StringComparer.Ordinal)
             {

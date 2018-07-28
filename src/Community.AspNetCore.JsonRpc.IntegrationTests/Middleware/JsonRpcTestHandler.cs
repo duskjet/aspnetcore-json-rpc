@@ -14,7 +14,7 @@ namespace Community.AspNetCore.JsonRpc.IntegrationTests.Middleware
             Assert.IsNotNull(loggerFactory);
         }
 
-        public IReadOnlyDictionary<string, JsonRpcRequestContract> CreateScheme()
+        public IReadOnlyDictionary<string, JsonRpcRequestContract> GetContracts()
         {
             return new Dictionary<string, JsonRpcRequestContract>(StringComparer.Ordinal)
             {

@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.JsonRpc;
-using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,8 +41,7 @@ namespace Community.AspNetCore.JsonRpc
 
             LazyInitializer.EnsureInitialized(ref _contracts, CreateContracts);
 
-            _serializer = new JsonRpcSerializer(
-                _contracts,
+            _serializer = new JsonRpcSerializer(_contracts,
                 EmptyDictionary<string, JsonRpcResponseContract>.Instance,
                 EmptyDictionary<JsonRpcId, string>.Instance,
                 EmptyDictionary<JsonRpcId, JsonRpcResponseContract>.Instance);
@@ -56,18 +54,18 @@ namespace Community.AspNetCore.JsonRpc
 
         private IDictionary<string, JsonRpcRequestContract> CreateContracts()
         {
-            var scheme = _handler.CreateScheme();
-            var contracts = new Dictionary<string, JsonRpcRequestContract>(scheme.Count, StringComparer.Ordinal);
+            var blueprint = _handler.GetContracts();
+            var contracts = new Dictionary<string, JsonRpcRequestContract>(blueprint.Count, StringComparer.Ordinal);
 
-            foreach (var kvp in scheme)
+            foreach (var kvp in blueprint)
             {
                 if (kvp.Key == null)
                 {
-                    throw new InvalidOperationException(Strings.GetString("handler.scheme.method.undefined_name"));
+                    throw new InvalidOperationException(Strings.GetString("handler.contract.method.undefined_name"));
                 }
                 if (JsonRpcRequest.IsSystemMethod(kvp.Key))
                 {
-                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Strings.GetString("handler.scheme.method.system_name"), kvp.Key));
+                    throw new InvalidOperationException(string.Format(Strings.GetString("handler.contract.method.system_name"), kvp.Key));
                 }
 
                 contracts[kvp.Key] = kvp.Value;
