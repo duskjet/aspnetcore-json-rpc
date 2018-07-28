@@ -82,7 +82,7 @@ or
 ```cs
 public class MyJsonRpcHandler : IJsonRpcHandler
 {
-    public IReadOnlyDictionary<string, JsonRpcRequestContract> CreateScheme()
+    public IReadOnlyDictionary<string, JsonRpcRequestContract> GetContracts()
     {
         return new Dictionary<string, JsonRpcRequestContract>
         {
