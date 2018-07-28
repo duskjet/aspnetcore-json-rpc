@@ -1,6 +1,6 @@
 ﻿<Project>
   <PropertyGroup>
-    <Version>1.9.13</Version>
+    <Version>1.10.0</Version>
     <PackageProjectUrl>https://github.com/alexanderkozlenko/aspnetcore-json-rpc</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.github.com/alexanderkozlenko/aspnetcore-json-rpc/master/LICENSE</PackageLicenseUrl>
     <Authors><![CDATA[Alexander Kozlenko]]></Authors>
