@@ -1,8 +1,0 @@
-{
-    "jsonrpc": "2.0",
-    "id": null,
-    "error": {
-        "code": -32020,
-        "message": "The provided batch exceeds size limit"
-    }
-}

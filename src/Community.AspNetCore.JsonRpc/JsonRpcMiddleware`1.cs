@@ -4,11 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.JsonRpc;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
-using Community.AspNetCore.JsonRpc.Internal;
 using Community.AspNetCore.JsonRpc.Resources;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -21,13 +18,8 @@ namespace Community.AspNetCore.JsonRpc
     internal sealed class JsonRpcMiddleware<T> : IMiddleware, IDisposable
         where T : class, IJsonRpcHandler
     {
-        private static IDictionary<string, JsonRpcRequestContract> _contracts;
-
         private readonly T _handler;
         private readonly JsonRpcSerializer _serializer;
-        private readonly bool _production;
-        private readonly JsonRpcOptions _options;
-        private readonly IJsonRpcDiagnosticProvider _diagnostic;
         private readonly ILogger _logger;
 
         public JsonRpcMiddleware(IServiceProvider services)
@@ -37,41 +29,35 @@ namespace Community.AspNetCore.JsonRpc
                 throw new ArgumentNullException(nameof(services));
             }
 
-            _handler = services.GetService<T>() ?? ActivatorUtilities.CreateInstance<T>(services);
+            var handler = services.GetService<T>();
+            var options = services.GetService<IOptions<JsonRpcOptions>>();
+            var loggerFactory = services.GetService<ILoggerFactory>();
 
-            LazyInitializer.EnsureInitialized(ref _contracts, CreateContracts);
-
-            _serializer = new JsonRpcSerializer(_contracts,
-                EmptyDictionary<string, JsonRpcResponseContract>.Instance,
-                EmptyDictionary<JsonRpcId, string>.Instance,
-                EmptyDictionary<JsonRpcId, JsonRpcResponseContract>.Instance);
-
-            _production = services.GetService<IHostingEnvironment>()?.EnvironmentName != EnvironmentName.Development;
-            _options = services.GetService<IOptions<JsonRpcOptions>>()?.Value;
-            _logger = services.GetService<ILoggerFactory>()?.CreateLogger<JsonRpcMiddleware<T>>();
-            _diagnostic = services.GetService<IJsonRpcDiagnosticProvider>();
+            _handler = handler ?? ActivatorUtilities.CreateInstance<T>(services);
+            _serializer = new JsonRpcSerializer(CreateJsonRpcContractResolver(_handler), options?.Value?.JsonSerializer);
+            _logger = loggerFactory?.CreateLogger<JsonRpcMiddleware<T>>();
         }
 
-        private IDictionary<string, JsonRpcRequestContract> CreateContracts()
+        private static JsonRpcContractResolver CreateJsonRpcContractResolver(T handler)
         {
-            var blueprint = _handler.GetContracts();
-            var contracts = new Dictionary<string, JsonRpcRequestContract>(blueprint.Count, StringComparer.Ordinal);
+            var contracts = handler.GetContracts();
+            var resolver = new JsonRpcContractResolver();
 
-            foreach (var kvp in blueprint)
+            foreach (var kvp in contracts)
             {
                 if (kvp.Key == null)
                 {
                     throw new InvalidOperationException(Strings.GetString("handler.contract.method.undefined_name"));
                 }
-                if (JsonRpcRequest.IsSystemMethod(kvp.Key))
+                if (JsonRpcSerializer.IsSystemMethod(kvp.Key))
                 {
                     throw new InvalidOperationException(string.Format(Strings.GetString("handler.contract.method.system_name"), kvp.Key));
                 }
 
-                contracts[kvp.Key] = kvp.Value;
+                resolver.AddRequestContract(kvp.Key, kvp.Value);
             }
 
-            return contracts;
+            return resolver;
         }
 
         async Task IMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)
@@ -116,13 +102,7 @@ namespace Community.AspNetCore.JsonRpc
                 _logger?.LogError(4000, e, Strings.GetString("handler.request_data.declined"), context.TraceIdentifier, context.Request.PathBase);
 
                 var jsonRpcError = ConvertExceptionToError(e);
-
-                if (_diagnostic != null)
-                {
-                    await _diagnostic.HandleErrorAsync(jsonRpcError.Code);
-                }
-
-                var jsonRpcResponse = new JsonRpcResponse(jsonRpcError);
+                var jsonRpcResponse = new JsonRpcResponse(jsonRpcError, default);
 
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
@@ -147,13 +127,6 @@ namespace Community.AspNetCore.JsonRpc
 
                     return;
                 }
-                if (!jsonRpcResponse.Success)
-                {
-                    if (_diagnostic != null)
-                    {
-                        await _diagnostic.HandleErrorAsync(jsonRpcResponse.Error.Code);
-                    }
-                }
                 if (jsonRpcRequestItem.IsValid && jsonRpcRequestItem.Message.IsNotification)
                 {
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
@@ -172,28 +145,6 @@ namespace Community.AspNetCore.JsonRpc
 
                 _logger?.LogDebug(1010, Strings.GetString("handler.request_data.accepted_batch"), context.TraceIdentifier, jsonRpcRequestItems.Count, context.Request.PathBase);
 
-                var maximumBatchSize = _options?.MaxBatchSize ?? 1024;
-
-                if (jsonRpcRequestItems.Count > maximumBatchSize)
-                {
-                    _logger?.LogError(4040, Strings.GetString("handler.request_data.invalid_batch_size"), context.TraceIdentifier, jsonRpcRequestItems.Count, maximumBatchSize);
-
-                    var jsonRpcError = new JsonRpcError(JsonRpcTransportErrorCodes.InvalidBatchSize, Strings.GetString("rpc.error.invalid_batch_size"));
-
-                    if (_diagnostic != null)
-                    {
-                        await _diagnostic.HandleErrorAsync(jsonRpcError.Code);
-                    }
-
-                    var jsonRpcResponse = new JsonRpcResponse(jsonRpcError);
-
-                    context.Response.StatusCode = StatusCodes.Status200OK;
-
-                    await SerializeResponseAsync(context, jsonRpcResponse);
-
-                    return;
-                }
-
                 var jsonRpcRequestIdentifiers = new HashSet<JsonRpcId>();
 
                 for (var i = 0; i < jsonRpcRequestItems.Count; i++)
@@ -206,14 +157,8 @@ namespace Community.AspNetCore.JsonRpc
                         {
                             _logger?.LogError(4020, Strings.GetString("handler.request_data.duplicate_ids"), context.TraceIdentifier);
 
-                            var jsonRpcError = new JsonRpcError(JsonRpcTransportErrorCodes.DuplicateIdentifiers, Strings.GetString("rpc.error.duplicate_ids"));
-
-                            if (_diagnostic != null)
-                            {
-                                await _diagnostic.HandleErrorAsync(jsonRpcError.Code);
-                            }
-
-                            var jsonRpcResponse = new JsonRpcResponse(jsonRpcError);
+                            var jsonRpcError = new JsonRpcError(-32000L, Strings.GetString("rpc.error.duplicate_ids"));
+                            var jsonRpcResponse = new JsonRpcResponse(jsonRpcError, default);
 
                             context.Response.StatusCode = StatusCodes.Status200OK;
 
@@ -235,13 +180,6 @@ namespace Community.AspNetCore.JsonRpc
 
                     if (jsonRpcResponse != null)
                     {
-                        if (!jsonRpcResponse.Success)
-                        {
-                            if (_diagnostic != null)
-                            {
-                                await _diagnostic.HandleErrorAsync(jsonRpcResponse.Error.Code);
-                            }
-                        }
                         if (jsonRpcRequestItem.IsValid && jsonRpcRequestItem.Message.IsNotification)
                         {
                             continue;
@@ -309,27 +247,6 @@ namespace Community.AspNetCore.JsonRpc
             }
 
             var request = requestItem.Message;
-
-            if (request.Id.Type == JsonRpcIdType.String)
-            {
-                var maximumIdLength = _options?.MaxIdLength ?? 128;
-                var currentIdLength = ((string)request.Id).Length;
-
-                if (currentIdLength > maximumIdLength)
-                {
-                    _logger?.LogError(4030, Strings.GetString("handler.request.invalid_id_length"), context.TraceIdentifier, currentIdLength, maximumIdLength);
-
-                    var jsonRpcError = new JsonRpcError(JsonRpcTransportErrorCodes.InvalidIdLength, Strings.GetString("rpc.error.invalid_id_length"));
-
-                    if (_diagnostic != null)
-                    {
-                        await _diagnostic.HandleErrorAsync(jsonRpcError.Code);
-                    }
-
-                    return new JsonRpcResponse(jsonRpcError);
-                }
-            }
-
             var response = await _handler.HandleAsync(request);
 
             if (response != null)
@@ -381,40 +298,33 @@ namespace Community.AspNetCore.JsonRpc
         {
             var message = default(string);
 
-            if (_production)
+            switch (exception.ErrorCode)
             {
-                switch (exception.ErrorCode)
-                {
-                    case JsonRpcErrorCodes.InvalidJson:
-                        {
-                            message = Strings.GetString("rpc.error.invalid_json");
-                        }
-                        break;
-                    case JsonRpcErrorCodes.InvalidParameters:
-                        {
-                            message = Strings.GetString("rpc.error.invalid_params");
-                        }
-                        break;
-                    case JsonRpcErrorCodes.InvalidMethod:
-                        {
-                            message = Strings.GetString("rpc.error.invalid_method");
-                        }
-                        break;
-                    case JsonRpcErrorCodes.InvalidMessage:
-                        {
-                            message = Strings.GetString("rpc.error.invalid_message");
-                        }
-                        break;
-                    default:
-                        {
-                            message = Strings.GetString("rpc.error.internal");
-                        }
-                        break;
-                }
-            }
-            else
-            {
-                message = exception.Message;
+                case JsonRpcErrorCodes.InvalidJson:
+                    {
+                        message = Strings.GetString("rpc.error.invalid_json");
+                    }
+                    break;
+                case JsonRpcErrorCodes.InvalidParameters:
+                    {
+                        message = Strings.GetString("rpc.error.invalid_params");
+                    }
+                    break;
+                case JsonRpcErrorCodes.InvalidMethod:
+                    {
+                        message = Strings.GetString("rpc.error.invalid_method");
+                    }
+                    break;
+                case JsonRpcErrorCodes.InvalidMessage:
+                    {
+                        message = Strings.GetString("rpc.error.invalid_message");
+                    }
+                    break;
+                default:
+                    {
+                        message = Strings.GetString("rpc.error.internal");
+                    }
+                    break;
             }
 
             return new JsonRpcError(exception.ErrorCode, message);
@@ -422,8 +332,6 @@ namespace Community.AspNetCore.JsonRpc
 
         void IDisposable.Dispose()
         {
-            _serializer.Dispose();
-
             (_handler as IDisposable)?.Dispose();
         }
     }

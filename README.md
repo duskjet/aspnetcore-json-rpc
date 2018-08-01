@@ -8,11 +8,6 @@
 
 - The middleware transparently handles batch JSON-RPC requests.
 - The middleware automatically handles common JSON-RPC issues.
-- The middleware supports for maximum identifier length and batch size (`128` and `1024` by default).
-- The middleware supports JSON-RPC errors diagnostic by using diagnostic provider.
-- A handler / service can be acquired from a service provider or instantiated directly for a request scope.
-- A handler / service which is disposable will be automatically disposed on request scope exit.
-- A service supports defining JSON-RPC names on interface members.
 - A service supports default method parameter values for named parameters not provided in a request.
 
 ### Characteristics
@@ -23,8 +18,6 @@
 Code | Reason
 :---: | ---
 `-32000` | The provided batch contains requests with duplicate identifiers
-`-32010` | The provided message identifier exceeds length limit
-`-32020` | The provided batch exceeds size limit
 
 - In addition to the JSON-RPC HTTP transport specification the middleware may return the following HTTP status codes:
 
@@ -47,8 +40,6 @@ ID | Level | Reason
 `4000` | Error | An error occurred during deserialization of a JSON-RPC request
 `4010` | Error | A JSON-RPC request is not considered as a valid JSON-RPC message
 `4020` | Error | A JSON-RPC batch contains requests with duplicate identifiers
-`4030` | Error | A JSON-RPC message identifier exceeds length limit
-`4040` | Error | A JSON-RPC batch exceeds size limit
 
 ### Usage Examples
 
@@ -88,13 +79,11 @@ public class MyJsonRpcHandler : IJsonRpcHandler
         {
             ["m1"] = new JsonRpcRequestContract(new Dictionary<string, Type>
                 {
-                    ["p1"] = typeof(long),
-                    ["p2"] = typeof(long)
+                    ["p1"] = typeof(long), ["p2"] = typeof(long)
                 }),
             ["m2"] = new JsonRpcRequestContract(new[]
                 {
-                    typeof(long),
-                    typeof(long)
+                    typeof(long), typeof(long)
                 })
         };
     }

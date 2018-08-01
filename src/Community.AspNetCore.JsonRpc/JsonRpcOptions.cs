@@ -1,5 +1,7 @@
 ﻿// © Alexander Kozlenko. Licensed under the MIT License.
 
+using Newtonsoft.Json;
+
 namespace Community.AspNetCore.JsonRpc
 {
     /// <summary>Provides options for the JSON-RPC 2.0 middleware.</summary>
@@ -10,15 +12,8 @@ namespace Community.AspNetCore.JsonRpc
         {
         }
 
-        /// <summary>Gets or sets the maximum size of batch size.</summary>
-        public ushort? MaxBatchSize
-        {
-            get;
-            set;
-        }
-
-        /// <summary>Gets or sets the maximum length of string message identifier.</summary>
-        public ushort? MaxIdLength
+        /// <summary>Gets or sets the JSON serializer instance used for serializing and deserializing JSON-RPC messages.</summary>
+        public JsonSerializer JsonSerializer
         {
             get;
             set;

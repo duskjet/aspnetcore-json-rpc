@@ -117,25 +117,17 @@ namespace Community.AspNetCore.JsonRpc.IntegrationTests
         [DataRow("not")]
         [DataRow("unk")]
         [DataRow("sys")]
-        [DataRow("ili")]
         [DataRow("bat")]
         [DataRow("bdi")]
-        [DataRow("bsi")]
         [DataRow("bon")]
         [DataRow("ipt")]
         public async Task UseJsonRpcHandler(string test)
         {
-            var options = new JsonRpcOptions
-            {
-                MaxBatchSize = 2,
-                MaxIdLength = 36
-            };
-
             var configurator = (Action<IWebHostBuilder>)(builder =>
             {
                 builder
                     .ConfigureServices(sc => sc
-                        .AddJsonRpcHandler<JsonRpcTestHandler>(options))
+                        .AddJsonRpcHandler<JsonRpcTestHandler>())
                     .Configure(ab => ab
                         .UseJsonRpcHandler<JsonRpcTestHandler>("/api/v1"));
             });
@@ -150,25 +142,17 @@ namespace Community.AspNetCore.JsonRpc.IntegrationTests
         [DataRow("not")]
         [DataRow("unk")]
         [DataRow("sys")]
-        [DataRow("ili")]
         [DataRow("bat")]
         [DataRow("bdi")]
-        [DataRow("bsi")]
         [DataRow("bon")]
         [DataRow("ipt")]
         public async Task UseJsonRpcService(string test)
         {
-            var options = new JsonRpcOptions
-            {
-                MaxBatchSize = 2,
-                MaxIdLength = 36
-            };
-
             var configurator = (Action<IWebHostBuilder>)(builder =>
             {
                 builder
                     .ConfigureServices(sc => sc
-                        .AddJsonRpcService<JsonRpcTestService>(options))
+                        .AddJsonRpcService<JsonRpcTestService>())
                     .Configure(ab => ab
                         .UseJsonRpcService<JsonRpcTestService>("/api/v1"));
             });

@@ -129,12 +129,6 @@
   <data name="handler.request_data.duplicate_ids" xml:space="preserve">
     <value>{0} JSON-RPC batch contains requests with duplicate identifiers</value>
   </data>
-  <data name="handler.request_data.invalid_batch_size" xml:space="preserve">
-    <value>{0} JSON-RPC batch exceeds size limit: {1} when {2} is allowed</value>
-  </data>
-  <data name="handler.request.invalid_id_length" xml:space="preserve">
-    <value>{0} JSON-RPC message identifier exceeds length limit: {1} when {2} is allowed</value>
-  </data>
   <data name="handler.response.handled_notification" xml:space="preserve">
     <value>{0} JSON-RPC request to the method "{1}" processed as notification</value>
   </data>
@@ -170,12 +164,6 @@
   </data>
   <data name="rpc.error.internal" xml:space="preserve">
     <value>An error occurred during processing the request</value>
-  </data>
-  <data name="rpc.error.invalid_batch_size" xml:space="preserve">
-    <value>The provided batch exceeds size limit</value>
-  </data>
-  <data name="rpc.error.invalid_id_length" xml:space="preserve">
-    <value>The provided message identifier exceeds length limit</value>
   </data>
   <data name="rpc.error.invalid_json" xml:space="preserve">
     <value>The provided JSON is invalid</value>
