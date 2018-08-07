@@ -44,10 +44,10 @@ ID | Level | Reason
 ### Usage Examples
 
 ```cs
-public class MyJsonRpcService : IJsonRpcService
+public class JsonRpcService : IJsonRpcService
 {
     [JsonRpcMethod("m1", "p1", "p2")]
-    public Task<long> Method1(long p1, long p2)
+    public Task<long> InvokeMethod1Async(long p1, long p2)
     {
         if (p2 == 0L)
         {
@@ -58,7 +58,7 @@ public class MyJsonRpcService : IJsonRpcService
     }
 
     [JsonRpcMethod("m2", 0, 1)]
-    public Task<long> Method2(long p1, long p2)
+    public Task<long> InvokeMethod2Async(long p1, long p2)
     {
         return Task.FromResult(p1 + p2);
     }
@@ -69,18 +69,18 @@ public class Startup : IStartup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddJsonRpcService<MyJsonRpcService>();
+        services.AddJsonRpcService<JsonRpcService>();
     }
 
     public void Configure(IApplicationBuilder app)
     {
-        app.UseJsonRpcService<MyJsonRpcService>("/api");
+        app.UseJsonRpcService<JsonRpcService>("/api");
     }
 }
 ```
 or
 ```cs
-public class MyJsonRpcHandler : IJsonRpcHandler
+public class JsonRpcHandler : IJsonRpcHandler
 {
     public IReadOnlyDictionary<string, JsonRpcRequestContract> GetContracts()
     {
@@ -135,12 +135,12 @@ public class Startup : IStartup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddJsonRpcHandler<MyJsonRpcHandler>();
+        services.AddJsonRpcHandler<JsonRpcHandler>();
     }
 
     public void Configure(IApplicationBuilder app)
     {
-        app.UseJsonRpcHandler<MyJsonRpcHandler>("/api");
+        app.UseJsonRpcHandler<JsonRpcHandler>("/api");
     }
 }
 ```
