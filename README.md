@@ -65,9 +65,18 @@ public class MyJsonRpcService : IJsonRpcService
 }
 ```
 ```cs
-builder
-    .ConfigureServices(sc => sc.AddJsonRpcService<MyJsonRpcService>())
-    .Configure(ab => ab.UseJsonRpcService<MyJsonRpcService>("/api"))
+public class Startup : IStartup
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddJsonRpcService<MyJsonRpcService>();
+    }
+
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseJsonRpcService<MyJsonRpcService>("/api");
+    }
+}
 ```
 or
 ```cs
@@ -119,7 +128,16 @@ public class MyJsonRpcHandler : IJsonRpcHandler
 }
 ```
 ```cs
-builder
-    .ConfigureServices(sc => sc.AddJsonRpcHandler<MyJsonRpcHandler>())
-    .Configure(ab => ab.UseJsonRpcHandler<MyJsonRpcHandler>("/api"))
+public class Startup : IStartup
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddJsonRpcHandler<MyJsonRpcHandler>();
+    }
+
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseJsonRpcHandler<MyJsonRpcHandler>("/api");
+    }
+}
 ```
