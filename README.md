@@ -84,17 +84,20 @@ public class MyJsonRpcHandler : IJsonRpcHandler
 {
     public IReadOnlyDictionary<string, JsonRpcRequestContract> GetContracts()
     {
-        return new Dictionary<string, JsonRpcRequestContract>
-        {
-            ["m1"] = new JsonRpcRequestContract(new Dictionary<string, Type>
-                {
-                    ["p1"] = typeof(long), ["p2"] = typeof(long)
-                }),
-            ["m2"] = new JsonRpcRequestContract(new[]
-                {
-                    typeof(long), typeof(long)
-                })
-        };
+        var contract1Types = new Dictionary<string, Type>();
+        var contract2Types = new Type[2];
+
+        contract1Types["p1"] = typeof(long);
+        contract1Types["p2"] = typeof(long);
+        contract2Types[0] = typeof(long);
+        contract2Types[1] = typeof(long);
+
+        var contracts = new Dictionary<string, JsonRpcRequestContract>();
+
+        contracts["m1"] = new JsonRpcRequestContract(contract1Types);
+        contracts["m2"] = new JsonRpcRequestContract(contract2Types);
+
+        return contracts;
     }
 
     public Task<JsonRpcResponse> HandleAsync(JsonRpcRequest request)
