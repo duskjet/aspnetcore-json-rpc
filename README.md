@@ -63,8 +63,7 @@ public class JsonRpcService : IJsonRpcService
         return Task.FromResult(p1 + p2);
     }
 }
-```
-```cs
+
 public class Startup : IStartup
 {
     public void ConfigureServices(IServiceCollection services)
@@ -129,8 +128,7 @@ public class JsonRpcHandler : IJsonRpcHandler
         return Task.FromResult(response);
     }
 }
-```
-```cs
+
 public class Startup : IStartup
 {
     public void ConfigureServices(IServiceCollection services)
