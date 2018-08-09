@@ -10,8 +10,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json;
 
 namespace Community.AspNetCore.JsonRpc
 {
@@ -66,13 +66,13 @@ namespace Community.AspNetCore.JsonRpc
             {
                 return;
             }
-            if (!StringSegment.Equals(context.Request.Method, HttpMethods.Post, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(context.Request.Method, HttpMethods.Post, StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
 
                 return;
             }
-            if (!StringSegment.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
 
@@ -84,7 +84,7 @@ namespace Community.AspNetCore.JsonRpc
 
                 return;
             }
-            if (!StringSegment.Equals((string)context.Request.Headers[HeaderNames.Accept], "application/json", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals((string)context.Request.Headers[HeaderNames.Accept], "application/json", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
 
@@ -96,6 +96,19 @@ namespace Community.AspNetCore.JsonRpc
             try
             {
                 jsonRpcRequestData = await _serializer.DeserializeRequestDataAsync(context.Request.Body, context.RequestAborted);
+            }
+            catch (JsonException e)
+            {
+                _logger?.LogError(4000, e, Strings.GetString("handler.request_data.declined"), context.TraceIdentifier, context.Request.PathBase);
+
+                var jsonRpcError = new JsonRpcError(JsonRpcErrorCodes.InvalidJson, Strings.GetString("rpc.error.invalid_json"));
+                var jsonRpcResponse = new JsonRpcResponse(jsonRpcError, default);
+
+                context.Response.StatusCode = StatusCodes.Status200OK;
+
+                await SerializeResponseAsync(context, jsonRpcResponse);
+
+                return;
             }
             catch (JsonRpcException e)
             {
