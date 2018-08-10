@@ -84,7 +84,7 @@ namespace Community.AspNetCore.JsonRpc
 
                 return;
             }
-            if (!string.Equals((string)context.Request.Headers[HeaderNames.Accept], "application/json", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(context.Request.Headers[HeaderNames.Accept], "application/json", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
 
@@ -158,7 +158,15 @@ namespace Community.AspNetCore.JsonRpc
 
                 _logger?.LogDebug(1010, Strings.GetString("handler.request_data.accepted_batch"), context.TraceIdentifier, jsonRpcRequestItems.Count, context.Request.PathBase);
 
+#if NETCOREAPP2_1
+
+                var jsonRpcRequestIdentifiers = new HashSet<JsonRpcId>(jsonRpcRequestItems.Count);
+
+#else
+
                 var jsonRpcRequestIdentifiers = new HashSet<JsonRpcId>();
+
+#endif
 
                 for (var i = 0; i < jsonRpcRequestItems.Count; i++)
                 {
@@ -182,7 +190,7 @@ namespace Community.AspNetCore.JsonRpc
                     }
                 }
 
-                var jsonRpcResponses = new List<JsonRpcResponse>();
+                var jsonRpcResponses = new List<JsonRpcResponse>(jsonRpcRequestItems.Count);
 
                 for (var i = 0; i < jsonRpcRequestItems.Count; i++)
                 {
