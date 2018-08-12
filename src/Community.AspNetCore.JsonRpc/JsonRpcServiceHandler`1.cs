@@ -170,6 +170,7 @@ namespace Community.AspNetCore.JsonRpc
 
         async Task<JsonRpcResponse> IJsonRpcHandler.HandleAsync(JsonRpcRequest request)
         {
+            var requestId = request.Id;
             var (method, parameters, parametersBindings) = _metadata[request.Method];
             var parametersValues = default(object[]);
 
@@ -206,7 +207,7 @@ namespace Community.AspNetCore.JsonRpc
 
                                     var message = string.Format(Strings.GetString("service.request.parameter.undefined_value"), request.Method, parametersBindings[i]);
 
-                                    return new JsonRpcResponse(new JsonRpcError(JsonRpcErrorCodes.InvalidParameters, message), request.Id);
+                                    return new JsonRpcResponse(new JsonRpcError(JsonRpcErrorCodes.InvalidParameters, message), requestId);
                                 }
                             }
                         }
@@ -222,13 +223,13 @@ namespace Community.AspNetCore.JsonRpc
                 }
                 else
                 {
-                    return new JsonRpcResponse(await (dynamic)method.Invoke(_service, parametersValues) as object, request.Id);
+                    return new JsonRpcResponse(await (dynamic)method.Invoke(_service, parametersValues) as object, requestId);
                 }
             }
             catch (TargetInvocationException e)
                 when (e.InnerException is JsonRpcServiceException jrse)
             {
-                return new JsonRpcResponse(new JsonRpcError(jrse.Code, jrse.Message, jrse.ErrorData), request.Id);
+                return new JsonRpcResponse(new JsonRpcError(jrse.Code, jrse.Message, jrse.ErrorData), requestId);
             }
             catch (TargetInvocationException e)
                 when (e.InnerException != null)

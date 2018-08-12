@@ -268,11 +268,14 @@ namespace Community.AspNetCore.JsonRpc
             }
 
             var request = requestItem.Message;
+            var requestId = request.Id;
             var response = await _handler.HandleAsync(request);
 
             if (response != null)
             {
-                if (request.Id != response.Id)
+                var responseId = response.Id;
+
+                if (requestId != responseId)
                 {
                     throw new InvalidOperationException(Strings.GetString("handler.response.invalid_id"));
                 }
@@ -281,11 +284,11 @@ namespace Community.AspNetCore.JsonRpc
                 {
                     if (response.Success)
                     {
-                        _logger?.LogInformation(2010, Strings.GetString("handler.response.handled_with_result"), context.TraceIdentifier, request.Id, request.Method);
+                        _logger?.LogInformation(2010, Strings.GetString("handler.response.handled_with_result"), context.TraceIdentifier, requestId, request.Method);
                     }
                     else
                     {
-                        _logger?.LogInformation(2020, Strings.GetString("handler.response.handled_with_error"), context.TraceIdentifier, request.Id, request.Method, response.Error.Code, response.Error.Message);
+                        _logger?.LogInformation(2020, Strings.GetString("handler.response.handled_with_error"), context.TraceIdentifier, requestId, request.Method, response.Error.Code, response.Error.Message);
                     }
                 }
                 else
@@ -308,7 +311,7 @@ namespace Community.AspNetCore.JsonRpc
                 }
                 else
                 {
-                    _logger?.LogWarning(3000, Strings.GetString("handler.response.handled_notification_as_response"), context.TraceIdentifier, request.Id, request.Method);
+                    _logger?.LogWarning(3000, Strings.GetString("handler.response.handled_notification_as_response"), context.TraceIdentifier, requestId, request.Method);
                 }
             }
 
