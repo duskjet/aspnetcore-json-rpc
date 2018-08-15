@@ -207,7 +207,7 @@ namespace Community.AspNetCore.JsonRpc
 
                                     var message = string.Format(Strings.GetString("service.request.parameter.undefined_value"), request.Method, parametersBindings[i]);
 
-                                    return new JsonRpcResponse(new JsonRpcError(JsonRpcErrorCodes.InvalidParameters, message), requestId);
+                                    return new JsonRpcResponse(new JsonRpcError(JsonRpcErrorCode.InvalidParameters, message), requestId);
                                 }
                             }
                         }

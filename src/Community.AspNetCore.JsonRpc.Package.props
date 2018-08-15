@@ -1,8 +1,11 @@
 ﻿<Project>
   <PropertyGroup>
-    <Version>1.11.2</Version>
+    <Version>1.11.3</Version>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/alexanderkozlenko/aspnetcore-json-rpc.git</RepositoryUrl>
+    <RepositoryBranch>master</RepositoryBranch>
     <PackageProjectUrl>https://github.com/alexanderkozlenko/aspnetcore-json-rpc</PackageProjectUrl>
-    <PackageLicenseUrl>https://raw.github.com/alexanderkozlenko/aspnetcore-json-rpc/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseUrl>https://raw.github.com/alexanderkozlenko/aspnetcore-json-rpc/$(RepositoryBranch)/LICENSE</PackageLicenseUrl>
     <Authors><![CDATA[Alexander Kozlenko]]></Authors>
     <Copyright><![CDATA[© Alexander Kozlenko. All rights reserved.]]></Copyright>
     <Description><![CDATA[JSON-RPC 2.0 middleware for ASP.NET Core 2 based on the "JSON-RPC 2.0 Transport: HTTP" specification]]></Description>
