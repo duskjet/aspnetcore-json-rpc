@@ -91,11 +91,11 @@ namespace Community.AspNetCore.JsonRpc
                 return;
             }
 
-            var jsonRpcRequestDataInfo = default(JsonRpcInfo<JsonRpcRequest>);
+            var jsonRpcRequestData = default(JsonRpcData<JsonRpcRequest>);
 
             try
             {
-                jsonRpcRequestDataInfo = await _serializer.DeserializeRequestDataAsync(context.Request.Body, context.RequestAborted);
+                jsonRpcRequestData = await _serializer.DeserializeRequestDataAsync(context.Request.Body, context.RequestAborted);
             }
             catch (JsonException e)
             {
@@ -124,15 +124,15 @@ namespace Community.AspNetCore.JsonRpc
                 return;
             }
 
-            if (!jsonRpcRequestDataInfo.IsBatch)
+            if (!jsonRpcRequestData.IsBatch)
             {
-                var jsonRpcRequestInfo = jsonRpcRequestDataInfo.Message;
+                var jsonRpcRequestItem = jsonRpcRequestData.Item;
 
                 _logger?.LogDebug(1000, Strings.GetString("handler.request_data.accepted_single"), context.TraceIdentifier, context.Request.PathBase);
 
                 context.RequestAborted.ThrowIfCancellationRequested();
 
-                var jsonRpcResponse = await CreateJsonRpcResponseAsync(context, jsonRpcRequestInfo);
+                var jsonRpcResponse = await CreateJsonRpcResponseAsync(context, jsonRpcRequestItem);
 
                 if (jsonRpcResponse == null)
                 {
@@ -140,7 +140,7 @@ namespace Community.AspNetCore.JsonRpc
 
                     return;
                 }
-                if (jsonRpcRequestInfo.IsValid && jsonRpcRequestInfo.Message.IsNotification)
+                if (jsonRpcRequestItem.IsValid && jsonRpcRequestItem.Message.IsNotification)
                 {
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
 
@@ -154,13 +154,13 @@ namespace Community.AspNetCore.JsonRpc
             }
             else
             {
-                var jsonRpcRequestInfos = jsonRpcRequestDataInfo.Messages;
+                var jsonRpcRequestItems = jsonRpcRequestData.Items;
 
-                _logger?.LogDebug(1010, Strings.GetString("handler.request_data.accepted_batch"), context.TraceIdentifier, jsonRpcRequestInfos.Count, context.Request.PathBase);
+                _logger?.LogDebug(1010, Strings.GetString("handler.request_data.accepted_batch"), context.TraceIdentifier, jsonRpcRequestItems.Count, context.Request.PathBase);
 
 #if NETCOREAPP2_1
 
-                var jsonRpcRequestIdentifiers = new HashSet<JsonRpcId>(jsonRpcRequestInfos.Count);
+                var jsonRpcRequestIdentifiers = new HashSet<JsonRpcId>(jsonRpcRequestItems.Count);
 
 #else
 
@@ -168,9 +168,9 @@ namespace Community.AspNetCore.JsonRpc
 
 #endif
 
-                for (var i = 0; i < jsonRpcRequestInfos.Count; i++)
+                for (var i = 0; i < jsonRpcRequestItems.Count; i++)
                 {
-                    var jsonRpcRequestItem = jsonRpcRequestInfos[i];
+                    var jsonRpcRequestItem = jsonRpcRequestItems[i];
 
                     if (jsonRpcRequestItem.IsValid && !jsonRpcRequestItem.Message.IsNotification)
                     {
@@ -190,13 +190,13 @@ namespace Community.AspNetCore.JsonRpc
                     }
                 }
 
-                var jsonRpcResponses = new List<JsonRpcResponse>(jsonRpcRequestInfos.Count);
+                var jsonRpcResponses = new List<JsonRpcResponse>(jsonRpcRequestItems.Count);
 
-                for (var i = 0; i < jsonRpcRequestInfos.Count; i++)
+                for (var i = 0; i < jsonRpcRequestItems.Count; i++)
                 {
                     context.RequestAborted.ThrowIfCancellationRequested();
 
-                    var jsonRpcRequestItem = jsonRpcRequestInfos[i];
+                    var jsonRpcRequestItem = jsonRpcRequestItems[i];
                     var jsonRpcResponse = await CreateJsonRpcResponseAsync(context, jsonRpcRequestItem);
 
                     if (jsonRpcResponse != null)
