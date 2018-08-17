@@ -16,7 +16,7 @@ namespace Community.AspNetCore.JsonRpc.Benchmarks.TestSuites
     public sealed class JsonRpcMiddlewareBenchmarks
     {
         private static readonly IReadOnlyDictionary<string, byte[]> _resources = CreateResourceDictionary();
-        private static readonly MediaTypeHeaderValue _mimeType = new MediaTypeHeaderValue("aplication/json");
+        private static readonly MediaTypeHeaderValue _mimeType = new MediaTypeHeaderValue("application/json");
 
         private readonly TestServer _serverHandler;
         private readonly TestServer _serverService;
