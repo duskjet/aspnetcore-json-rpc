@@ -10,7 +10,7 @@
     <ProjectReference Include="..\Community.AspNetCore.JsonRpc\Community.AspNetCore.JsonRpc.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.11.0" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.11.1" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.1.1" />
   </ItemGroup>
 </Project>
