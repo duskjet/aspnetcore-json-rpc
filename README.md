@@ -1,9 +1,9 @@
-## Community.AspNetCore.JsonRpc
+## Anemonis.AspNetCore.JsonRpc
 
-[JSON-RPC 2.0](http://www.jsonrpc.org/specification) middleware for ASP.NET Core 2 based on the [JSON-RPC 2.0 Transport: HTTP](https://www.simple-is-better.org/json-rpc/transport_http.html) specification and the [System.Data.JsonRpc](https://www.nuget.org/packages/System.Data.JsonRpc)
+[JSON-RPC 2.0](http://www.jsonrpc.org/specification) middleware for ASP.NET Core 2 based on the [JSON-RPC 2.0 Transport: HTTP](https://www.simple-is-better.org/json-rpc/transport_http.html) specification and the [Anemonis.JsonRpc](https://www.nuget.org/packages/Anemonis.JsonRpc)
  serializer.
 
-[![NuGet package](https://img.shields.io/nuget/v/Community.AspNetCore.JsonRpc.svg?style=flat-square)](https://www.nuget.org/packages/Community.AspNetCore.JsonRpc)
+[![NuGet package](https://img.shields.io/nuget/v/Anemonis.AspNetCore.JsonRpc.svg?style=flat-square)](https://www.nuget.org/packages/Anemonis.AspNetCore.JsonRpc)
 
 ### Important Features
 
