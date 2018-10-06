@@ -354,7 +354,7 @@ namespace Anemonis.AspNetCore.JsonRpc
             return new JsonRpcError(exception.ErrorCode, message);
         }
 
-        void IDisposable.Dispose()
+        public void Dispose()
         {
             (_handler as IDisposable)?.Dispose();
         }
