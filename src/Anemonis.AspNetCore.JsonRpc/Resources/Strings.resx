@@ -162,10 +162,10 @@
   <data name="rpc.error.duplicate_ids" xml:space="preserve">
     <value>The provided batch contains requests with duplicate identifiers</value>
   </data>
-  <data name="rpc.error.internal" xml:space="preserve">
+  <data name="rpc.error.invalid_operation" xml:space="preserve">
     <value>An error occurred during processing the request</value>
   </data>
-  <data name="rpc.error.invalid_json" xml:space="preserve">
+  <data name="rpc.error.invalid_format" xml:space="preserve">
     <value>The provided JSON is invalid</value>
   </data>
   <data name="rpc.error.invalid_message" xml:space="preserve">
@@ -174,7 +174,7 @@
   <data name="rpc.error.invalid_method" xml:space="preserve">
     <value>The specified method does not exist or is not available</value>
   </data>
-  <data name="rpc.error.invalid_params" xml:space="preserve">
+  <data name="rpc.error.invalid_parameters" xml:space="preserve">
     <value>The specified method parameters are invalid</value>
   </data>
   <data name="service.method.invalid_name" xml:space="preserve">

@@ -163,12 +163,12 @@ namespace Anemonis.AspNetCore.JsonRpc
             }
         }
 
-        IReadOnlyDictionary<string, JsonRpcRequestContract> IJsonRpcHandler.GetContracts()
+        public IReadOnlyDictionary<string, JsonRpcRequestContract> GetContracts()
         {
             return _contracts;
         }
 
-        async Task<JsonRpcResponse> IJsonRpcHandler.HandleAsync(JsonRpcRequest request)
+        public async Task<JsonRpcResponse> HandleAsync(JsonRpcRequest request)
         {
             var requestId = request.Id;
             var (method, parameters, parametersBindings) = _metadata[request.Method];
@@ -240,7 +240,7 @@ namespace Anemonis.AspNetCore.JsonRpc
             return null;
         }
 
-        void IDisposable.Dispose()
+        public void Dispose()
         {
             (_service as IDisposable)?.Dispose();
         }

@@ -18,6 +18,8 @@ namespace Anemonis.AspNetCore.JsonRpc
     internal sealed class JsonRpcMiddleware<T> : IMiddleware, IDisposable
         where T : class, IJsonRpcHandler
     {
+        private static readonly IDictionary<long, JsonRpcError> _standardJsonRpcErrors = CreateStandardJsonRpcErrors();
+
         private readonly T _handler;
         private readonly JsonRpcSerializer _serializer;
         private readonly ILogger _logger;
@@ -60,7 +62,29 @@ namespace Anemonis.AspNetCore.JsonRpc
             return resolver;
         }
 
-        async Task IMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)
+        private static IDictionary<long, JsonRpcError> CreateStandardJsonRpcErrors()
+        {
+            return new Dictionary<long, JsonRpcError>(5)
+            {
+                [JsonRpcErrorCode.InvalidFormat] = new JsonRpcError(JsonRpcErrorCode.InvalidFormat, Strings.GetString("rpc.error.invalid_format")),
+                [JsonRpcErrorCode.InvalidOperation] = new JsonRpcError(JsonRpcErrorCode.InvalidOperation, Strings.GetString("rpc.error.invalid_operation")),
+                [JsonRpcErrorCode.InvalidParameters] = new JsonRpcError(JsonRpcErrorCode.InvalidParameters, Strings.GetString("rpc.error.invalid_parameters")),
+                [JsonRpcErrorCode.InvalidMethod] = new JsonRpcError(JsonRpcErrorCode.InvalidMethod, Strings.GetString("rpc.error.invalid_method")),
+                [JsonRpcErrorCode.InvalidMessage] = new JsonRpcError(JsonRpcErrorCode.InvalidMessage, Strings.GetString("rpc.error.invalid_message"))
+            };
+        }
+
+        private static JsonRpcError ConvertExceptionToError(JsonRpcSerializationException exception)
+        {
+            if (!_standardJsonRpcErrors.TryGetValue(exception.ErrorCode, out var jsonRpcError))
+            {
+                jsonRpcError = new JsonRpcError(exception.ErrorCode, Strings.GetString("rpc.error.invalid_operation"));
+            }
+
+            return jsonRpcError;
+        }
+
+        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             if (context.Response.HasStarted)
             {
@@ -316,42 +340,6 @@ namespace Anemonis.AspNetCore.JsonRpc
             }
 
             return response;
-        }
-
-        private JsonRpcError ConvertExceptionToError(JsonRpcSerializationException exception)
-        {
-            var message = default(string);
-
-            switch (exception.ErrorCode)
-            {
-                case JsonRpcErrorCode.InvalidFormat:
-                    {
-                        message = Strings.GetString("rpc.error.invalid_json");
-                    }
-                    break;
-                case JsonRpcErrorCode.InvalidParameters:
-                    {
-                        message = Strings.GetString("rpc.error.invalid_params");
-                    }
-                    break;
-                case JsonRpcErrorCode.InvalidMethod:
-                    {
-                        message = Strings.GetString("rpc.error.invalid_method");
-                    }
-                    break;
-                case JsonRpcErrorCode.InvalidMessage:
-                    {
-                        message = Strings.GetString("rpc.error.invalid_message");
-                    }
-                    break;
-                default:
-                    {
-                        message = Strings.GetString("rpc.error.internal");
-                    }
-                    break;
-            }
-
-            return new JsonRpcError(exception.ErrorCode, message);
         }
 
         public void Dispose()
