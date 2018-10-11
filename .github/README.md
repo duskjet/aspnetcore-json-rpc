@@ -1,48 +1,46 @@
-## Anemonis.AspNetCore.JsonRpc
+# Anemonis.AspNetCore.JsonRpc
 
 [JSON-RPC 2.0](http://www.jsonrpc.org/specification) middleware for ASP.NET Core 2 based on the [JSON-RPC 2.0 Transport: HTTP](https://www.simple-is-better.org/json-rpc/transport_http.html) specification and the [Anemonis.JsonRpc](https://www.nuget.org/packages/Anemonis.JsonRpc)
  serializer.
 
 [![NuGet package](https://img.shields.io/nuget/v/Anemonis.AspNetCore.JsonRpc.svg?style=flat-square)](https://www.nuget.org/packages/Anemonis.AspNetCore.JsonRpc)
 
-### Important Features
+## Project Details
 
 - The middleware transparently handles batch JSON-RPC requests.
 - The middleware automatically handles common JSON-RPC issues.
+- The middleware does not verify the `Content-Length` header.
 - A service supports default method parameter values for named parameters not provided in a request.
 
-### Characteristics
+In addition to the standard JSON-RPC error codes the middleware may return the following JSON-RPC errors:
 
-- The middleware does not verify the `Content-Length` header.
-- In addition to the standard JSON-RPC error codes the middleware may return the following JSON-RPC errors:
+| Code | Reason |
+| :---: | --- |
+| `-32000` | The provided batch contains requests with duplicate identifiers |
 
-Code | Reason
-:---: | ---
-`-32000` | The provided batch contains requests with duplicate identifiers
+In addition to the JSON-RPC HTTP transport specification the middleware may return the following HTTP status codes:
 
-- In addition to the JSON-RPC HTTP transport specification the middleware may return the following HTTP status codes:
+ Code | Reason |
+ :---: | --- |
+ `415` | The `Content-Encoding` header is specified |
 
-Code | Reason
-:---: | ---
-`415` | The `Content-Encoding` header is specified
+With logger factory availability, the following events may appear in a journal:
 
-- With logger factory availability, the following events may appear in a journal:
+ ID | Level | Reason |
+ :---: | --- | --- |
+ `1000` | Debug | A JSON-RPC request accepted for processing as a single item |
+ `1010` | Debug | A JSON-RPC request accepted for processing as a batch |
+ `2000` | Information | A JSON-RPC request processed as notification |
+ `2010` | Information | A JSON-RPC request processed with result |
+ `2020` | Information | A JSON-RPC request processed with error |
+ `2030` | Information | A JSON-RPC request processed with result as notification due to client  demand |
+ `2040` | Information | A JSON-RPC request processed with error as notification due to client  demand |
+ `3000` | Warning | A JSON-RPC request processed as notification due to server configuration |
+ `4000` | Error | An error occurred during deserialization of a JSON-RPC request |
+ `4010` | Error | A JSON-RPC request is not considered as a valid JSON-RPC message |
+ `4020` | Error | A JSON-RPC batch contains requests with duplicate identifiers |
 
-ID | Level | Reason
-:---: | --- | ---
-`1000` | Debug | A JSON-RPC request accepted for processing as a single item
-`1010` | Debug | A JSON-RPC request accepted for processing as a batch
-`2000` | Information | A JSON-RPC request processed as notification
-`2010` | Information | A JSON-RPC request processed with result
-`2020` | Information | A JSON-RPC request processed with error
-`2030` | Information | A JSON-RPC request processed with result as notification due to client demand
-`2040` | Information | A JSON-RPC request processed with error as notification due to client demand
-`3000` | Warning | A JSON-RPC request processed as notification due to server configuration
-`4000` | Error | An error occurred during deserialization of a JSON-RPC request
-`4010` | Error | A JSON-RPC request is not considered as a valid JSON-RPC message
-`4020` | Error | A JSON-RPC batch contains requests with duplicate identifiers
-
-### Usage Examples
+## Code Examples
 
 ```cs
 public class JsonRpcService : IJsonRpcService
@@ -143,3 +141,8 @@ public class Startup : IStartup
     }
 }
 ```
+
+## Quicklinks
+
+- [Contributing Guidelines](./CONTRIBUTING.md)
+- [Code of Conduct](./CODE_OF_CONDUCT.md)
