@@ -69,6 +69,8 @@ namespace Anemonis.AspNetCore.JsonRpc.IntegrationTests
                     {
                         Assert.AreEqual(HttpStatusCode.NoContent, response.StatusCode);
                     }
+
+                    requestContent.Dispose();
                 }
             }
         }
@@ -95,6 +97,8 @@ namespace Anemonis.AspNetCore.JsonRpc.IntegrationTests
 
                     var response1 = await client.PostAsync("/api/v2", requestContent1);
 
+                    requestContent1.Dispose();
+
                     Assert.AreEqual(HttpStatusCode.NotFound, response1.StatusCode);
 
                     var requestContent2 = new StringContent("");
@@ -104,6 +108,8 @@ namespace Anemonis.AspNetCore.JsonRpc.IntegrationTests
                     requestContent2.Headers.ContentEncoding.Add("deflate");
 
                     var response2 = await client.PostAsync("/api/v1", requestContent2);
+
+                    requestContent2.Dispose();
 
                     Assert.AreEqual(HttpStatusCode.UnsupportedMediaType, response2.StatusCode);
                 }
