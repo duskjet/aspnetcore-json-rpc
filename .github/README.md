@@ -4,6 +4,7 @@
  serializer.
 
 [![NuGet package](https://img.shields.io/nuget/v/Anemonis.AspNetCore.JsonRpc.svg?style=flat-square)](https://www.nuget.org/packages/Anemonis.AspNetCore.JsonRpc)
+[![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg?style=flat-square)](https://gitter.im/anemonis/aspnetcore-json-rpc)
 
 ## Project Details
 
