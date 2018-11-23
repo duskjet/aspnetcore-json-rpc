@@ -1,11 +1,10 @@
 ﻿// © Alexander Kozlenko. Licensed under the MIT License.
 
 using System;
-using Anemonis.AspNetCore.JsonRpc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore
+namespace Anemonis.AspNetCore.JsonRpc
 {
     /// <summary>The JSON-RPC 2.0 middleware extensions for the <see cref="IApplicationBuilder" />.</summary>
     public static class JsonRpcBuilderExtensions

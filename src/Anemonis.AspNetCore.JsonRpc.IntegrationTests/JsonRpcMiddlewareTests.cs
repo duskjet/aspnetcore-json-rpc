@@ -6,7 +6,6 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Anemonis.AspNetCore.JsonRpc.IntegrationTests.Middleware;
 using Anemonis.AspNetCore.JsonRpc.IntegrationTests.Resources;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;

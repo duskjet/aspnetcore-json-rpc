@@ -1,10 +1,9 @@
 ﻿// © Alexander Kozlenko. Licensed under the MIT License.
 
 using System;
-using Anemonis.AspNetCore.JsonRpc;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Anemonis.AspNetCore
+namespace Anemonis.AspNetCore.JsonRpc
 {
     /// <summary>The JSON-RPC 2.0 middleware extensions for the <see cref="IServiceCollection" />.</summary>
     public static class JsonRpcServicesExtensions

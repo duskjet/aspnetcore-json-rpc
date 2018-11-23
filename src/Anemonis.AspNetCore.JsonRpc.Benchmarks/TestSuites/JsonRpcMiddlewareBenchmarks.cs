@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Anemonis.AspNetCore.JsonRpc.Benchmarks.Middleware;
 using Anemonis.AspNetCore.JsonRpc.Benchmarks.Resources;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 
