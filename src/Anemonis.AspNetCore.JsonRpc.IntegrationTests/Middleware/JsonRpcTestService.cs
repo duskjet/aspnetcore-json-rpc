@@ -32,7 +32,7 @@ namespace Anemonis.AspNetCore.JsonRpc.IntegrationTests.Middleware
         [JsonRpcMethod("err")]
         public Task<long> MethodWithErrorResponse()
         {
-            throw new JsonRpcServiceException(0L, "m");
+            throw new JsonRpcServiceException(0L, "m", null);
         }
 
         [JsonRpcMethod("not")]

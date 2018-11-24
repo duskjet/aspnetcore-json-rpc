@@ -229,7 +229,18 @@ namespace Anemonis.AspNetCore.JsonRpc
             catch (TargetInvocationException e)
                 when (e.InnerException is JsonRpcServiceException jrse)
             {
-                return new JsonRpcResponse(new JsonRpcError(jrse.Code, jrse.Message, jrse.ErrorData), requestId);
+                var responseError = default(JsonRpcError);
+
+                if (jrse.HasErrorData)
+                {
+                    responseError = new JsonRpcError(jrse.Code, jrse.Message, jrse.ErrorData);
+                }
+                else
+                {
+                    responseError = new JsonRpcError(jrse.Code, jrse.Message);
+                }
+
+                return new JsonRpcResponse(responseError, requestId);
             }
             catch (TargetInvocationException e)
                 when (e.InnerException != null)
