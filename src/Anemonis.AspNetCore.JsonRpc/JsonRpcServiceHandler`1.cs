@@ -223,8 +223,25 @@ namespace Anemonis.AspNetCore.JsonRpc
                 }
                 else
                 {
-                    return new JsonRpcResponse(await (dynamic)method.Invoke(_service, parametersValues) as object, requestId);
+                    var jsonRpcResult = await (dynamic)method.Invoke(_service, parametersValues) as object;
+
+                    return new JsonRpcResponse(jsonRpcResult, requestId);
                 }
+            }
+            catch (JsonRpcServiceException e)
+            {
+                var responseError = default(JsonRpcError);
+
+                if (e.HasErrorData)
+                {
+                    responseError = new JsonRpcError(e.Code, e.Message, e.ErrorData);
+                }
+                else
+                {
+                    responseError = new JsonRpcError(e.Code, e.Message);
+                }
+
+                return new JsonRpcResponse(responseError, requestId);
             }
             catch (TargetInvocationException e)
                 when (e.InnerException is JsonRpcServiceException jrse)
