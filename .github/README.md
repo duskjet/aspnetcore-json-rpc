@@ -19,7 +19,7 @@ In addition to the standard JSON-RPC error codes the middleware may return the f
 | :---: | --- |
 | `-32000` | The provided batch contains requests with duplicate identifiers |
 
-In addition to the JSON-RPC HTTP transport specification the middleware may return the following HTTP status codes:
+In addition to the standard JSON-RPC HTTP error codes the middleware may return the following HTTP error codes:
 
  Code | Reason |
  :---: | --- |
