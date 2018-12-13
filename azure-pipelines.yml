@@ -1,5 +1,11 @@
 # © Alexander Kozlenko. Licensed under the MIT License.
 
+trigger:
+  paths:
+    exclude:
+    - .github/*
+    - .gitignore
+    - lgtm.*
 variables:
   Project.FilePath: "$(Build.SourcesDirectory)/global.proj"
   Project.Configuration: "Release"
