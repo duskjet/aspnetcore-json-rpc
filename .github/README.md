@@ -25,7 +25,7 @@ In addition to the standard JSON-RPC HTTP error codes the middleware may return 
  :---: | --- |
  `415` | The `Content-Encoding` header is specified |
 
-With logger factory availability, the following events may appear in a journal:
+According to the current logging configuration, the following events may appear in a journal:
 
  ID | Level | Reason |
  :---: | --- | --- |
