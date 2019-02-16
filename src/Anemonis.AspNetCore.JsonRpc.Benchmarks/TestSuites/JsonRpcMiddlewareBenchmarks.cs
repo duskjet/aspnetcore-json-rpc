@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.TestHost;
 
 namespace Anemonis.AspNetCore.JsonRpc.Benchmarks.TestSuites
 {
-    public sealed class JsonRpcMiddlewareBenchmarks
+    public class JsonRpcMiddlewareBenchmarks
     {
         private static readonly IReadOnlyDictionary<string, byte[]> _resources = CreateResourceDictionary();
         private static readonly MediaTypeHeaderValue _mimeType = new MediaTypeHeaderValue("application/json");
