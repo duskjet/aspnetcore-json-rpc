@@ -126,6 +126,7 @@ namespace Anemonis.AspNetCore.JsonRpc.IntegrationTests
         [DataRow("bdi")]
         [DataRow("bon")]
         [DataRow("ipt")]
+        [DataRow("inv")]
         public async Task UseJsonRpcHandler(string test)
         {
             var configurator = (Action<IWebHostBuilder>)(builder =>
@@ -151,6 +152,7 @@ namespace Anemonis.AspNetCore.JsonRpc.IntegrationTests
         [DataRow("bdi")]
         [DataRow("bon")]
         [DataRow("ipt")]
+        [DataRow("inv")]
         public async Task UseJsonRpcService(string test)
         {
             var configurator = (Action<IWebHostBuilder>)(builder =>

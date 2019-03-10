@@ -125,7 +125,7 @@ namespace Anemonis.AspNetCore.JsonRpc
             {
                 _logger?.LogError(4000, e, Strings.GetString("handler.request_data.declined"), context.TraceIdentifier, context.Request.PathBase);
 
-                var jsonRpcError = new JsonRpcError(JsonRpcErrorCode.InvalidFormat, Strings.GetString("rpc.error.invalid_json"));
+                var jsonRpcError = new JsonRpcError(JsonRpcErrorCode.InvalidFormat, Strings.GetString("rpc.error.invalid_format"));
                 var jsonRpcResponse = new JsonRpcResponse(jsonRpcError, default);
 
                 context.Response.StatusCode = StatusCodes.Status200OK;
