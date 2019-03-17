@@ -4,8 +4,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Anemonis.AspNetCore.JsonRpc.Benchmarks.Middleware;
 using Anemonis.AspNetCore.JsonRpc.Benchmarks.Resources;
+using Anemonis.AspNetCore.JsonRpc.Benchmarks.TestStubs;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -17,16 +17,14 @@ namespace Anemonis.AspNetCore.JsonRpc.Benchmarks.TestSuites
         private static readonly IReadOnlyDictionary<string, byte[]> _resources = CreateResourceDictionary();
         private static readonly MediaTypeHeaderValue _mimeType = new MediaTypeHeaderValue("application/json");
 
-        private readonly TestServer _serverHandler;
-        private readonly TestServer _serverService;
-        private readonly HttpClient _clientHandler;
-        private readonly HttpClient _clientService;
+        private readonly TestServer _server;
+        private readonly HttpClient _client;
 
         private static IReadOnlyDictionary<string, byte[]> CreateResourceDictionary()
         {
             var resources = new Dictionary<string, byte[]>(StringComparer.Ordinal);
 
-            foreach (var code in CreateRequestcodes())
+            foreach (var code in CreateTestCodes())
             {
                 resources[code] = Encoding.UTF8.GetBytes(EmbeddedResourceManager.GetString($"Assets.{code}.json"));
             }
@@ -34,30 +32,37 @@ namespace Anemonis.AspNetCore.JsonRpc.Benchmarks.TestSuites
             return resources;
         }
 
-        private static IEnumerable<string> CreateRequestcodes()
+        private static IEnumerable<string> CreateTestCodes()
         {
-            return new[] { "nam", "pos", "err", "not" };
+            return new[]
+            {
+                "b0t0p0e0d0", "b0t0p0e1d0", "b0t0p0e1d1",
+                "b0t0p1e0d0", "b0t0p1e1d0", "b0t0p1e1d1",
+                "b0t0p2e0d0", "b0t0p2e1d0", "b0t0p2e1d1",
+                "b0t1p0e0d0", "b0t1p0e1d0", "b0t1p0e1d1",
+                "b0t1p1e0d0", "b0t1p1e1d0", "b0t1p1e1d1",
+                "b0t1p2e0d0", "b0t1p2e1d0", "b0t1p2e1d1",
+                "b1t0p0e0d0", "b1t0p0e1d0", "b1t0p0e1d1",
+                "b1t0p1e0d0", "b1t0p1e1d0", "b1t0p1e1d1",
+                "b1t0p2e0d0", "b1t0p2e1d0", "b1t0p2e1d1",
+                "b1t1p0e0d0", "b1t1p0e1d0", "b1t1p0e1d1",
+                "b1t1p1e0d0", "b1t1p1e1d0", "b1t1p1e1d1",
+                "b1t1p2e0d0", "b1t1p2e1d0", "b1t1p2e1d1"
+            };
         }
 
         public JsonRpcMiddlewareBenchmarks()
         {
             var builderHandler = new WebHostBuilder()
-                .ConfigureServices(sc => sc
-                    .AddJsonRpcService<JsonRpcTestService>())
-                .Configure(ab => ab
-                    .UseJsonRpcService<JsonRpcTestService>());
+                .ConfigureServices(sc => sc.AddJsonRpcService<JsonRpcTestService>())
+                .Configure(ab => ab.UseJsonRpcService<JsonRpcTestService>("/api/v1"));
             var builderService = new WebHostBuilder()
-                .ConfigureServices(sc => sc
-                    .AddJsonRpcService<JsonRpcTestService>())
-                .Configure(ab => ab
-                    .UseJsonRpcService<JsonRpcTestService>());
+                .ConfigureServices(sc => sc.AddJsonRpcService<JsonRpcTestService>())
+                .Configure(ab => ab.UseJsonRpcService<JsonRpcTestService>("/api/v2"));
 
-            _serverHandler = new TestServer(builderHandler);
-            _serverService = new TestServer(builderService);
-            _clientHandler = _serverHandler.CreateClient();
-            _clientService = _serverService.CreateClient();
-            _clientHandler.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            _clientService.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _server = new TestServer(builderHandler);
+            _client = _server.CreateClient();
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
         private HttpContent CreateHttpContent(string name)
@@ -71,52 +76,437 @@ namespace Anemonis.AspNetCore.JsonRpc.Benchmarks.TestSuites
             return result;
         }
 
-        [Benchmark(Description = "TYPE=H-ID=N-PARAMS=U-ERROR=N")]
-        public async Task<object> HandlerWithNotification()
+        [Benchmark(Description = "TYPE=H-CASE=B0T0P0E0D0")]
+        public async Task<object> HandlerB0T0P0E0D0()
         {
-            return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not"));
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t0p0e0d0"));
         }
 
-        [Benchmark(Description = "TYPE=H-ID=Y-PARAMS=N-ERROR=N")]
-        public async Task<object> HandlerWithParametersByName()
+        [Benchmark(Description = "TYPE=H-CASE=B0T0P0E1D0")]
+        public async Task<object> HandlerB0T0P0E1D0()
         {
-            return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam"));
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t0p0e1d0"));
         }
 
-        [Benchmark(Description = "TYPE=H-ID=Y-PARAMS=P-ERROR=N")]
-        public async Task<object> HandlerWithParametersByPosition()
+        [Benchmark(Description = "TYPE=H-CASE=B0T0P0E1D1")]
+        public async Task<object> HandlerB0T0P0E1D1()
         {
-            return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos"));
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t0p0e1d1"));
         }
 
-        [Benchmark(Description = "TYPE=H-ID=Y-PARAMS=U-ERROR=Y")]
-        public async Task<object> HandlerWithErrorResponse()
+        [Benchmark(Description = "TYPE=H-CASE=B0T0P1E0D0")]
+        public async Task<object> HandlerB0T0P1E0D0()
         {
-            return await _clientHandler.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err"));
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t0p1e0d0"));
         }
 
-        [Benchmark(Description = "TYPE=S-ID=N-PARAMS=U-ERROR=N")]
-        public async Task<object> ServiceWithNotification()
+        [Benchmark(Description = "TYPE=H-CASE=B0T0P1E1D0")]
+        public async Task<object> HandlerB0T0P1E1D0()
         {
-            return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("not"));
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t0p1e1d0"));
         }
 
-        [Benchmark(Description = "TYPE=S-ID=Y-PARAMS=N-ERROR=N")]
-        public async Task<object> ServiceWithParametersByName()
+        [Benchmark(Description = "TYPE=H-CASE=B0T0P1E1D1")]
+        public async Task<object> HandlerB0T0P1E1D1()
         {
-            return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("nam"));
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t0p1e1d1"));
         }
 
-        [Benchmark(Description = "TYPE=S-ID=Y-PARAMS=P-ERROR=N")]
-        public async Task<object> ServiceWithParametersByPosition()
+        [Benchmark(Description = "TYPE=H-CASE=B0T0P2E0D0")]
+        public async Task<object> HandlerB0T0P2E0D0()
         {
-            return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("pos"));
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t0p2e0d0"));
         }
 
-        [Benchmark(Description = "TYPE=S-ID=Y-PARAMS=U-ERROR=Y")]
-        public async Task<object> ServiceWithErrorResponse()
+        [Benchmark(Description = "TYPE=H-CASE=B0T0P2E1D0")]
+        public async Task<object> HandlerB0T0P2E1D0()
         {
-            return await _clientService.PostAsync(_serverHandler.BaseAddress, CreateHttpContent("err"));
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t0p2e1d0"));
         }
+
+        [Benchmark(Description = "TYPE=H-CASE=B0T0P2E1D1")]
+        public async Task<object> HandlerB0T0P2E1D1()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t0p2e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B0T1P0E0D0")]
+        public async Task<object> HandlerB0T1P0E0D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t1p0e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B0T1P0E1D0")]
+        public async Task<object> HandlerB0T1P0E1D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t1p0e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B0T1P0E1D1")]
+        public async Task<object> HandlerB0T1P0E1D1()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t1p0e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B0T1P1E0D0")]
+        public async Task<object> HandlerB0T1P1E0D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t1p1e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B0T1P1E1D0")]
+        public async Task<object> HandlerB0T1P1E1D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t1p1e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B0T1P1E1D1")]
+        public async Task<object> HandlerB0T1P1E1D1()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t1p1e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B0T1P2E0D0")]
+        public async Task<object> HandlerB0T1P2E0D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t1p2e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B0T1P2E1D0")]
+        public async Task<object> HandlerB0T1P2E1D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t1p2e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B0T1P2E1D1")]
+        public async Task<object> HandlerB0T1P2E1D1()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b0t1p2e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T0P0E0D0")]
+        public async Task<object> HandlerB1T0P0E0D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t0p0e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T0P0E1D0")]
+        public async Task<object> HandlerB1T0P0E1D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t0p0e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T0P0E1D1")]
+        public async Task<object> HandlerB1T0P0E1D1()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t0p0e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T0P1E0D0")]
+        public async Task<object> HandlerB1T0P1E0D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t0p1e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T0P1E1D0")]
+        public async Task<object> HandlerB1T0P1E1D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t0p1e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T0P1E1D1")]
+        public async Task<object> HandlerB1T0P1E1D1()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t0p1e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T0P2E0D0")]
+        public async Task<object> HandlerB1T0P2E0D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t0p2e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T0P2E1D0")]
+        public async Task<object> HandlerB1T0P2E1D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t0p2e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T0P2E1D1")]
+        public async Task<object> HandlerB1T0P2E1D1()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t0p2e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T1P0E0D0")]
+        public async Task<object> HandlerB1T1P0E0D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t1p0e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T1P0E1D0")]
+        public async Task<object> HandlerB1T1P0E1D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t1p0e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T1P0E1D1")]
+        public async Task<object> HandlerB1T1P0E1D1()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t1p0e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T1P1E0D0")]
+        public async Task<object> HandlerB1T1P1E0D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t1p1e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T1P1E1D0")]
+        public async Task<object> HandlerB1T1P1E1D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t1p1e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T1P1E1D1")]
+        public async Task<object> HandlerB1T1P1E1D1()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t1p1e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T1P2E0D0")]
+        public async Task<object> HandlerB1T1P2E0D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t1p2e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T1P2E1D0")]
+        public async Task<object> HandlerB1T1P2E1D0()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t1p2e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=H-CASE=B1T1P2E1D1")]
+        public async Task<object> HandlerB1T1P2E1D1()
+        {
+            return await _client.PostAsync("/api/v1", CreateHttpContent("b1t1p2e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T0P0E0D0")]
+        public async Task<object> ServiceB0T0P0E0D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t0p0e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T0P0E1D0")]
+        public async Task<object> ServiceB0T0P0E1D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t0p0e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T0P0E1D1")]
+        public async Task<object> ServiceB0T0P0E1D1()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t0p0e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T0P1E0D0")]
+        public async Task<object> ServiceB0T0P1E0D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t0p1e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T0P1E1D0")]
+        public async Task<object> ServiceB0T0P1E1D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t0p1e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T0P1E1D1")]
+        public async Task<object> ServiceB0T0P1E1D1()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t0p1e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T0P2E0D0")]
+        public async Task<object> ServiceB0T0P2E0D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t0p2e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T0P2E1D0")]
+        public async Task<object> ServiceB0T0P2E1D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t0p2e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T0P2E1D1")]
+        public async Task<object> ServiceB0T0P2E1D1()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t0p2e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T1P0E0D0")]
+        public async Task<object> ServiceB0T1P0E0D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t1p0e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T1P0E1D0")]
+        public async Task<object> ServiceB0T1P0E1D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t1p0e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T1P0E1D1")]
+        public async Task<object> ServiceB0T1P0E1D1()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t1p0e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T1P1E0D0")]
+        public async Task<object> ServiceB0T1P1E0D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t1p1e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T1P1E1D0")]
+        public async Task<object> ServiceB0T1P1E1D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t1p1e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T1P1E1D1")]
+        public async Task<object> ServiceB0T1P1E1D1()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t1p1e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T1P2E0D0")]
+        public async Task<object> ServiceB0T1P2E0D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t1p2e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T1P2E1D0")]
+        public async Task<object> ServiceB0T1P2E1D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t1p2e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B0T1P2E1D1")]
+        public async Task<object> ServiceB0T1P2E1D1()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b0t1p2e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T0P0E0D0")]
+        public async Task<object> ServiceB1T0P0E0D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t0p0e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T0P0E1D0")]
+        public async Task<object> ServiceB1T0P0E1D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t0p0e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T0P0E1D1")]
+        public async Task<object> ServiceB1T0P0E1D1()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t0p0e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T0P1E0D0")]
+        public async Task<object> ServiceB1T0P1E0D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t0p1e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T0P1E1D0")]
+        public async Task<object> ServiceB1T0P1E1D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t0p1e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T0P1E1D1")]
+        public async Task<object> ServiceB1T0P1E1D1()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t0p1e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T0P2E0D0")]
+        public async Task<object> ServiceB1T0P2E0D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t0p2e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T0P2E1D0")]
+        public async Task<object> ServiceB1T0P2E1D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t0p2e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T0P2E1D1")]
+        public async Task<object> ServiceB1T0P2E1D1()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t0p2e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T1P0E0D0")]
+        public async Task<object> ServiceB1T1P0E0D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t1p0e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T1P0E1D0")]
+        public async Task<object> ServiceB1T1P0E1D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t1p0e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T1P0E1D1")]
+        public async Task<object> ServiceB1T1P0E1D1()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t1p0e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T1P1E0D0")]
+        public async Task<object> ServiceB1T1P1E0D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t1p1e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T1P1E1D0")]
+        public async Task<object> ServiceB1T1P1E1D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t1p1e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T1P1E1D1")]
+        public async Task<object> ServiceB1T1P1E1D1()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t1p1e1d1"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T1P2E0D0")]
+        public async Task<object> ServiceB1T1P2E0D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t1p2e0d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T1P2E1D0")]
+        public async Task<object> ServiceB1T1P2E1D0()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t1p2e1d0"));
+        }
+
+        [Benchmark(Description = "TYPE=S-CASE=B1T1P2E1D1")]
+        public async Task<object> ServiceB1T1P2E1D1()
+        {
+            return await _client.PostAsync("/api/v2", CreateHttpContent("b1t1p2e1d1"));
+        }
+
     }
 }

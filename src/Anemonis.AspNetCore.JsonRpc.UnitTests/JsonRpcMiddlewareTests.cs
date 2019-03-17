@@ -194,10 +194,10 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         [DataRow("b1t1p2e1d1")]
         [DataRow("b1iu")]
         [DataRow("b1is")]
-        public async Task InvokeAsync(string identifier)
+        public async Task InvokeAsync(string code)
         {
-            var requestActualContent = EmbeddedResourceManager.GetString($"Assets.{identifier}_req.json");
-            var responseExpectedContent = EmbeddedResourceManager.GetString($"Assets.{identifier}_res.json");
+            var requestActualContent = EmbeddedResourceManager.GetString($"Assets.{code}_req.json");
+            var responseExpectedContent = EmbeddedResourceManager.GetString($"Assets.{code}_res.json");
             var responseExpectedStatusCode = !string.IsNullOrEmpty(responseExpectedContent) ? StatusCodes.Status200OK : StatusCodes.Status204NoContent;
 
             var serviceProviderMock = new Mock<IServiceProvider>(MockBehavior.Strict);
