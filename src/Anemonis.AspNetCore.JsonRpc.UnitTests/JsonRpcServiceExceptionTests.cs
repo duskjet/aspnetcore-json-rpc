@@ -10,13 +10,39 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         public void ConstructorWithCodeAndMessageWhenMessageIsNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
-                new JsonRpcServiceException(default, null));
+                new JsonRpcServiceException(0L, null));
         }
 
         [TestMethod]
-        public void ConstructorWithCodeAndMessage()
+        public void GetHasErrorDataIsFalse()
         {
-            new JsonRpcServiceException(default, "m");
+            var exception = new JsonRpcServiceException(0L, "m");
+
+            Assert.AreEqual(0L, exception.Code);
+            Assert.AreEqual("m", exception.Message);
+            Assert.IsFalse(exception.HasErrorData);
+        }
+
+        [TestMethod]
+        public void GetHasErrorDataIsTrueAndDataIsNull()
+        {
+            var exception = new JsonRpcServiceException(0L, "m", null);
+
+            Assert.AreEqual(0L, exception.Code);
+            Assert.AreEqual("m", exception.Message);
+            Assert.IsTrue(exception.HasErrorData);
+            Assert.AreEqual(null, exception.ErrorData);
+        }
+
+        [TestMethod]
+        public void GetHasErrorDataIsTrueAndDataIsNotNull()
+        {
+            var exception = new JsonRpcServiceException(0L, "m", 1L);
+
+            Assert.AreEqual(0L, exception.Code);
+            Assert.AreEqual("m", exception.Message);
+            Assert.IsTrue(exception.HasErrorData);
+            Assert.AreEqual(1L, exception.ErrorData);
         }
     }
 }

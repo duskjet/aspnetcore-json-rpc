@@ -6,30 +6,24 @@ namespace Anemonis.AspNetCore.JsonRpc
 {
     internal sealed class JsonRpcMethodInfo
     {
-        public JsonRpcMethodInfo(MethodInfo method, ParameterInfo[] parameters)
+        public JsonRpcMethodInfo(MethodInfo method)
         {
             Method = method;
-            Parameters = parameters;
         }
 
-        public JsonRpcMethodInfo(MethodInfo method, ParameterInfo[] parameters, int[] parameterPositions)
-            : this(method, parameters)
+        public JsonRpcMethodInfo(MethodInfo method, int[] parameterPositions)
+            : this(method)
         {
             ParameterPositions = parameterPositions;
         }
 
-        public JsonRpcMethodInfo(MethodInfo method, ParameterInfo[] parameters, string[] parameterNames)
-            : this(method, parameters)
+        public JsonRpcMethodInfo(MethodInfo method, string[] parameterNames)
+            : this(method)
         {
             ParameterNames = parameterNames;
         }
 
         public MethodInfo Method
-        {
-            get;
-        }
-
-        public ParameterInfo[] Parameters
         {
             get;
         }

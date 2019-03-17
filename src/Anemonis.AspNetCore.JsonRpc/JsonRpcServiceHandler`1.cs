@@ -122,7 +122,7 @@ namespace Anemonis.AspNetCore.JsonRpc
                             }
 
                             contract = new JsonRpcRequestContract(contractParameters);
-                            methodInfo = new JsonRpcMethodInfo(method, parameters, parameterPositions);
+                            methodInfo = new JsonRpcMethodInfo(method, parameterPositions);
                         }
                         break;
                     case JsonRpcParametersType.ByName:
@@ -148,7 +148,7 @@ namespace Anemonis.AspNetCore.JsonRpc
                             }
 
                             contract = new JsonRpcRequestContract(contractParameters);
-                            methodInfo = new JsonRpcMethodInfo(method, parameters, methodParameterNames);
+                            methodInfo = new JsonRpcMethodInfo(method, methodParameterNames);
                         }
                         break;
                     default:
@@ -159,7 +159,7 @@ namespace Anemonis.AspNetCore.JsonRpc
                             }
 
                             contract = new JsonRpcRequestContract();
-                            methodInfo = new JsonRpcMethodInfo(method, parameters);
+                            methodInfo = new JsonRpcMethodInfo(method);
                         }
                         break;
                 }
@@ -182,7 +182,8 @@ namespace Anemonis.AspNetCore.JsonRpc
         {
             var requestId = request.Id;
             var methodInfo = _metadata[request.Method];
-            var parameters = methodInfo.Parameters;
+            var method = methodInfo.Method;
+            var parameters = method.GetParameters();
             var parameterValues = default(object[]);
 
             switch (request.ParametersType)
@@ -228,8 +229,6 @@ namespace Anemonis.AspNetCore.JsonRpc
 
             try
             {
-                var method = methodInfo.Method;
-
                 if (request.IsNotification || !method.ReturnType.IsGenericType)
                 {
                     await (dynamic)method.Invoke(_service, parameterValues);
