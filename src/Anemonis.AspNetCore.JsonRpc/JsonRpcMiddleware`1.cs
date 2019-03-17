@@ -15,7 +15,9 @@ using Newtonsoft.Json;
 
 namespace Anemonis.AspNetCore.JsonRpc
 {
-    internal sealed class JsonRpcMiddleware<T> : IMiddleware, IDisposable
+    /// <summary>Represents a middleware for adding a JSON-RPC handler to the application's request pipeline.</summary>
+    /// <typeparam name="T">The type of the handler.</typeparam>
+    public sealed class JsonRpcMiddleware<T> : IMiddleware, IDisposable
         where T : class, IJsonRpcHandler
     {
         private static readonly IDictionary<long, JsonRpcError> _standardJsonRpcErrors = CreateStandardJsonRpcErrors();
@@ -24,6 +26,9 @@ namespace Anemonis.AspNetCore.JsonRpc
         private readonly JsonRpcSerializer _serializer;
         private readonly ILogger _logger;
 
+        /// <summary>Initializes a new instance of the <see cref="JsonRpcMiddleware{T}" /> class.</summary>
+        /// <param name="services">The <see cref="IServiceProvider" /> instance for retrieving service objects.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="services" /> is <see langword="null" />.</exception>
         public JsonRpcMiddleware(IServiceProvider services)
         {
             if (services == null)
@@ -74,7 +79,7 @@ namespace Anemonis.AspNetCore.JsonRpc
             };
         }
 
-        private static JsonRpcError ConvertExceptionToError(JsonRpcSerializationException exception)
+        private static JsonRpcError ConvertExceptionToJsonRpcError(JsonRpcSerializationException exception)
         {
             if (!_standardJsonRpcErrors.TryGetValue(exception.ErrorCode, out var jsonRpcError))
             {
@@ -84,6 +89,10 @@ namespace Anemonis.AspNetCore.JsonRpc
             return jsonRpcError;
         }
 
+        /// <summary>Handles an HTTP request as an asynchronous operation.</summary>
+        /// <param name="context">The <see cref="HttpContext" /> instance for the current request.</param>
+        /// <param name="next">The delegate representing the remaining middleware in the request pipeline.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             if (context.Response.HasStarted)
@@ -130,7 +139,7 @@ namespace Anemonis.AspNetCore.JsonRpc
 
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                await SerializeResponseAsync(context, jsonRpcResponse);
+                await SerializeJsonRpcResponseAsync(context, jsonRpcResponse);
 
                 return;
             }
@@ -138,12 +147,12 @@ namespace Anemonis.AspNetCore.JsonRpc
             {
                 _logger?.LogError(4000, e, Strings.GetString("handler.request_data.declined"), context.TraceIdentifier, context.Request.PathBase);
 
-                var jsonRpcError = ConvertExceptionToError(e);
+                var jsonRpcError = ConvertExceptionToJsonRpcError(e);
                 var jsonRpcResponse = new JsonRpcResponse(jsonRpcError, default);
 
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                await SerializeResponseAsync(context, jsonRpcResponse);
+                await SerializeJsonRpcResponseAsync(context, jsonRpcResponse);
 
                 return;
             }
@@ -174,7 +183,7 @@ namespace Anemonis.AspNetCore.JsonRpc
                 context.RequestAborted.ThrowIfCancellationRequested();
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                await SerializeResponseAsync(context, jsonRpcResponse);
+                await SerializeJsonRpcResponseAsync(context, jsonRpcResponse);
             }
             else
             {
@@ -207,7 +216,7 @@ namespace Anemonis.AspNetCore.JsonRpc
 
                             context.Response.StatusCode = StatusCodes.Status200OK;
 
-                            await SerializeResponseAsync(context, jsonRpcResponse);
+                            await SerializeJsonRpcResponseAsync(context, jsonRpcResponse);
 
                             return;
                         }
@@ -246,11 +255,11 @@ namespace Anemonis.AspNetCore.JsonRpc
                 context.RequestAborted.ThrowIfCancellationRequested();
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                await SerializeResponsesAsync(context, jsonRpcResponses);
+                await SerializeJsonRpcResponsesAsync(context, jsonRpcResponses);
             }
         }
 
-        private async Task SerializeResponseAsync(HttpContext context, JsonRpcResponse jsonRpcResponse)
+        private async Task SerializeJsonRpcResponseAsync(HttpContext context, JsonRpcResponse jsonRpcResponse)
         {
             context.Response.ContentType = "application/json";
 
@@ -265,7 +274,7 @@ namespace Anemonis.AspNetCore.JsonRpc
             }
         }
 
-        private async Task SerializeResponsesAsync(HttpContext context, IReadOnlyList<JsonRpcResponse> jsonRpcResponses)
+        private async Task SerializeJsonRpcResponsesAsync(HttpContext context, IReadOnlyList<JsonRpcResponse> jsonRpcResponses)
         {
             context.Response.ContentType = "application/json";
 
@@ -288,7 +297,7 @@ namespace Anemonis.AspNetCore.JsonRpc
 
                 _logger?.LogError(4010, exception, Strings.GetString("handler.request.invalid_message"), context.TraceIdentifier, exception.MessageId);
 
-                return new JsonRpcResponse(ConvertExceptionToError(exception), exception.MessageId);
+                return new JsonRpcResponse(ConvertExceptionToJsonRpcError(exception), exception.MessageId);
             }
 
             var request = requestInfo.Message;
@@ -342,6 +351,7 @@ namespace Anemonis.AspNetCore.JsonRpc
             return response;
         }
 
+        /// <summary>Disposes the corresponding instance of a JSON-RPC handler.</summary>
         public void Dispose()
         {
             (_handler as IDisposable)?.Dispose();

@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Anemonis.AspNetCore.JsonRpc", "Anemonis.AspNetCore.JsonRpc\Anemonis.AspNetCore.JsonRpc.csproj", "{0945A84E-051E-4836-9E8A-44A7533EAA5E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Anemonis.AspNetCore.JsonRpc.IntegrationTests", "Anemonis.AspNetCore.JsonRpc.IntegrationTests\Anemonis.AspNetCore.JsonRpc.IntegrationTests.csproj", "{098593F5-AF4D-48F9-B675-3E8852F638A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Anemonis.AspNetCore.JsonRpc.UnitTests", "Anemonis.AspNetCore.JsonRpc.UnitTests\Anemonis.AspNetCore.JsonRpc.UnitTests.csproj", "{7F339FEF-7C13-4BAE-8B79-381CC6F3DD8C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Anemonis.AspNetCore.JsonRpc.Benchmarks", "Anemonis.AspNetCore.JsonRpc.Benchmarks\Anemonis.AspNetCore.JsonRpc.Benchmarks.csproj", "{A556A0C5-38E5-47FE-AECA-CB95F4527FC1}"
 EndProject
@@ -26,10 +26,10 @@ Global
 		{0945A84E-051E-4836-9E8A-44A7533EAA5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0945A84E-051E-4836-9E8A-44A7533EAA5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0945A84E-051E-4836-9E8A-44A7533EAA5E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{098593F5-AF4D-48F9-B675-3E8852F638A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{098593F5-AF4D-48F9-B675-3E8852F638A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{098593F5-AF4D-48F9-B675-3E8852F638A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{098593F5-AF4D-48F9-B675-3E8852F638A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F339FEF-7C13-4BAE-8B79-381CC6F3DD8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F339FEF-7C13-4BAE-8B79-381CC6F3DD8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F339FEF-7C13-4BAE-8B79-381CC6F3DD8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F339FEF-7C13-4BAE-8B79-381CC6F3DD8C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A556A0C5-38E5-47FE-AECA-CB95F4527FC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A556A0C5-38E5-47FE-AECA-CB95F4527FC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A556A0C5-38E5-47FE-AECA-CB95F4527FC1}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -1,0 +1,416 @@
+﻿using System;
+using System.Threading.Tasks;
+using Anemonis.AspNetCore.JsonRpc.UnitTests.TestStubs;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+
+namespace Anemonis.AspNetCore.JsonRpc.UnitTests
+{
+    [TestClass]
+    public sealed class JsonRpcBuilderExtensionsTests
+    {
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilderAndTypeWhenBuilderInNull()
+        {
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcHandler(null, typeof(JsonRpcTestHandler2)));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilderAndTypeWhenTypeInNull()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcHandler(builderMock.Object, null));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilderAndTypeWhenTypeInNotClass()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<ArgumentException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcHandler(builderMock.Object, typeof(int)));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilderAndTypeWhenTypeDoesNotImplementInterface()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<ArgumentException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcHandler(builderMock.Object, typeof(object)));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilderAndTypeWhenTypeDoesNotHaveAttribute()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<InvalidOperationException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcHandler(builderMock.Object, typeof(JsonRpcTestHandler1)));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilderAndType()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            builderMock.Setup(o => o.New())
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()))
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Build())
+                .Returns(c => Task.CompletedTask);
+
+            JsonRpcBuilderExtensions.UseJsonRpcHandler(builderMock.Object, typeof(JsonRpcTestHandler2));
+
+            builderMock.Verify(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()), Times.AtLeastOnce());
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilderAndTypeAndPathWhenBuilderInNull()
+        {
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcHandler(null, typeof(JsonRpcTestHandler2), default));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilderAndTypeAndPathWhenTypeInNull()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcHandler(builderMock.Object, null, default));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilderAndTypeAndPathWhenTypeInNotClass()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<ArgumentException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcHandler(builderMock.Object, typeof(int), default));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilderAndTypeAndPathWhenTypeDoesNotImplementInterface()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<ArgumentException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcHandler(builderMock.Object, typeof(object), default));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilderAndTypeAndPath()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            builderMock.Setup(o => o.New())
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()))
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Build())
+                .Returns(c => Task.CompletedTask);
+
+            JsonRpcBuilderExtensions.UseJsonRpcHandler(builderMock.Object, typeof(JsonRpcTestHandler2), default);
+
+            builderMock.Verify(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()), Times.AtLeastOnce());
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilderWhenBuilderInNull()
+        {
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcHandler<JsonRpcTestHandler2>(null));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilderWhenTypeDoesNotHaveAttribute()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<InvalidOperationException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcHandler<JsonRpcTestHandler1>(builderMock.Object));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilder()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            builderMock.Setup(o => o.New())
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()))
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Build())
+                .Returns(c => Task.CompletedTask);
+
+            JsonRpcBuilderExtensions.UseJsonRpcHandler<JsonRpcTestHandler2>(builderMock.Object);
+
+            builderMock.Verify(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()), Times.AtLeastOnce());
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilderAndPathWhenBuilderInNull()
+        {
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcHandler<JsonRpcTestHandler2>(null, default));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlerWithBuilderAndPath()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            builderMock.Setup(o => o.New())
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()))
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Build())
+                .Returns(c => Task.CompletedTask);
+
+            JsonRpcBuilderExtensions.UseJsonRpcHandler<JsonRpcTestHandler2>(builderMock.Object, default);
+
+            builderMock.Verify(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()), Times.AtLeastOnce());
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlersWhenBuilderInNull()
+        {
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcHandlers(null));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcHandlers()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            builderMock.Setup(o => o.New())
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()))
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Build())
+                .Returns(c => Task.CompletedTask);
+
+            JsonRpcBuilderExtensions.UseJsonRpcHandlers(builderMock.Object);
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilderAndTypeWhenBuilderInNull()
+        {
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcService(null, typeof(JsonRpcTestService2)));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilderAndTypeWhenTypeInNull()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcService(builderMock.Object, null));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilderAndTypeWhenTypeInNotClass()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<ArgumentException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcService(builderMock.Object, typeof(int)));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilderAndTypeWhenTypeDoesNotImplementInterface()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<ArgumentException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcService(builderMock.Object, typeof(object)));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilderAndTypeWhenTypeDoesNotHaveAttribute()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<InvalidOperationException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcService(builderMock.Object, typeof(JsonRpcTestService1)));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilderAndType()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            builderMock.Setup(o => o.New())
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()))
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Build())
+                .Returns(c => Task.CompletedTask);
+
+            JsonRpcBuilderExtensions.UseJsonRpcService(builderMock.Object, typeof(JsonRpcTestService2));
+
+            builderMock.Verify(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()), Times.AtLeastOnce());
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilderAndTypeAndPathWhenBuilderInNull()
+        {
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcService(null, typeof(JsonRpcTestService2), default));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilderAndTypeAndPathWhenTypeInNull()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcService(builderMock.Object, null, default));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilderAndTypeAndPathWhenTypeInNotClass()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<ArgumentException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcService(builderMock.Object, typeof(int), default));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilderAndTypeAndPathWhenTypeDoesNotImplementInterface()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<ArgumentException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcService(builderMock.Object, typeof(object), default));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilderAndTypeAndPath()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            builderMock.Setup(o => o.New())
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()))
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Build())
+                .Returns(c => Task.CompletedTask);
+
+            JsonRpcBuilderExtensions.UseJsonRpcService(builderMock.Object, typeof(JsonRpcTestService2), default);
+
+            builderMock.Verify(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()), Times.AtLeastOnce());
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilderWhenBuilderInNull()
+        {
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcService<JsonRpcTestService2>(null));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilderWhenTypeDoesNotHaveAttribute()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            Assert.ThrowsException<InvalidOperationException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcService<JsonRpcTestService1>(builderMock.Object));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilder()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            builderMock.Setup(o => o.New())
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()))
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Build())
+                .Returns(c => Task.CompletedTask);
+
+            JsonRpcBuilderExtensions.UseJsonRpcService<JsonRpcTestService2>(builderMock.Object);
+
+            builderMock.Verify(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()), Times.AtLeastOnce());
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilderAndPathWhenBuilderInNull()
+        {
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcService<JsonRpcTestService2>(null, default));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServiceWithBuilderAndPath()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            builderMock.Setup(o => o.New())
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()))
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Build())
+                .Returns(c => Task.CompletedTask);
+
+            JsonRpcBuilderExtensions.UseJsonRpcService<JsonRpcTestService2>(builderMock.Object, default);
+
+            builderMock.Verify(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()), Times.AtLeastOnce());
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServicesWhenBuilderInNull()
+        {
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpcServices(null));
+        }
+
+        [TestMethod]
+        public void UseJsonRpcServices()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            builderMock.Setup(o => o.New())
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()))
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Build())
+                .Returns(c => Task.CompletedTask);
+
+            JsonRpcBuilderExtensions.UseJsonRpcServices(builderMock.Object);
+        }
+
+        [TestMethod]
+        public void UseJsonRpcWhenBuilderInNull()
+        {
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                JsonRpcBuilderExtensions.UseJsonRpc(null));
+        }
+
+        [TestMethod]
+        public void UseJsonRpc()
+        {
+            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
+
+            builderMock.Setup(o => o.New())
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Use(It.IsNotNull<Func<RequestDelegate, RequestDelegate>>()))
+                .Returns(builderMock.Object);
+            builderMock.Setup(o => o.Build())
+                .Returns(c => Task.CompletedTask);
+
+            JsonRpcBuilderExtensions.UseJsonRpc(builderMock.Object);
+        }
+    }
+}

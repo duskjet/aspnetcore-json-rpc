@@ -1,9 +1,0 @@
-{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "nam",
-    "params": {
-        "p1": 1,
-        "p2": 2
-    }
-}

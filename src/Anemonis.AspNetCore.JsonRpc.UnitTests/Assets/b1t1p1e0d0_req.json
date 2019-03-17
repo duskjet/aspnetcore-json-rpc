@@ -1,0 +1,20 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "t1p1e0d0",
+    "params": [
+      1,
+      "!"
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "t1p1e0d0",
+    "params": [
+      1,
+      "!"
+    ]
+  }
+]

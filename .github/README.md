@@ -44,6 +44,7 @@ According to the current logging configuration, the following events may appear 
 ## Code Examples
 
 ```cs
+[JsonRpcRoute("/api")]
 public class JsonRpcService : IJsonRpcService
 {
     [JsonRpcMethod("m1", "p1", "p2")]
@@ -68,17 +69,18 @@ public class Startup : IStartup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddJsonRpcService<JsonRpcService>();
+        services.AddJsonRpc();
     }
 
     public void Configure(IApplicationBuilder app)
     {
-        app.UseJsonRpcService<JsonRpcService>("/api");
+        app.UseJsonRpc();
     }
 }
 ```
 or
 ```cs
+[JsonRpcRoute("/api")]
 public class JsonRpcHandler : IJsonRpcHandler
 {
     public IReadOnlyDictionary<string, JsonRpcRequestContract> GetContracts()
@@ -133,12 +135,12 @@ public class Startup : IStartup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddJsonRpcHandler<JsonRpcHandler>();
+        services.AddJsonRpc();
     }
 
     public void Configure(IApplicationBuilder app)
     {
-        app.UseJsonRpcHandler<JsonRpcHandler>("/api");
+        app.UseJsonRpc();
     }
 }
 ```

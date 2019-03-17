@@ -1,0 +1,12 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "sys.unknown"
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "sys.unknown"
+  }
+]

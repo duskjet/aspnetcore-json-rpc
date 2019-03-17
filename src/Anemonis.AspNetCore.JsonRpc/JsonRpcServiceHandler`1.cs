@@ -12,35 +12,38 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Anemonis.AspNetCore.JsonRpc
 {
-    internal sealed class JsonRpcServiceHandler<T> : IJsonRpcHandler, IDisposable
+    /// <summary>Represents a JSON-RPC handler for a JSON-RPC service.</summary>
+    /// <typeparam name="T">The type of the service.</typeparam>
+    public sealed class JsonRpcServiceHandler<T> : IJsonRpcHandler, IDisposable
         where T : class, IJsonRpcService
     {
-        private static readonly IReadOnlyDictionary<string, (MethodInfo, ParameterInfo[], string[])> _metadata;
-        private static readonly IReadOnlyDictionary<string, JsonRpcRequestContract> _contracts;
+        private static readonly Dictionary<string, JsonRpcMethodInfo> _metadata;
+        private static readonly Dictionary<string, JsonRpcRequestContract> _contracts;
 
         private readonly T _service;
 
         static JsonRpcServiceHandler()
         {
-            var blueprint = new Dictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])>(StringComparer.Ordinal);
+            var blueprint = new Dictionary<string, (JsonRpcRequestContract Contract, JsonRpcMethodInfo MethodInfo)>(StringComparer.Ordinal);
 
-            GetContracts(blueprint, typeof(T));
+            FindContracts(blueprint, typeof(T));
 
-            var metadata = new Dictionary<string, (MethodInfo, ParameterInfo[], string[])>(blueprint.Count, StringComparer.Ordinal);
+            var metadata = new Dictionary<string, JsonRpcMethodInfo>(blueprint.Count, StringComparer.Ordinal);
             var contracts = new Dictionary<string, JsonRpcRequestContract>(blueprint.Count, StringComparer.Ordinal);
 
             foreach (var kvp in blueprint)
             {
-                var (contract, method, parameters, parametersBindings) = kvp.Value;
-
-                metadata[kvp.Key] = (method, parameters, parametersBindings);
-                contracts[kvp.Key] = contract;
+                metadata[kvp.Key] = kvp.Value.MethodInfo;
+                contracts[kvp.Key] = kvp.Value.Contract;
             }
 
             _metadata = metadata;
             _contracts = contracts;
         }
 
+        /// <summary>Initializes a new instance of the <see cref="JsonRpcServiceHandler{T}" /> class.</summary>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider" /> instance for retrieving service objects.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="serviceProvider" /> is <see langword="null" />.</exception>
         public JsonRpcServiceHandler(IServiceProvider serviceProvider)
         {
             if (serviceProvider == null)
@@ -51,25 +54,25 @@ namespace Anemonis.AspNetCore.JsonRpc
             _service = serviceProvider.GetService<T>() ?? ActivatorUtilities.CreateInstance<T>(serviceProvider);
         }
 
-        private static void GetContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> blueprint, Type type)
+        private static void FindContracts(Dictionary<string, (JsonRpcRequestContract, JsonRpcMethodInfo)> blueprint, Type type)
         {
             if (type == null)
             {
                 return;
             }
 
-            GetContracts(blueprint, type.GetMethods(BindingFlags.Instance | BindingFlags.Public));
-            GetContracts(blueprint, type.BaseType);
+            FindContracts(blueprint, type.GetMethods(BindingFlags.Instance | BindingFlags.Public));
+            FindContracts(blueprint, type.BaseType);
 
             var interfaceTypes = type.GetInterfaces();
 
             for (var i = 0; i < interfaceTypes.Length; i++)
             {
-                GetContracts(blueprint, interfaceTypes[i]);
+                FindContracts(blueprint, interfaceTypes[i]);
             }
         }
 
-        private static void GetContracts(IDictionary<string, (JsonRpcRequestContract, MethodInfo, ParameterInfo[], string[])> contracts, IEnumerable<MethodInfo> methods)
+        private static void FindContracts(Dictionary<string, (JsonRpcRequestContract, JsonRpcMethodInfo)> blueprint, IEnumerable<MethodInfo> methods)
         {
             foreach (var method in methods)
             {
@@ -83,14 +86,14 @@ namespace Anemonis.AspNetCore.JsonRpc
                 {
                     throw new InvalidOperationException(string.Format(Strings.GetString("service.method.invalid_type"), method.Name, typeof(T)));
                 }
-                if (contracts.ContainsKey(attribute.MethodName))
+                if (blueprint.ContainsKey(attribute.MethodName))
                 {
                     throw new InvalidOperationException(string.Format(Strings.GetString("service.method.invalid_name"), typeof(T), attribute.MethodName));
                 }
 
                 var contract = default(JsonRpcRequestContract);
+                var methodInfo = default(JsonRpcMethodInfo);
                 var parameters = method.GetParameters();
-                var parametersBindings = default(string[]);
 
                 switch (attribute.ParametersType)
                 {
@@ -111,14 +114,15 @@ namespace Anemonis.AspNetCore.JsonRpc
                                 }
                             }
 
-                            var parametersContract = new Type[parameters.Length];
+                            var contractParameters = new Type[parameters.Length];
 
                             for (var i = 0; i < parameters.Length; i++)
                             {
-                                parametersContract[i] = parameters[i].ParameterType;
+                                contractParameters[parameterPositions[i]] = parameters[i].ParameterType;
                             }
 
-                            contract = new JsonRpcRequestContract(parametersContract);
+                            contract = new JsonRpcRequestContract(contractParameters);
+                            methodInfo = new JsonRpcMethodInfo(method, parameters, parameterPositions);
                         }
                         break;
                     case JsonRpcParametersType.ByName:
@@ -134,17 +138,17 @@ namespace Anemonis.AspNetCore.JsonRpc
                                 throw new InvalidOperationException(string.Format(Strings.GetString("service.method.invalid_parameter_names"), method.Name, typeof(T)));
                             }
 
-                            var parametersContract = new Dictionary<string, Type>(parameters.Length, StringComparer.Ordinal);
-
-                            parametersBindings = new string[parameters.Length];
+                            var contractParameters = new Dictionary<string, Type>(parameters.Length, StringComparer.Ordinal);
+                            var methodParameterNames = new string[parameters.Length];
 
                             for (var i = 0; i < parameters.Length; i++)
                             {
-                                parametersContract[parameterNames[i]] = parameters[i].ParameterType;
-                                parametersBindings[i] = parameterNames[i];
+                                contractParameters[parameterNames[i]] = parameters[i].ParameterType;
+                                methodParameterNames[i] = parameterNames[i];
                             }
 
-                            contract = new JsonRpcRequestContract(parametersContract);
+                            contract = new JsonRpcRequestContract(contractParameters);
+                            methodInfo = new JsonRpcMethodInfo(method, parameters, methodParameterNames);
                         }
                         break;
                     default:
@@ -155,48 +159,55 @@ namespace Anemonis.AspNetCore.JsonRpc
                             }
 
                             contract = new JsonRpcRequestContract();
+                            methodInfo = new JsonRpcMethodInfo(method, parameters);
                         }
                         break;
                 }
 
-                contracts[attribute.MethodName] = (contract, method, parameters, parametersBindings);
+                blueprint[attribute.MethodName] = (contract, methodInfo);
             }
         }
 
+        /// <summary>Get contracts for JSON-RPC requests deserialization.</summary>
+        /// <returns>A dictionary with JSON-RPC request contracts.</returns>
         public IReadOnlyDictionary<string, JsonRpcRequestContract> GetContracts()
         {
             return _contracts;
         }
 
+        /// <summary>Handles a JSON-RPC request and returns a JSON-RPC response or <see langword="null" /> for a notification as an asynchronous operation.</summary>
+        /// <param name="request">The JSON-RPC request.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result is a JSON-RPC response or <see langword="null" /> for a notification.</returns>
         public async Task<JsonRpcResponse> HandleAsync(JsonRpcRequest request)
         {
             var requestId = request.Id;
-            var (method, parameters, parametersBindings) = _metadata[request.Method];
-            var parametersValues = default(object[]);
+            var methodInfo = _metadata[request.Method];
+            var parameters = methodInfo.Parameters;
+            var parameterValues = default(object[]);
 
             switch (request.ParametersType)
             {
                 case JsonRpcParametersType.ByPosition:
                     {
-                        parametersValues = new object[parameters.Length];
+                        parameterValues = new object[parameters.Length];
 
-                        for (var i = 0; i < parametersValues.Length; i++)
+                        for (var i = 0; i < parameterValues.Length; i++)
                         {
-                            parametersValues[i] = request.ParametersByPosition[i];
+                            parameterValues[methodInfo.ParameterPositions[i]] = request.ParametersByPosition[i];
                         }
                     }
                     break;
                 case JsonRpcParametersType.ByName:
                     {
-                        parametersValues = new object[parameters.Length];
+                        parameterValues = new object[parameters.Length];
 
-                        for (var i = 0; i < parametersValues.Length; i++)
+                        for (var i = 0; i < parameterValues.Length; i++)
                         {
-                            if (!request.ParametersByName.TryGetValue(parametersBindings[i], out parametersValues[i]))
+                            if (!request.ParametersByName.TryGetValue(methodInfo.ParameterNames[i], out parameterValues[i]))
                             {
                                 if (parameters[i].HasDefaultValue)
                                 {
-                                    parametersValues[i] = parameters[i].DefaultValue;
+                                    parameterValues[i] = parameters[i].DefaultValue;
                                 }
                                 else
                                 {
@@ -205,7 +216,7 @@ namespace Anemonis.AspNetCore.JsonRpc
                                         return null;
                                     }
 
-                                    var message = string.Format(Strings.GetString("service.request.parameter.undefined_value"), request.Method, parametersBindings[i]);
+                                    var message = string.Format(Strings.GetString("service.request.parameter.undefined_value"), request.Method, methodInfo.ParameterNames[i]);
 
                                     return new JsonRpcResponse(new JsonRpcError(JsonRpcErrorCode.InvalidParameters, message), requestId);
                                 }
@@ -217,13 +228,15 @@ namespace Anemonis.AspNetCore.JsonRpc
 
             try
             {
+                var method = methodInfo.Method;
+
                 if (request.IsNotification || !method.ReturnType.IsGenericType)
                 {
-                    await (dynamic)method.Invoke(_service, parametersValues);
+                    await (dynamic)method.Invoke(_service, parameterValues);
                 }
                 else
                 {
-                    var jsonRpcResult = await (dynamic)method.Invoke(_service, parametersValues) as object;
+                    var jsonRpcResult = await (dynamic)method.Invoke(_service, parameterValues) as object;
 
                     return new JsonRpcResponse(jsonRpcResult, requestId);
                 }
@@ -268,6 +281,7 @@ namespace Anemonis.AspNetCore.JsonRpc
             return null;
         }
 
+        /// <summary>Disposes the corresponding instance of a JSON-RPC service.</summary>
         public void Dispose()
         {
             (_service as IDisposable)?.Dispose();

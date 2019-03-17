@@ -159,6 +159,15 @@
   <data name="handler.contract.method.undefined_name" xml:space="preserve">
     <value>The JSON-RPC method name is null</value>
   </data>
+  <data name="infrastructure.type_doesnt_have_route_attribute" xml:space="preserve">
+    <value>The specified type does not have a JSON-RPC route attribute defined</value>
+  </data>
+  <data name="infrastructure.type_doesnt_implement_interface" xml:space="preserve">
+    <value>The specified type does not implement interface {0}</value>
+  </data>
+  <data name="infrastructure.type_isnt_class" xml:space="preserve">
+    <value>The specified type is not a class</value>
+  </data>
   <data name="rpc.error.duplicate_ids" xml:space="preserve">
     <value>The provided batch contains requests with duplicate identifiers</value>
   </data>
