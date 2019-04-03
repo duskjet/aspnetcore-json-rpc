@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Anemonis.AspNetCore.JsonRpc.Resources;
 using Anemonis.JsonRpc;
@@ -20,6 +21,10 @@ namespace Anemonis.AspNetCore.JsonRpc
     public sealed class JsonRpcMiddleware<T> : IMiddleware, IDisposable
         where T : class, IJsonRpcHandler
     {
+        private const string _mediaTypeValue = "application/json";
+        private const string _contentTypeHeaderValue = "application/json; charset=utf-8";
+        private const int _streamBufferSize = 1024;
+
         private static readonly IDictionary<long, JsonRpcError> _standardJsonRpcErrors = CreateStandardJsonRpcErrors();
 
         private readonly T _handler;
@@ -105,41 +110,82 @@ namespace Anemonis.AspNetCore.JsonRpc
 
                 return;
             }
-            if (!string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
-            {
-                context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-
-                return;
-            }
             if (context.Request.Headers.ContainsKey(HeaderNames.ContentEncoding))
             {
                 context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
 
                 return;
             }
-            if (!string.Equals(context.Request.Headers[HeaderNames.Accept], "application/json", StringComparison.OrdinalIgnoreCase))
+            if (!context.Request.Headers.TryGetValue(HeaderNames.ContentType, out var contentTypeHeaderValueString))
+            {
+                context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+
+                return;
+            }
+            if (!MediaTypeHeaderValue.TryParse((string)contentTypeHeaderValueString, out var contentTypeHeaderValue))
+            {
+                context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+
+                return;
+            }
+            if (!contentTypeHeaderValue.MediaType.Equals(_mediaTypeValue, StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+
+                return;
+            }
+            if (contentTypeHeaderValue.Charset.HasValue && (contentTypeHeaderValue.Encoding == null))
+            {
+                context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+
+                return;
+            }
+            if (!context.Request.Headers.TryGetValue(HeaderNames.Accept, out var acceptTypeHeaderValueString))
+            {
+                context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
+
+                return;
+            }
+            if (!MediaTypeHeaderValue.TryParse((string)acceptTypeHeaderValueString, out var acceptTypeHeaderValue))
+            {
+                context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
+
+                return;
+            }
+            if (!acceptTypeHeaderValue.MediaType.Equals(_mediaTypeValue, StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
+
+                return;
+            }
+            if (acceptTypeHeaderValue.Charset.HasValue && (acceptTypeHeaderValue.Encoding == null))
             {
                 context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
 
                 return;
             }
 
+            var contentEncoding = contentTypeHeaderValue.Encoding ?? Encoding.GetEncoding("utf-8");
+            var acceptEncoding = acceptTypeHeaderValue.Encoding ?? Encoding.GetEncoding("utf-8");
             var jsonRpcRequestData = default(JsonRpcData<JsonRpcRequest>);
 
             try
             {
-                jsonRpcRequestData = await _serializer.DeserializeRequestDataAsync(context.Request.Body, context.RequestAborted);
+                using (var streamReader = new StreamReader(context.Request.Body, contentEncoding, false, _streamBufferSize, true))
+                {
+                    jsonRpcRequestData = await _serializer.DeserializeRequestDataAsync(streamReader, context.RequestAborted);
+                }
             }
             catch (JsonException e)
             {
                 _logger?.LogError(4000, e, Strings.GetString("handler.request_data.declined"), context.TraceIdentifier, context.Request.PathBase);
 
                 var jsonRpcError = new JsonRpcError(JsonRpcErrorCode.InvalidFormat, Strings.GetString("rpc.error.invalid_format"));
-                var jsonRpcResponse = new JsonRpcResponse(jsonRpcError, default);
+                var jsonRpcResponse = new JsonRpcResponse(default, jsonRpcError);
 
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                await SerializeJsonRpcResponseAsync(context, jsonRpcResponse);
+                await SerializeJsonRpcResponseAsync(context, jsonRpcResponse, acceptEncoding);
 
                 return;
             }
@@ -148,11 +194,11 @@ namespace Anemonis.AspNetCore.JsonRpc
                 _logger?.LogError(4000, e, Strings.GetString("handler.request_data.declined"), context.TraceIdentifier, context.Request.PathBase);
 
                 var jsonRpcError = ConvertExceptionToJsonRpcError(e);
-                var jsonRpcResponse = new JsonRpcResponse(jsonRpcError, default);
+                var jsonRpcResponse = new JsonRpcResponse(default, jsonRpcError);
 
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                await SerializeJsonRpcResponseAsync(context, jsonRpcResponse);
+                await SerializeJsonRpcResponseAsync(context, jsonRpcResponse, acceptEncoding);
 
                 return;
             }
@@ -183,7 +229,7 @@ namespace Anemonis.AspNetCore.JsonRpc
                 context.RequestAborted.ThrowIfCancellationRequested();
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                await SerializeJsonRpcResponseAsync(context, jsonRpcResponse);
+                await SerializeJsonRpcResponseAsync(context, jsonRpcResponse, acceptEncoding);
             }
             else
             {
@@ -212,11 +258,11 @@ namespace Anemonis.AspNetCore.JsonRpc
                             _logger?.LogError(4020, Strings.GetString("handler.request_data.duplicate_ids"), context.TraceIdentifier);
 
                             var jsonRpcError = new JsonRpcError(-32000L, Strings.GetString("rpc.error.duplicate_ids"));
-                            var jsonRpcResponse = new JsonRpcResponse(jsonRpcError, default);
+                            var jsonRpcResponse = new JsonRpcResponse(default, jsonRpcError);
 
                             context.Response.StatusCode = StatusCodes.Status200OK;
 
-                            await SerializeJsonRpcResponseAsync(context, jsonRpcResponse);
+                            await SerializeJsonRpcResponseAsync(context, jsonRpcResponse, acceptEncoding);
 
                             return;
                         }
@@ -255,17 +301,20 @@ namespace Anemonis.AspNetCore.JsonRpc
                 context.RequestAborted.ThrowIfCancellationRequested();
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                await SerializeJsonRpcResponsesAsync(context, jsonRpcResponses);
+                await SerializeJsonRpcResponsesAsync(context, jsonRpcResponses, acceptEncoding);
             }
         }
 
-        private async Task SerializeJsonRpcResponseAsync(HttpContext context, JsonRpcResponse jsonRpcResponse)
+        private async Task SerializeJsonRpcResponseAsync(HttpContext context, JsonRpcResponse jsonRpcResponse, Encoding encoding)
         {
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = _contentTypeHeaderValue;
 
             using (var responseStream = new MemoryStream())
             {
-                await _serializer.SerializeResponseAsync(jsonRpcResponse, responseStream, context.RequestAborted);
+                using (var streamWriter = new StreamWriter(responseStream, encoding, _streamBufferSize, true))
+                {
+                    await _serializer.SerializeResponseAsync(jsonRpcResponse, streamWriter, context.RequestAborted);
+                }
 
                 context.Response.ContentLength = responseStream.Length;
                 responseStream.Position = 0;
@@ -274,13 +323,16 @@ namespace Anemonis.AspNetCore.JsonRpc
             }
         }
 
-        private async Task SerializeJsonRpcResponsesAsync(HttpContext context, IReadOnlyList<JsonRpcResponse> jsonRpcResponses)
+        private async Task SerializeJsonRpcResponsesAsync(HttpContext context, IReadOnlyList<JsonRpcResponse> jsonRpcResponses, Encoding encoding)
         {
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = _contentTypeHeaderValue;
 
             using (var responseStream = new MemoryStream())
             {
-                await _serializer.SerializeResponsesAsync(jsonRpcResponses, responseStream, context.RequestAborted);
+                using (var streamWriter = new StreamWriter(responseStream, encoding, _streamBufferSize, true))
+                {
+                    await _serializer.SerializeResponsesAsync(jsonRpcResponses, streamWriter, context.RequestAborted);
+                }
 
                 context.Response.ContentLength = responseStream.Length;
                 responseStream.Position = 0;
@@ -297,7 +349,7 @@ namespace Anemonis.AspNetCore.JsonRpc
 
                 _logger?.LogError(4010, exception, Strings.GetString("handler.request.invalid_message"), context.TraceIdentifier, exception.MessageId);
 
-                return new JsonRpcResponse(ConvertExceptionToJsonRpcError(exception), exception.MessageId);
+                return new JsonRpcResponse(exception.MessageId, ConvertExceptionToJsonRpcError(exception));
             }
 
             var request = requestInfo.Message;

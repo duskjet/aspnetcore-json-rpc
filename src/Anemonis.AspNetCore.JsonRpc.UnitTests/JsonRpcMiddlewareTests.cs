@@ -71,7 +71,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             var httpContext = new DefaultHttpContext();
 
             httpContext.Request.Method = method;
-            httpContext.Request.ContentType = "application/json";
+            httpContext.Request.ContentType = "application/json; charset=utf-8";
 
             await jsonRpcMiddleware.InvokeAsync(httpContext, c => Task.CompletedTask);
 
@@ -79,11 +79,12 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [DataTestMethod]
+        [DataRow("application/json; charset=utf")]
         [DataRow("application/x-www-form-urlencoded")]
         [DataRow("application/xml")]
         [DataRow("multipart/form-data")]
         [DataRow("text/plain")]
-        public async Task InvokeAsyncWhenContentTypeHeaderIsInvalid(string contentType)
+        public async Task InvokeAsyncWhenContentTypeHeaderIsInvalid(string mediaType)
         {
             var serviceProviderMock = new Mock<IServiceProvider>(MockBehavior.Strict);
 
@@ -98,7 +99,8 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             var httpContext = new DefaultHttpContext();
 
             httpContext.Request.Method = HttpMethods.Post;
-            httpContext.Request.ContentType = contentType;
+            httpContext.Request.ContentType = mediaType;
+            httpContext.Request.Headers.Add(HeaderNames.Accept, "application/json; charset=utf-8");
 
             await jsonRpcMiddleware.InvokeAsync(httpContext, c => Task.CompletedTask);
 
@@ -121,7 +123,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             var httpContext = new DefaultHttpContext();
 
             httpContext.Request.Method = HttpMethods.Post;
-            httpContext.Request.ContentType = "application/json";
+            httpContext.Request.ContentType = "application/json; charset=utf-8";
             httpContext.Request.Headers.Add(HeaderNames.ContentEncoding, "deflate");
 
             await jsonRpcMiddleware.InvokeAsync(httpContext, c => Task.CompletedTask);
@@ -145,7 +147,36 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             var httpContext = new DefaultHttpContext();
 
             httpContext.Request.Method = HttpMethods.Post;
-            httpContext.Request.ContentType = "application/json";
+            httpContext.Request.ContentType = "application/json; charset=utf-8";
+
+            await jsonRpcMiddleware.InvokeAsync(httpContext, c => Task.CompletedTask);
+
+            Assert.AreEqual(StatusCodes.Status406NotAcceptable, httpContext.Response.StatusCode);
+        }
+
+        [DataTestMethod]
+        [DataRow("application/json; charset=utf")]
+        [DataRow("application/x-www-form-urlencoded")]
+        [DataRow("application/xml")]
+        [DataRow("multipart/form-data")]
+        [DataRow("text/plain")]
+        public async Task InvokeAsyncWhenAcceptTypeHeaderIsInvalid(string mediaType)
+        {
+            var serviceProviderMock = new Mock<IServiceProvider>(MockBehavior.Strict);
+
+            serviceProviderMock.Setup(o => o.GetService(typeof(JsonRpcTestHandler1)))
+                .Returns(null);
+            serviceProviderMock.Setup(o => o.GetService(typeof(IOptions<JsonRpcOptions>)))
+                .Returns(null);
+            serviceProviderMock.Setup(o => o.GetService(typeof(ILoggerFactory)))
+                .Returns(null);
+
+            var jsonRpcMiddleware = new JsonRpcMiddleware<JsonRpcTestHandler1>(serviceProviderMock.Object);
+            var httpContext = new DefaultHttpContext();
+
+            httpContext.Request.Method = HttpMethods.Post;
+            httpContext.Request.ContentType = "application/json; charset=utf-8";
+            httpContext.Request.Headers.Add(HeaderNames.Accept, mediaType);
 
             await jsonRpcMiddleware.InvokeAsync(httpContext, c => Task.CompletedTask);
 
@@ -213,8 +244,8 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             var httpContext = new DefaultHttpContext();
 
             httpContext.Request.Method = HttpMethods.Post;
-            httpContext.Request.ContentType = "application/json";
-            httpContext.Request.Headers.Add(HeaderNames.Accept, "application/json");
+            httpContext.Request.ContentType = "application/json; charset=utf-8";
+            httpContext.Request.Headers.Add(HeaderNames.Accept, "application/json; charset=utf-8");
             httpContext.Request.Body = await new StringContent(requestActualContent).ReadAsStreamAsync();
             httpContext.Response.Body = new MemoryStream();
 

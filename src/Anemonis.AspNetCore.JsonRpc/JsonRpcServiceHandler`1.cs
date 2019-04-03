@@ -219,7 +219,7 @@ namespace Anemonis.AspNetCore.JsonRpc
 
                                     var message = string.Format(Strings.GetString("service.request.parameter.undefined_value"), request.Method, methodInfo.ParameterNames[i]);
 
-                                    return new JsonRpcResponse(new JsonRpcError(JsonRpcErrorCode.InvalidParameters, message), requestId);
+                                    return new JsonRpcResponse(requestId, new JsonRpcError(JsonRpcErrorCode.InvalidParameters, message));
                                 }
                             }
                         }
@@ -237,7 +237,7 @@ namespace Anemonis.AspNetCore.JsonRpc
                 {
                     var jsonRpcResult = await (dynamic)method.Invoke(_service, parameterValues) as object;
 
-                    return new JsonRpcResponse(jsonRpcResult, requestId);
+                    return new JsonRpcResponse(requestId, jsonRpcResult);
                 }
             }
             catch (JsonRpcServiceException e)
@@ -253,7 +253,7 @@ namespace Anemonis.AspNetCore.JsonRpc
                     responseError = new JsonRpcError(e.Code, e.Message);
                 }
 
-                return new JsonRpcResponse(responseError, requestId);
+                return new JsonRpcResponse(requestId, responseError);
             }
             catch (TargetInvocationException e)
                 when (e.InnerException is JsonRpcServiceException jrse)
@@ -269,7 +269,7 @@ namespace Anemonis.AspNetCore.JsonRpc
                     responseError = new JsonRpcError(jrse.Code, jrse.Message);
                 }
 
-                return new JsonRpcResponse(responseError, requestId);
+                return new JsonRpcResponse(requestId, responseError);
             }
             catch (TargetInvocationException e)
                 when (e.InnerException != null)
