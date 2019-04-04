@@ -25,7 +25,8 @@ namespace Anemonis.AspNetCore.JsonRpc
         private const string _contentTypeHeaderValue = "application/json; charset=utf-8";
         private const int _streamBufferSize = 1024;
 
-        private static readonly IDictionary<long, JsonRpcError> _standardJsonRpcErrors = CreateStandardJsonRpcErrors();
+        private static readonly IReadOnlyDictionary<string, Encoding> _supportedEncodings = CreateSupportedEncodings();
+        private static readonly IReadOnlyDictionary<long, JsonRpcError> _standardJsonRpcErrors = CreateStandardJsonRpcErrors();
 
         private readonly T _handler;
         private readonly JsonRpcSerializer _serializer;
@@ -50,6 +51,15 @@ namespace Anemonis.AspNetCore.JsonRpc
             _logger = loggerFactory?.CreateLogger<JsonRpcMiddleware<T>>();
         }
 
+        private static IReadOnlyDictionary<string, Encoding> CreateSupportedEncodings()
+        {
+            return new Dictionary<string, Encoding>(StringComparer.OrdinalIgnoreCase)
+            {
+                [Encoding.UTF8.WebName] = new UTF8Encoding(false, true),
+                [Encoding.Unicode.WebName] = new UnicodeEncoding(false, true, true)
+            };
+        }
+
         private static JsonRpcContractResolver CreateJsonRpcContractResolver(T handler)
         {
             var contracts = handler.GetContracts();
@@ -72,7 +82,7 @@ namespace Anemonis.AspNetCore.JsonRpc
             return resolver;
         }
 
-        private static IDictionary<long, JsonRpcError> CreateStandardJsonRpcErrors()
+        private static IReadOnlyDictionary<long, JsonRpcError> CreateStandardJsonRpcErrors()
         {
             return new Dictionary<long, JsonRpcError>(5)
             {
@@ -116,6 +126,10 @@ namespace Anemonis.AspNetCore.JsonRpc
 
                 return;
             }
+
+            var requestStreamEncoding = default(Encoding);
+            var responseStreamEncoding = default(Encoding);
+
             if (!context.Request.Headers.TryGetValue(HeaderNames.ContentType, out var contentTypeHeaderValueString))
             {
                 context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
@@ -134,7 +148,7 @@ namespace Anemonis.AspNetCore.JsonRpc
 
                 return;
             }
-            if (contentTypeHeaderValue.Charset.HasValue && (contentTypeHeaderValue.Encoding == null))
+            if (contentTypeHeaderValue.Charset.HasValue && !_supportedEncodings.TryGetValue(contentTypeHeaderValue.Charset.Value, out requestStreamEncoding))
             {
                 context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
 
@@ -158,20 +172,27 @@ namespace Anemonis.AspNetCore.JsonRpc
 
                 return;
             }
-            if (acceptTypeHeaderValue.Charset.HasValue && (acceptTypeHeaderValue.Encoding == null))
+            if (acceptTypeHeaderValue.Charset.HasValue && !_supportedEncodings.TryGetValue(acceptTypeHeaderValue.Charset.Value, out responseStreamEncoding))
             {
                 context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
 
                 return;
             }
 
-            var contentEncoding = contentTypeHeaderValue.Encoding ?? Encoding.GetEncoding("utf-8");
-            var acceptEncoding = acceptTypeHeaderValue.Encoding ?? Encoding.GetEncoding("utf-8");
+            if (requestStreamEncoding == null)
+            {
+                requestStreamEncoding = _supportedEncodings[Encoding.UTF8.WebName];
+            }
+            if (responseStreamEncoding == null)
+            {
+                responseStreamEncoding = _supportedEncodings[Encoding.UTF8.WebName];
+            }
+
             var jsonRpcRequestData = default(JsonRpcData<JsonRpcRequest>);
 
             try
             {
-                using (var streamReader = new StreamReader(context.Request.Body, contentEncoding, false, _streamBufferSize, true))
+                using (var streamReader = new StreamReader(context.Request.Body, requestStreamEncoding, false, _streamBufferSize, true))
                 {
                     jsonRpcRequestData = await _serializer.DeserializeRequestDataAsync(streamReader, context.RequestAborted);
                 }
@@ -185,7 +206,7 @@ namespace Anemonis.AspNetCore.JsonRpc
 
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                await SerializeJsonRpcResponseAsync(context, jsonRpcResponse, acceptEncoding);
+                await SerializeJsonRpcResponseAsync(context, jsonRpcResponse, responseStreamEncoding);
 
                 return;
             }
@@ -198,7 +219,7 @@ namespace Anemonis.AspNetCore.JsonRpc
 
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                await SerializeJsonRpcResponseAsync(context, jsonRpcResponse, acceptEncoding);
+                await SerializeJsonRpcResponseAsync(context, jsonRpcResponse, responseStreamEncoding);
 
                 return;
             }
@@ -229,7 +250,7 @@ namespace Anemonis.AspNetCore.JsonRpc
                 context.RequestAborted.ThrowIfCancellationRequested();
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                await SerializeJsonRpcResponseAsync(context, jsonRpcResponse, acceptEncoding);
+                await SerializeJsonRpcResponseAsync(context, jsonRpcResponse, responseStreamEncoding);
             }
             else
             {
@@ -262,7 +283,7 @@ namespace Anemonis.AspNetCore.JsonRpc
 
                             context.Response.StatusCode = StatusCodes.Status200OK;
 
-                            await SerializeJsonRpcResponseAsync(context, jsonRpcResponse, acceptEncoding);
+                            await SerializeJsonRpcResponseAsync(context, jsonRpcResponse, responseStreamEncoding);
 
                             return;
                         }
@@ -301,7 +322,7 @@ namespace Anemonis.AspNetCore.JsonRpc
                 context.RequestAborted.ThrowIfCancellationRequested();
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                await SerializeJsonRpcResponsesAsync(context, jsonRpcResponses, acceptEncoding);
+                await SerializeJsonRpcResponsesAsync(context, jsonRpcResponses, responseStreamEncoding);
             }
         }
 
