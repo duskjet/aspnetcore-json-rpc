@@ -46,15 +46,6 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcHandlerWithBuilderAndTypeWhenTypeDoesNotHaveAttribute()
-        {
-            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
-
-            Assert.ThrowsException<InvalidOperationException>(() =>
-                JsonRpcBuilderExtensions.UseJsonRpcHandler(builderMock.Object, typeof(JsonRpcTestHandler1)));
-        }
-
-        [TestMethod]
         public void UseJsonRpcHandlerWithBuilderAndType()
         {
             var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
@@ -127,15 +118,6 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcBuilderExtensions.UseJsonRpcHandler<JsonRpcTestHandler2>(null));
-        }
-
-        [TestMethod]
-        public void UseJsonRpcHandlerWithBuilderWhenTypeDoesNotHaveAttribute()
-        {
-            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
-
-            Assert.ThrowsException<InvalidOperationException>(() =>
-                JsonRpcBuilderExtensions.UseJsonRpcHandler<JsonRpcTestHandler1>(builderMock.Object));
         }
 
         [TestMethod]
@@ -236,15 +218,6 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcServiceWithBuilderAndTypeWhenTypeDoesNotHaveAttribute()
-        {
-            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
-
-            Assert.ThrowsException<InvalidOperationException>(() =>
-                JsonRpcBuilderExtensions.UseJsonRpcService(builderMock.Object, typeof(JsonRpcTestService1)));
-        }
-
-        [TestMethod]
         public void UseJsonRpcServiceWithBuilderAndType()
         {
             var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
@@ -317,15 +290,6 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcBuilderExtensions.UseJsonRpcService<JsonRpcTestService2>(null));
-        }
-
-        [TestMethod]
-        public void UseJsonRpcServiceWithBuilderWhenTypeDoesNotHaveAttribute()
-        {
-            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
-
-            Assert.ThrowsException<InvalidOperationException>(() =>
-                JsonRpcBuilderExtensions.UseJsonRpcService<JsonRpcTestService1>(builderMock.Object));
         }
 
         [TestMethod]
