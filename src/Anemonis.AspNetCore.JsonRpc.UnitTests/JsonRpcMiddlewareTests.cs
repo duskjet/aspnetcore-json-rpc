@@ -79,6 +79,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [DataTestMethod]
+        [DataRow("application/json; charset=us-ascii")]
         [DataRow("application/json; charset=utf")]
         [DataRow("application/x-www-form-urlencoded")]
         [DataRow("application/xml")]
@@ -155,6 +156,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [DataTestMethod]
+        [DataRow("application/json; charset=us-ascii")]
         [DataRow("application/json; charset=utf")]
         [DataRow("application/x-www-form-urlencoded")]
         [DataRow("application/xml")]

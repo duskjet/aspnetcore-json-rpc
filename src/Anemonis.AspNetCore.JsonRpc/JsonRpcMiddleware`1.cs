@@ -56,7 +56,8 @@ namespace Anemonis.AspNetCore.JsonRpc
             return new Dictionary<string, Encoding>(StringComparer.OrdinalIgnoreCase)
             {
                 [Encoding.UTF8.WebName] = new UTF8Encoding(false, true),
-                [Encoding.Unicode.WebName] = new UnicodeEncoding(false, true, true)
+                [Encoding.Unicode.WebName] = new UnicodeEncoding(false, false, true),
+                [Encoding.UTF32.WebName] = new UTF32Encoding(false, false, true)
             };
         }
 
