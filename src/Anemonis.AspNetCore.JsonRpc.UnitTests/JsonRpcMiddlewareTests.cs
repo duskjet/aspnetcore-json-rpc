@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Anemonis.AspNetCore.JsonRpc.UnitTests.Resources;
 using Anemonis.AspNetCore.JsonRpc.UnitTests.TestStubs;
@@ -246,7 +246,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             httpContext.Request.Method = HttpMethods.Post;
             httpContext.Request.ContentType = "application/json; charset=utf-8";
             httpContext.Request.Headers.Add(HeaderNames.Accept, "application/json; charset=utf-8");
-            httpContext.Request.Body = await new StringContent(requestActualContent).ReadAsStreamAsync();
+            httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(requestActualContent));
             httpContext.Response.Body = new MemoryStream();
 
             await jsonRpcMiddleware.InvokeAsync(httpContext, c => Task.CompletedTask);
