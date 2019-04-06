@@ -11,14 +11,14 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
     public sealed class JsonRpcServicesExtensionsTests
     {
         [TestMethod]
-        public void AddJsonRpcHandlerWithBuilderAndTypeWhenBuilderInNull()
+        public void AddJsonRpcHandlerWithServicesAndTypeWhenBuilderInNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcServicesExtensions.AddJsonRpcHandler(null, typeof(JsonRpcTestHandler2)));
         }
 
         [TestMethod]
-        public void AddJsonRpcHandlerWithBuilderAndTypeWhenTypeInNull()
+        public void AddJsonRpcHandlerWithServicesAndTypeWhenTypeInNull()
         {
             var servicesMock = new Mock<IServiceCollection>(MockBehavior.Strict);
 
@@ -27,7 +27,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void AddJsonRpcHandlerWithBuilderAndTypeWhenTypeInNotClass()
+        public void AddJsonRpcHandlerWithServicesAndTypeWhenTypeInNotClass()
         {
             var servicesMock = new Mock<IServiceCollection>(MockBehavior.Strict);
 
@@ -36,7 +36,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void AddJsonRpcHandlerWithBuilderAndTypeWhenTypeDoesNotImplementInterface()
+        public void AddJsonRpcHandlerWithServicesAndTypeWhenTypeDoesNotImplementInterface()
         {
             var servicesMock = new Mock<IServiceCollection>(MockBehavior.Strict);
 
@@ -45,7 +45,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void AddJsonRpcHandlerWithBuilderAndType()
+        public void AddJsonRpcHandlerWithServicesAndType()
         {
             var servicesMock = new Mock<IServiceCollection>(MockBehavior.Strict);
 
@@ -57,14 +57,14 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void AddJsonRpcHandlerWithBuilderWhenBuilderInNull()
+        public void AddJsonRpcHandlerWithServicesWhenBuilderInNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcServicesExtensions.AddJsonRpcHandler<JsonRpcTestHandler2>(null));
         }
 
         [TestMethod]
-        public void AddJsonRpcHandlerWithBuilder()
+        public void AddJsonRpcHandlerWithServices()
         {
             var servicesMock = new Mock<IServiceCollection>(MockBehavior.Strict);
 
@@ -76,14 +76,14 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void AddJsonRpcHandlersWhenBuilderInNull()
+        public void AddJsonRpcHandlersWithServicesWhenBuilderInNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcServicesExtensions.AddJsonRpcHandlers(null));
         }
 
         [TestMethod]
-        public void AddJsonRpcHandlers()
+        public void AddJsonRpcHandlersWithServices()
         {
             var servicesMock = new Mock<IServiceCollection>(MockBehavior.Strict);
 
@@ -93,14 +93,14 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void AddJsonRpcServiceWithBuilderAndTypeWhenBuilderInNull()
+        public void AddJsonRpcServiceWithServicesAndTypeWhenBuilderInNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcServicesExtensions.AddJsonRpcService(null, typeof(JsonRpcTestService1)));
         }
 
         [TestMethod]
-        public void AddJsonRpcServiceWithBuilderAndTypeWhenTypeInNull()
+        public void AddJsonRpcServiceWithServicesAndTypeWhenTypeInNull()
         {
             var servicesMock = new Mock<IServiceCollection>(MockBehavior.Strict);
 
@@ -109,7 +109,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void AddJsonRpcServiceWithBuilderAndTypeWhenTypeInNotClass()
+        public void AddJsonRpcServiceWithServicesAndTypeWhenTypeInNotClass()
         {
             var servicesMock = new Mock<IServiceCollection>(MockBehavior.Strict);
 
@@ -118,7 +118,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void AddJsonRpcServiceWithBuilderAndTypeWhenTypeDoesNotImplementInterface()
+        public void AddJsonRpcServiceWithServicesAndTypeWhenTypeDoesNotImplementInterface()
         {
             var servicesMock = new Mock<IServiceCollection>(MockBehavior.Strict);
 
@@ -127,7 +127,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void AddJsonRpcServiceWithBuilderAndType()
+        public void AddJsonRpcServiceWithServicesAndType()
         {
             var servicesMock = new Mock<IServiceCollection>(MockBehavior.Strict);
 
@@ -139,14 +139,14 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void AddJsonRpcServiceWithBuilderWhenBuilderInNull()
+        public void AddJsonRpcServiceWithServicesWhenBuilderInNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcServicesExtensions.AddJsonRpcService<JsonRpcTestService1>(null));
         }
 
         [TestMethod]
-        public void AddJsonRpcServiceWithBuilder()
+        public void AddJsonRpcServiceWithServices()
         {
             var servicesMock = new Mock<IServiceCollection>(MockBehavior.Strict);
 
@@ -158,14 +158,14 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void AddJsonRpcServicesWhenBuilderInNull()
+        public void AddJsonRpcServicesWithServicesWhenBuilderInNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcServicesExtensions.AddJsonRpcServices(null));
         }
 
         [TestMethod]
-        public void AddJsonRpcServices()
+        public void AddJsonRpcServicesWithServices()
         {
             var servicesMock = new Mock<IServiceCollection>(MockBehavior.Strict);
 
@@ -175,14 +175,14 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void AddJsonRpcWithOptionsWhenBuilderInNull()
+        public void AddJsonRpcWithWithServicesAndOptionsWhenBuilderInNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcServicesExtensions.AddJsonRpc(null, new JsonRpcOptions()));
         }
 
         [TestMethod]
-        public void AddJsonRpcWithOptionsWhenOptionsInNull()
+        public void AddJsonRpcWithWithServicesAndOptionsWhenOptionsInNull()
         {
             var servicesMock = new Mock<IServiceCollection>(MockBehavior.Strict);
 
@@ -191,7 +191,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void AddJsonRpcWithOptions()
+        public void AddJsonRpcWithWithServicesAndOptions()
         {
             var servicesMock = new Mock<IServiceCollection>(MockBehavior.Strict);
 
