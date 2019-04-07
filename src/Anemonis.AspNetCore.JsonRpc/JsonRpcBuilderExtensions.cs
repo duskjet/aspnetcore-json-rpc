@@ -2,7 +2,6 @@
 
 using System;
 using System.Reflection;
-using Anemonis.AspNetCore.JsonRpc.Resources;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -16,6 +15,7 @@ namespace Anemonis.AspNetCore.JsonRpc
         /// <param name="type">The type of the handler.</param>
         /// <param name="path">The request path for JSON-RPC methods.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <exception cref="ArgumentException"><paramref name="type" /> is not class or does not implement the <see cref="IJsonRpcHandler" /> interface.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="builder" /> or <paramref name="type" /> is <see langword="null" />.</exception>
         public static IApplicationBuilder UseJsonRpcHandler(this IApplicationBuilder builder, Type type, PathString path = default)
         {
@@ -107,6 +107,7 @@ namespace Anemonis.AspNetCore.JsonRpc
         /// <param name="type">The type of the service.</param>
         /// <param name="path">The request path for JSON-RPC methods.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <exception cref="ArgumentException"><paramref name="type" /> is not class or does not implement the <see cref="IJsonRpcService" /> interface.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="builder" /> or <paramref name="type" /> is <see langword="null" />.</exception>
         public static IApplicationBuilder UseJsonRpcService(this IApplicationBuilder builder, Type type, PathString path = default)
         {
