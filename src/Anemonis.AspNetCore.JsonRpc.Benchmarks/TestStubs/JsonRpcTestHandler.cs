@@ -92,12 +92,12 @@ namespace Anemonis.AspNetCore.JsonRpc.Benchmarks.TestStubs
                     break;
                 case "t0p0e1d0":
                     {
-                        response = new JsonRpcResponse(new JsonRpcError(1L, "m"), request.Id);
+                        response = new JsonRpcResponse(request.Id, new JsonRpcError(1L, "m"));
                     }
                     break;
                 case "t0p0e1d1":
                     {
-                        response = new JsonRpcResponse(new JsonRpcError(1L, "m", null), request.Id);
+                        response = new JsonRpcResponse(request.Id, new JsonRpcError(1L, "m", null));
                     }
                     break;
                 case "t0p1e0d0":
@@ -106,14 +106,14 @@ namespace Anemonis.AspNetCore.JsonRpc.Benchmarks.TestStubs
                     break;
                 case "t0p1e1d0":
                     {
-                        response = new JsonRpcResponse(new JsonRpcError(1L, "m"), request.Id);
+                        response = new JsonRpcResponse(request.Id, new JsonRpcError(1L, "m"));
                     }
                     break;
                 case "t0p1e1d1":
                     {
                         var parameters = request.ParametersByPosition;
 
-                        response = new JsonRpcResponse(new JsonRpcError(1L, "m", parameters[0]), request.Id);
+                        response = new JsonRpcResponse(request.Id, new JsonRpcError(1L, "m", parameters[0]));
                     }
                     break;
                 case "t0p2e0d0":
@@ -122,67 +122,67 @@ namespace Anemonis.AspNetCore.JsonRpc.Benchmarks.TestStubs
                     break;
                 case "t0p2e1d0":
                     {
-                        response = new JsonRpcResponse(new JsonRpcError(1L, "m"), request.Id);
+                        response = new JsonRpcResponse(request.Id, new JsonRpcError(1L, "m"));
                     }
                     break;
                 case "t0p2e1d1":
                     {
                         var parameters = request.ParametersByName;
 
-                        response = new JsonRpcResponse(new JsonRpcError(1L, "m", parameters["p0"]), request.Id);
+                        response = new JsonRpcResponse(request.Id, new JsonRpcError(1L, "m", parameters["p0"]));
                     }
                     break;
                 case "t1p0e0d0":
                     {
-                        response = new JsonRpcResponse(default(string), request.Id);
+                        response = new JsonRpcResponse(request.Id, default(string));
                     }
                     break;
                 case "t1p0e1d0":
                     {
-                        response = new JsonRpcResponse(new JsonRpcError(1L, "m"), request.Id);
+                        response = new JsonRpcResponse(request.Id, new JsonRpcError(1L, "m"));
                     }
                     break;
                 case "t1p0e1d1":
                     {
-                        response = new JsonRpcResponse(new JsonRpcError(1L, "m", null), request.Id);
+                        response = new JsonRpcResponse(request.Id, new JsonRpcError(1L, "m", null));
                     }
                     break;
                 case "t1p1e0d0":
                     {
                         var parameters = request.ParametersByPosition;
 
-                        response = new JsonRpcResponse(parameters[0], request.Id);
+                        response = new JsonRpcResponse(request.Id, parameters[0]);
                     }
                     break;
                 case "t1p1e1d0":
                     {
-                        response = new JsonRpcResponse(new JsonRpcError(1L, "m"), request.Id);
+                        response = new JsonRpcResponse(request.Id, new JsonRpcError(1L, "m"));
                     }
                     break;
                 case "t1p1e1d1":
                     {
                         var parameters = request.ParametersByPosition;
 
-                        response = new JsonRpcResponse(new JsonRpcError(1L, "m", parameters[0]), request.Id);
+                        response = new JsonRpcResponse(request.Id, new JsonRpcError(1L, "m", parameters[0]));
                     }
                     break;
                 case "t1p2e0d0":
                     {
                         var parameters = request.ParametersByName;
 
-                        response = new JsonRpcResponse(parameters["p0"], request.Id);
+                        response = new JsonRpcResponse(request.Id, parameters["p0"]);
                     }
                     break;
                 case "t1p2e1d0":
                     {
-                        response = new JsonRpcResponse(new JsonRpcError(1L, "m"), request.Id);
+                        response = new JsonRpcResponse(request.Id, new JsonRpcError(1L, "m"));
                     }
                     break;
                 case "t1p2e1d1":
                     {
                         var parameters = request.ParametersByName;
 
-                        response = new JsonRpcResponse(new JsonRpcError(1L, "m", parameters["p0"]), request.Id);
+                        response = new JsonRpcResponse(request.Id, new JsonRpcError(1L, "m", parameters["p0"]));
                     }
                     break;
                 default:

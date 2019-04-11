@@ -12,14 +12,14 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
     public sealed class JsonRpcBuilderExtensionsTests
     {
         [TestMethod]
-        public void UseJsonRpcHandlerWithBuilderAndTypeWhenBuilderInNull()
+        public void UseJsonRpcHandlerWithBuilderAndTypeWhenBuilderIsNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcBuilderExtensions.UseJsonRpcHandler(null, typeof(JsonRpcTestHandler2)));
         }
 
         [TestMethod]
-        public void UseJsonRpcHandlerWithBuilderAndTypeWhenTypeInNull()
+        public void UseJsonRpcHandlerWithBuilderAndTypeWhenTypeIsNull()
         {
             var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
 
@@ -28,7 +28,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcHandlerWithBuilderAndTypeWhenTypeInNotClass()
+        public void UseJsonRpcHandlerWithBuilderAndTypeWhenTypeIsNotClass()
         {
             var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
 
@@ -43,15 +43,6 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
 
             Assert.ThrowsException<ArgumentException>(() =>
                 JsonRpcBuilderExtensions.UseJsonRpcHandler(builderMock.Object, typeof(object)));
-        }
-
-        [TestMethod]
-        public void UseJsonRpcHandlerWithBuilderAndTypeWhenTypeDoesNotHaveAttribute()
-        {
-            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
-
-            Assert.ThrowsException<InvalidOperationException>(() =>
-                JsonRpcBuilderExtensions.UseJsonRpcHandler(builderMock.Object, typeof(JsonRpcTestHandler1)));
         }
 
         [TestMethod]
@@ -72,14 +63,14 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcHandlerWithBuilderAndTypeAndPathWhenBuilderInNull()
+        public void UseJsonRpcHandlerWithBuilderAndTypeAndPathWhenBuilderIsNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcBuilderExtensions.UseJsonRpcHandler(null, typeof(JsonRpcTestHandler2), default));
         }
 
         [TestMethod]
-        public void UseJsonRpcHandlerWithBuilderAndTypeAndPathWhenTypeInNull()
+        public void UseJsonRpcHandlerWithBuilderAndTypeAndPathWhenTypeIsNull()
         {
             var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
 
@@ -88,7 +79,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcHandlerWithBuilderAndTypeAndPathWhenTypeInNotClass()
+        public void UseJsonRpcHandlerWithBuilderAndTypeAndPathWhenTypeIsNotClass()
         {
             var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
 
@@ -123,19 +114,10 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcHandlerWithBuilderWhenBuilderInNull()
+        public void UseJsonRpcHandlerWithBuilderWhenBuilderIsNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcBuilderExtensions.UseJsonRpcHandler<JsonRpcTestHandler2>(null));
-        }
-
-        [TestMethod]
-        public void UseJsonRpcHandlerWithBuilderWhenTypeDoesNotHaveAttribute()
-        {
-            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
-
-            Assert.ThrowsException<InvalidOperationException>(() =>
-                JsonRpcBuilderExtensions.UseJsonRpcHandler<JsonRpcTestHandler1>(builderMock.Object));
         }
 
         [TestMethod]
@@ -156,7 +138,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcHandlerWithBuilderAndPathWhenBuilderInNull()
+        public void UseJsonRpcHandlerWithBuilderAndPathWhenBuilderIsNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcBuilderExtensions.UseJsonRpcHandler<JsonRpcTestHandler2>(null, default));
@@ -180,7 +162,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcHandlersWhenBuilderInNull()
+        public void UseJsonRpcHandlersWhenBuilderIsNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcBuilderExtensions.UseJsonRpcHandlers(null));
@@ -202,14 +184,14 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcServiceWithBuilderAndTypeWhenBuilderInNull()
+        public void UseJsonRpcServiceWithBuilderAndTypeWhenBuilderIsNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcBuilderExtensions.UseJsonRpcService(null, typeof(JsonRpcTestService2)));
         }
 
         [TestMethod]
-        public void UseJsonRpcServiceWithBuilderAndTypeWhenTypeInNull()
+        public void UseJsonRpcServiceWithBuilderAndTypeWhenTypeIsNull()
         {
             var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
 
@@ -218,7 +200,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcServiceWithBuilderAndTypeWhenTypeInNotClass()
+        public void UseJsonRpcServiceWithBuilderAndTypeWhenTypeIsNotClass()
         {
             var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
 
@@ -233,15 +215,6 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
 
             Assert.ThrowsException<ArgumentException>(() =>
                 JsonRpcBuilderExtensions.UseJsonRpcService(builderMock.Object, typeof(object)));
-        }
-
-        [TestMethod]
-        public void UseJsonRpcServiceWithBuilderAndTypeWhenTypeDoesNotHaveAttribute()
-        {
-            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
-
-            Assert.ThrowsException<InvalidOperationException>(() =>
-                JsonRpcBuilderExtensions.UseJsonRpcService(builderMock.Object, typeof(JsonRpcTestService1)));
         }
 
         [TestMethod]
@@ -262,14 +235,14 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcServiceWithBuilderAndTypeAndPathWhenBuilderInNull()
+        public void UseJsonRpcServiceWithBuilderAndTypeAndPathWhenBuilderIsNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcBuilderExtensions.UseJsonRpcService(null, typeof(JsonRpcTestService2), default));
         }
 
         [TestMethod]
-        public void UseJsonRpcServiceWithBuilderAndTypeAndPathWhenTypeInNull()
+        public void UseJsonRpcServiceWithBuilderAndTypeAndPathWhenTypeIsNull()
         {
             var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
 
@@ -278,7 +251,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcServiceWithBuilderAndTypeAndPathWhenTypeInNotClass()
+        public void UseJsonRpcServiceWithBuilderAndTypeAndPathWhenTypeIsNotClass()
         {
             var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
 
@@ -313,19 +286,10 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcServiceWithBuilderWhenBuilderInNull()
+        public void UseJsonRpcServiceWithBuilderWhenBuilderIsNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcBuilderExtensions.UseJsonRpcService<JsonRpcTestService2>(null));
-        }
-
-        [TestMethod]
-        public void UseJsonRpcServiceWithBuilderWhenTypeDoesNotHaveAttribute()
-        {
-            var builderMock = new Mock<IApplicationBuilder>(MockBehavior.Strict);
-
-            Assert.ThrowsException<InvalidOperationException>(() =>
-                JsonRpcBuilderExtensions.UseJsonRpcService<JsonRpcTestService1>(builderMock.Object));
         }
 
         [TestMethod]
@@ -346,7 +310,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcServiceWithBuilderAndPathWhenBuilderInNull()
+        public void UseJsonRpcServiceWithBuilderAndPathWhenBuilderIsNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcBuilderExtensions.UseJsonRpcService<JsonRpcTestService2>(null, default));
@@ -370,7 +334,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcServicesWhenBuilderInNull()
+        public void UseJsonRpcServicesWhenBuilderIsNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcBuilderExtensions.UseJsonRpcServices(null));
@@ -392,7 +356,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
         }
 
         [TestMethod]
-        public void UseJsonRpcWhenBuilderInNull()
+        public void UseJsonRpcWhenBuilderIsNull()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
                 JsonRpcBuilderExtensions.UseJsonRpc(null));

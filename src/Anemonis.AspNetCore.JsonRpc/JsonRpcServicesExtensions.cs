@@ -13,6 +13,7 @@ namespace Anemonis.AspNetCore.JsonRpc
         /// <param name="services">The <see cref="IServiceCollection" /> instance to add the handler to.</param>
         /// <param name="type">The type of the handler.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <exception cref="ArgumentException"><paramref name="type" /> is not class or does not implement the <see cref="IJsonRpcHandler" /> interface.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="services" /> or <paramref name="type" /> is <see langword="null" />.</exception>
         public static IServiceCollection AddJsonRpcHandler(this IServiceCollection services, Type type)
         {
@@ -86,6 +87,7 @@ namespace Anemonis.AspNetCore.JsonRpc
         /// <param name="services">The <see cref="IServiceCollection" /> instance to add the service to.</param>
         /// <param name="type">The type of the service.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <exception cref="ArgumentException"><paramref name="type" /> is not class or does not implement the <see cref="IJsonRpcService" /> interface.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="services" /> or <paramref name="type" /> is <see langword="null" />.</exception>
         public static IServiceCollection AddJsonRpcService(this IServiceCollection services, Type type)
         {

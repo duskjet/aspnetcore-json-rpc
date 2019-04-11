@@ -170,7 +170,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
                 .Returns(null);
 
             var jsonRpcServiceHandler = new JsonRpcServiceHandler<JsonRpcTestService1>(serviceProviderMock.Object);
-            var jsonRpcRequest = new JsonRpcRequest("t0p0e0d0");
+            var jsonRpcRequest = new JsonRpcRequest(default, "t0p0e0d0");
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNull(jsonRpcResponse);
@@ -185,7 +185,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
                 .Returns(null);
 
             var jsonRpcServiceHandler = new JsonRpcServiceHandler<JsonRpcTestService1>(serviceProviderMock.Object);
-            var jsonRpcRequest = new JsonRpcRequest("t0p0e1d0");
+            var jsonRpcRequest = new JsonRpcRequest(default, "t0p0e1d0");
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNotNull(jsonRpcResponse);
@@ -204,7 +204,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
                 .Returns(null);
 
             var jsonRpcServiceHandler = new JsonRpcServiceHandler<JsonRpcTestService1>(serviceProviderMock.Object);
-            var jsonRpcRequest = new JsonRpcRequest("t0p0e1d1");
+            var jsonRpcRequest = new JsonRpcRequest(default, "t0p0e1d1");
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNotNull(jsonRpcResponse);
@@ -229,7 +229,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             jsonRpcParams.Add(1L);
             jsonRpcParams.Add("!");
 
-            var jsonRpcRequest = new JsonRpcRequest("t0p1e0d0", new JsonRpcId(0L), jsonRpcParams);
+            var jsonRpcRequest = new JsonRpcRequest(0L, "t0p1e0d0", jsonRpcParams);
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNull(jsonRpcResponse);
@@ -249,7 +249,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             jsonRpcParams.Add(1L);
             jsonRpcParams.Add("!");
 
-            var jsonRpcRequest = new JsonRpcRequest("t0p1e1d0", new JsonRpcId(0L), jsonRpcParams);
+            var jsonRpcRequest = new JsonRpcRequest(0L, "t0p1e1d0", jsonRpcParams);
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNotNull(jsonRpcResponse);
@@ -273,7 +273,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             jsonRpcParams.Add(1L);
             jsonRpcParams.Add("!");
 
-            var jsonRpcRequest = new JsonRpcRequest("t0p1e1d1", new JsonRpcId(0L), jsonRpcParams);
+            var jsonRpcRequest = new JsonRpcRequest(0L, "t0p1e1d1", jsonRpcParams);
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNotNull(jsonRpcResponse);
@@ -298,7 +298,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             jsonRpcParams.Add("p0", 1L);
             jsonRpcParams.Add("p1", "!");
 
-            var jsonRpcRequest = new JsonRpcRequest("t0p2e0d0", new JsonRpcId(0L), jsonRpcParams);
+            var jsonRpcRequest = new JsonRpcRequest(0L, "t0p2e0d0", jsonRpcParams);
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNull(jsonRpcResponse);
@@ -318,7 +318,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             jsonRpcParams.Add("p0", 1L);
             jsonRpcParams.Add("p1", "!");
 
-            var jsonRpcRequest = new JsonRpcRequest("t0p2e1d0", new JsonRpcId(0L), jsonRpcParams);
+            var jsonRpcRequest = new JsonRpcRequest(0L, "t0p2e1d0", jsonRpcParams);
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNotNull(jsonRpcResponse);
@@ -342,7 +342,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             jsonRpcParams.Add("p0", 1L);
             jsonRpcParams.Add("p1", "!");
 
-            var jsonRpcRequest = new JsonRpcRequest("t0p2e1d1", new JsonRpcId(0L), jsonRpcParams);
+            var jsonRpcRequest = new JsonRpcRequest(0L, "t0p2e1d1", jsonRpcParams);
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNotNull(jsonRpcResponse);
@@ -353,8 +353,6 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             Assert.AreEqual("1!", jsonRpcResponse.Error.Data);
         }
 
-        // --------------------------------------------------------------------------------
-
         [TestMethod]
         public async Task HandleAsyncT1P0E0D0()
         {
@@ -364,7 +362,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
                 .Returns(null);
 
             var jsonRpcServiceHandler = new JsonRpcServiceHandler<JsonRpcTestService1>(serviceProviderMock.Object);
-            var jsonRpcRequest = new JsonRpcRequest("t1p0e0d0");
+            var jsonRpcRequest = new JsonRpcRequest(default, "t1p0e0d0");
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNull(jsonRpcResponse);
@@ -379,7 +377,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
                 .Returns(null);
 
             var jsonRpcServiceHandler = new JsonRpcServiceHandler<JsonRpcTestService1>(serviceProviderMock.Object);
-            var jsonRpcRequest = new JsonRpcRequest("t1p0e1d0");
+            var jsonRpcRequest = new JsonRpcRequest(default, "t1p0e1d0");
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNotNull(jsonRpcResponse);
@@ -398,7 +396,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
                 .Returns(null);
 
             var jsonRpcServiceHandler = new JsonRpcServiceHandler<JsonRpcTestService1>(serviceProviderMock.Object);
-            var jsonRpcRequest = new JsonRpcRequest("t1p0e1d1");
+            var jsonRpcRequest = new JsonRpcRequest(default, "t1p0e1d1");
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNotNull(jsonRpcResponse);
@@ -423,7 +421,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             jsonRpcParams.Add(1L);
             jsonRpcParams.Add("!");
 
-            var jsonRpcRequest = new JsonRpcRequest("t1p1e0d0", new JsonRpcId(0L), jsonRpcParams);
+            var jsonRpcRequest = new JsonRpcRequest(0L, "t1p1e0d0", jsonRpcParams);
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNotNull(jsonRpcResponse);
@@ -445,7 +443,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             jsonRpcParams.Add(1L);
             jsonRpcParams.Add("!");
 
-            var jsonRpcRequest = new JsonRpcRequest("t1p1e1d0", new JsonRpcId(0L), jsonRpcParams);
+            var jsonRpcRequest = new JsonRpcRequest(0L, "t1p1e1d0", jsonRpcParams);
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNotNull(jsonRpcResponse);
@@ -469,7 +467,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             jsonRpcParams.Add(1L);
             jsonRpcParams.Add("!");
 
-            var jsonRpcRequest = new JsonRpcRequest("t1p1e1d1", new JsonRpcId(0L), jsonRpcParams);
+            var jsonRpcRequest = new JsonRpcRequest(0L, "t1p1e1d1", jsonRpcParams);
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNotNull(jsonRpcResponse);
@@ -494,7 +492,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             jsonRpcParams.Add("p0", 1L);
             jsonRpcParams.Add("p1", "!");
 
-            var jsonRpcRequest = new JsonRpcRequest("t1p2e0d0", new JsonRpcId(0L), jsonRpcParams);
+            var jsonRpcRequest = new JsonRpcRequest(0L, "t1p2e0d0", jsonRpcParams);
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNotNull(jsonRpcResponse);
@@ -516,7 +514,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             jsonRpcParams.Add("p0", 1L);
             jsonRpcParams.Add("p1", "!");
 
-            var jsonRpcRequest = new JsonRpcRequest("t1p2e1d0", new JsonRpcId(0L), jsonRpcParams);
+            var jsonRpcRequest = new JsonRpcRequest(0L, "t1p2e1d0", jsonRpcParams);
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNotNull(jsonRpcResponse);
@@ -540,7 +538,7 @@ namespace Anemonis.AspNetCore.JsonRpc.UnitTests
             jsonRpcParams.Add("p0", 1L);
             jsonRpcParams.Add("p1", "!");
 
-            var jsonRpcRequest = new JsonRpcRequest("t1p2e1d1", new JsonRpcId(0L), jsonRpcParams);
+            var jsonRpcRequest = new JsonRpcRequest(0L, "t1p2e1d1", jsonRpcParams);
             var jsonRpcResponse = await jsonRpcServiceHandler.HandleAsync(jsonRpcRequest);
 
             Assert.IsNotNull(jsonRpcResponse);
